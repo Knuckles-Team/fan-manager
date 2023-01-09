@@ -40,7 +40,7 @@ def get_temp():
     return temp_cpu
 
 
-def determine_fan_level(temperature: int, minimum_temperature: int, maximum_temperature: int, minimum_fan_speed: int,
+def determine_fan_level(temperature, minimum_temperature: int, maximum_temperature: int, minimum_fan_speed: int,
                         maximum_fan_speed: int, temperature_power: int):
     x = min(1, max(0, (temperature - minimum_temperature) / (maximum_temperature - minimum_temperature)))
     fan_level = int(

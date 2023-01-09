@@ -1,5 +1,5 @@
 # Fan-Manager
-*Version: 0.3.0*
+*Version: 0.4.0*
 
 Manager your Dell PowerEdge Fan Speed with this handy tool!
 

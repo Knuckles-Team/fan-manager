@@ -26,7 +26,7 @@ setup(
     url='https://github.com/Knuckles-Team/fan-manager',
     author=__author__,
     author_email='knucklessg1@gmail.com',
-    license='MIT License',
+    license='MIT',
     packages=['fan_manager'],
     include_package_data=True,
     install_requires=[str(requirement.requirement) for requirement in requirements],

@@ -1,9 +1,39 @@
 # Fan-Manager
+
+![PyPI - Version](https://img.shields.io/pypi/v/fan-manager)
+![PyPI - Downloads](https://img.shields.io/pypi/dd/fan-manager)
+![GitHub Repo stars](https://img.shields.io/github/stars/Knuckles-Team/fan-manager)
+![GitHub forks](https://img.shields.io/github/forks/Knuckles-Team/fan-manager)
+![GitHub contributors](https://img.shields.io/github/contributors/Knuckles-Team/fan-manager)
+![PyPI - License](https://img.shields.io/pypi/l/fan-manager)
+![GitHub](https://img.shields.io/github/license/Knuckles-Team/fan-manager)
+
+![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/Knuckles-Team/fan-manager)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/Knuckles-Team/fan-manager)
+![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/Knuckles-Team/fan-manager)
+![GitHub issues](https://img.shields.io/github/issues/Knuckles-Team/fan-manager)
+
+![GitHub top language](https://img.shields.io/github/languages/top/Knuckles-Team/fan-manager)
+![GitHub language count](https://img.shields.io/github/languages/count/Knuckles-Team/fan-manager)
+![GitHub repo size](https://img.shields.io/github/repo-size/Knuckles-Team/fan-manager)
+![GitHub repo file count (file type)](https://img.shields.io/github/directory-file-count/Knuckles-Team/fan-manager)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/fan-manager)
+![PyPI - Implementation](https://img.shields.io/pypi/implementation/fan-manager)
+
 *Version: 0.4.0*
 
 Manager your Dell PowerEdge Fan Speed with this handy tool!
 
-### Usage:
+This repository is actively maintained - Contributions are welcome!
+
+Contribution Opportunities:
+- Increase support of Dell PowerEdge Devices
+- Support Non-PowerEdge Devices
+- Support Non-Dell Devices
+
+<details>
+  <summary><b>Usage:</b></summary>
+
 | Short Flag | Long Flag   | Description                                            |
 |------------|-------------|--------------------------------------------------------|
 | -h         | --help      | See usage for fan-manager                              | 
@@ -14,7 +44,10 @@ Manager your Dell PowerEdge Fan Speed with this handy tool!
 | -f         | --fast      | Maximum Fan Speed                                      | 
 | -p         | --poll-rate | Poll Rate for CPU Temperature in Seconds               | 
 
-### Example:
+</details>
+
+<details>
+  <summary><b>Example:</b></summary>
 
 Python
 ```bash
@@ -55,22 +88,25 @@ Docker Compose
 docker-compose up --build -d
 ```
 
-#### Install Instructions
+</details>
+
+<details>
+  <summary><b>Installation Instructions:</b></summary>
+
 Install Python Package
 
 ```bash
 python -m pip install fan-manager
 ```
 
-#### Build Instructions
-Build Python Package
+</details>
 
-```bash
-sudo chmod +x ./*.py
-sudo pip install .
-python3 setup.py bdist_wheel --universal
-# Test Pypi
-twine upload --repository-url https://test.pypi.org/legacy/ dist/* --verbose -u "Username" -p "Password"
-# Prod Pypi
-twine upload dist/* --verbose -u "Username" -p "Password"
-```
+<details>
+  <summary><b>Repository Owners:</b></summary>
+
+
+<img width="100%" height="180em" src="https://github-readme-stats.vercel.app/api?username=Knucklessg1&show_icons=true&hide_border=true&&count_private=true&include_all_commits=true" />
+
+![GitHub followers](https://img.shields.io/github/followers/Knucklessg1)
+![GitHub User's stars](https://img.shields.io/github/stars/Knucklessg1)
+</details>

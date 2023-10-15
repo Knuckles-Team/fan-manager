@@ -20,7 +20,7 @@
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/fan-manager)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/fan-manager)
 
-*Version: 0.4.0*
+*Version: 0.5.0*
 
 Manager your Dell PowerEdge Fan Speed with this handy tool!
 

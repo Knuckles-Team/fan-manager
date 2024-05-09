@@ -36,13 +36,13 @@ Contribution Opportunities:
 
 | Short Flag | Long Flag   | Description                                            |
 |------------|-------------|--------------------------------------------------------|
-| -h         | --help      | See usage for fan-manager                              | 
-| -i         | --intensity | Intensity of Fan Speed - Scales Logarithmically (0-10) | 
-| -c         | --cold      | Minimum Temperature for Fan Speed                      | 
-| -w         | --warm      | Maximum Temperature for Fan Speed                      | 
-| -s         | --slow      | Minimum Fan Speed                                      | 
-| -f         | --fast      | Maximum Fan Speed                                      | 
-| -p         | --poll-rate | Poll Rate for CPU Temperature in Seconds               | 
+| -h         | --help      | See usage for fan-manager                              |
+| -i         | --intensity | Intensity of Fan Speed - Scales Logarithmically (0-10) |
+| -c         | --cold      | Minimum Temperature for Fan Speed                      |
+| -w         | --warm      | Maximum Temperature for Fan Speed                      |
+| -s         | --slow      | Minimum Fan Speed                                      |
+| -f         | --fast      | Maximum Fan Speed                                      |
+| -p         | --poll-rate | Poll Rate for CPU Temperature in Seconds               |
 
 </details>
 

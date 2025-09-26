@@ -3,7 +3,7 @@
 
 import os
 import sys
-import getopt
+import argparse
 import json
 import time
 
@@ -33,7 +33,7 @@ def get_core_temp(cpus, sensors) -> int:
     return temp_cpu
 
 
-def get_temp() -> int:
+def get_temp() -> float:
     sensors = json.loads(os.popen("sensors -j").read())
     cpus = ["coretemp-isa-0000", "coretemp-isa-0001"]
     temp_cpu = get_core_temp(cpus, sensors)
@@ -60,26 +60,29 @@ def run_service(
 ):
     while True:
         cpu_temperature = get_temp()
-        x = min(
-            1,
+        x: float = min(
+            1.0,
             max(
-                0,
+                0.0,
                 (cpu_temperature - minimum_temperature)
                 / (maximum_temperature - minimum_temperature),
-            ),
+                ),
         )
         fan_level = int(
             min(
                 maximum_fan_speed,
                 max(
                     minimum_fan_speed,
-                    pow(x, temperature_power) * (maximum_fan_speed - minimum_fan_speed)
-                    + minimum_fan_speed,
+                    int(
+                        pow(x, temperature_power) * (maximum_fan_speed - minimum_fan_speed)
+                        + minimum_fan_speed
+                    ),
                 ),
             )
         )
         set_fan(fan_level)
         time.sleep(temperature_poll_rate)
+
 
 
 def usage():
@@ -97,91 +100,82 @@ def usage():
     )
 
 
-def fan_manager(argv):
-    temperature_poll_rate = 24
-    minimum_fan_speed = 5
-    maximum_fan_speed = 100
+def fan_manager():
+    # Define default values
+    defaults = {
+        'temperature_poll_rate': 24,
+        'minimum_fan_speed': 5,
+        'maximum_fan_speed': 100,
+        'minimum_temperature': 50,
+        'maximum_temperature': 80,
+        'temperature_power': 5
+    }
 
-    minimum_temperature = 50
-    maximum_temperature = 80
-
-    temperature_power = 5
-
-    try:
-        opts, args = getopt.getopt(
-            argv,
-            "hi:c:w:s:f:p:",
-            ["help", "intensity=", "cold=", "warm=", "slow=", "fast=", "poll-rate="],
-        )
-    except getopt.GetoptError:
-        usage()
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
-            usage()
-            sys.exit()
-        elif opt in ("-i", "--intensity"):
-            try:
-                temperature_power = int(arg)
-            except Exception as e:
-                print(f"Unable to parse input as integer: {arg}" f"Error: " f"{e}")
-                usage()
-                sys.exit(2)
-        elif opt in ("-c", "--cold"):
-            try:
-                minimum_temperature = int(arg)
-            except Exception as e:
-                print(f"Unable to parse input as integer: {arg}" f"Error: " f"{e}")
-                usage()
-                sys.exit(2)
-        elif opt in ("-w", "--warm"):
-            try:
-                maximum_temperature = int(arg)
-            except Exception as e:
-                print(f"Unable to parse input as integer: {arg}" f"Error: " f"{e}")
-                usage()
-                sys.exit(2)
-        elif opt in ("-s", "--slow"):
-            try:
-                minimum_fan_speed = int(arg)
-            except Exception as e:
-                print(f"Unable to parse input as integer: {arg}" f"Error: " f"{e}")
-                usage()
-                sys.exit(2)
-        elif opt in ("-f", "--fast"):
-            try:
-                maximum_fan_speed = int(arg)
-            except Exception as e:
-                print(f"Unable to parse input as integer: {arg}" f"Error: " f"{e}")
-                usage()
-                sys.exit(2)
-        elif opt in ("-p", "--poll-rate"):
-            try:
-                temperature_poll_rate = int(arg)
-            except Exception as e:
-                print(f"Unable to parse input as integer: {arg}" f"Error: " f"{e}")
-                usage()
-                sys.exit(2)
-
-    run_service(
-        temperature_poll_rate=temperature_poll_rate,
-        minimum_fan_speed=minimum_fan_speed,
-        maximum_fan_speed=maximum_fan_speed,
-        minimum_temperature=minimum_temperature,
-        maximum_temperature=maximum_temperature,
-        temperature_power=temperature_power,
+    # Set up argument parser
+    parser = argparse.ArgumentParser(
+        description="Fan manager tool to control fan speeds based on temperature.",
+        add_help=False  # Disable default help to customize it
+    )
+    parser.add_argument(
+        '-h', '--help',
+        action='help',
+        default=argparse.SUPPRESS,
+        help='Show this help message and exit'
+    )
+    parser.add_argument(
+        '-i', '--intensity',
+        type=int,
+        default=defaults['temperature_power'],
+        help='Temperature power intensity (default: %(default)s)'
+    )
+    parser.add_argument(
+        '-c', '--cold',
+        type=int,
+        default=defaults['minimum_temperature'],
+        help='Minimum temperature (default: %(default)s)'
+    )
+    parser.add_argument(
+        '-w', '--warm',
+        type=int,
+        default=defaults['maximum_temperature'],
+        help='Maximum temperature (default: %(default)s)'
+    )
+    parser.add_argument(
+        '-s', '--slow',
+        type=int,
+        default=defaults['minimum_fan_speed'],
+        help='Minimum fan speed (default: %(default)s)'
+    )
+    parser.add_argument(
+        '-f', '--fast',
+        type=int,
+        default=defaults['maximum_fan_speed'],
+        help='Maximum fan speed (default: %(default)s)'
+    )
+    parser.add_argument(
+        '-p', '--poll-rate',
+        type=int,
+        default=defaults['temperature_poll_rate'],
+        help='Temperature poll rate (default: %(default)s)'
     )
 
-
-def main():
-    if len(sys.argv) < 2:
+    # Parse arguments
+    try:
+        args = parser.parse_args()
+    except SystemExit as e:
+        # Handle parsing errors (e.g., invalid integer input)
         usage()
         sys.exit(2)
-    fan_manager(sys.argv[1:])
 
+    # Call run_service with parsed arguments
+    run_service(
+        temperature_poll_rate=args.poll_rate,
+        minimum_fan_speed=args.slow,
+        maximum_fan_speed=args.fast,
+        minimum_temperature=args.cold,
+        maximum_temperature=args.warm,
+        temperature_power=args.intensity
+    )
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        usage()
-        sys.exit(2)
-    fan_manager(sys.argv[1:])
+    fan_manager()

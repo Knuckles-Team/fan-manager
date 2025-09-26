@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # coding: utf-8
-from container_manager_mcp.container_manager_mcp import container_manager_mcp
+from fan_manager.fan_manager import fan_manager
+from fan_manager.fan_manager_mcp import fan_manager_mcp
 
 if __name__ == "__main__":
-    container_manager_mcp()
+    fan_manager()
+    fan_manager_mcp()

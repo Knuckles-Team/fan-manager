@@ -20,9 +20,11 @@
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/fan-manager)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/fan-manager)
 
-*Version: 0.6.1*
+*Version: 0.6.2*
 
 Manager your Dell PowerEdge Fan Speed with this handy tool!
+
+MCP Server for Agentic AI! Get started with Pip or Docker as well
 
 This repository is actively maintained - Contributions are welcome!
 
@@ -54,25 +56,42 @@ Python
 fan-manager --intensity 5 --cold 50 --warm 80 --slow 5 --fast 100 --poll-rate 24
 ```
 
-Dockerfile
-```dockerfile
-FROM ubuntu:latest AS ubuntu
-RUN apt update && apt upgrade -y && apt install -y dos2unix lm-sensors ipmitool wget curl git python3 python-is-python3 python3-pip gcc
-RUN python -m pip install --upgrade pip
-RUN python -m pip install --upgrade fan-manager
-CMD ["fan-manager --intensity 5 --cold 50 --warm 80 --slow 5 --fast 100 --poll-rate 24"]
-```
-
 Docker Compose
+
+Fan Manager
 ```docker-compose
 ---
-version: '3.9'
-
 services:
-  server_fan_speed:
-    build: .
+  fan-manager:
+    image: knucklessg1/fan-manager:latest
     container_name: server_fan_speed
     privileged: true
+    environment:
+      MODE: "fan-manager"
+      INTENSITY: ${INTENSITY}
+      COLD: ${COLD}
+      WARM: ${WARM}
+      SLOW: ${SLOW}
+      FAST: ${FAST}
+      POLL_RATE: ${POLL_RATE}
+    volumes:
+      - /dev/ipmi0:/dev/ipmi0
+    restart: unless-stopped
+```
+
+Fan Manager MCP Server
+```docker-compose
+---
+services:
+  fan-manager-mcp:
+    image: knucklessg1/fan-manager:latest
+    container_name: server_fan_speed
+    privileged: true
+    environment:
+      MODE: "fan-manager-mcp"
+      HOST: 0.0.0.0
+      PORT: 8030
+      TRANSPORT: "http"
     volumes:
       - /dev/ipmi0:/dev/ipmi0
     restart: unless-stopped
@@ -80,12 +99,37 @@ services:
 
 Docker Run
 ```bash
-docker run -it -d server_fan_speed fan-manager
+docker run -it -d knucklessg1/fan-manager:latest fan-manager
 ```
 
 Docker Compose
 ```bash
 docker-compose up --build -d
+```
+
+## Use with AI
+
+Configure `mcp.json`
+
+Recommended: Store secrets in environment variables with lookup in JSON file.
+
+For Testing Only: Plain text storage will also work, although **not** recommended.
+
+```json
+{
+  "mcpServers": {
+    "fan-manager": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "fan-manager",
+        "fan-manager-mcp"
+      ],
+      "timeout": 200000
+    }
+  }
+}
 ```
 
 </details>

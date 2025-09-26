@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=80.9.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fan-manager"
+version = "0.6.2"
+description = "Manager your Dell PowerEdge Fan Speed with this handy tool and MCP Server!"
+readme = "README.md"
+authors = [{ name = "Audel Rouhi", email = "knucklessg1@gmail.com" }]
+license = { text = "MIT" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: Public Domain",
+    "Environment :: Console",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.scripts]
+fan-manager = "fan_manager.fan_manager:fan_manager"
+fan-manager-mcp = "fan_manager.fan_manager_mcp:fan_manager_mcp"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools]
+include-package-data = true
+package-data = { "fan_manager" = ["fan_manager"] }

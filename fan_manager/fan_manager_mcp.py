@@ -115,7 +115,7 @@ async def set_fan_speed(
     },
     tags={"fan_management", "control", "automatic"},
 )
-async def mcp_automatic_fan_speed(
+async def automatic_fan_speed(
     minimum_fan_speed: float = Field(
         description="Minimum fan speed (0-100)", default=5, ge=0, le=100
     ),

@@ -54,11 +54,10 @@ def get_core_temp(cpus: list, sensors: dict) -> Dict[str, Any]:
                                     highest_temp = temp_cpu
                                     highest_core = cores
                                     highest_cpu = cpu
-                temp_cpu = highest_temp
         logger.info(
             f"Highest CPU: {highest_cpu}, Core: {highest_core}, Temperature: {highest_temp}"
         )
-        return {"response": temp_cpu, "command": command, "status": 200}
+        return {"response": highest_temp, "command": command, "status": 200}
     except Exception as e:
         logger.error(f"Failed to get core temperature: {str(e)}")
         return {"response": None, "command": command, "status": 500, "error": str(e)}
@@ -72,7 +71,10 @@ def get_temp() -> Dict[str, Any]:
     logger = logging.getLogger("FanManager")
     command = "sensors -j"
     try:
-        sensors = json.loads(os.popen("sensors -j").read())
+        sensors_output = os.popen("sensors -j").read()
+        if not sensors_output.strip():
+            raise RuntimeError("No output from 'sensors -j' command")
+        sensors = json.loads(sensors_output)
         cpus = ["coretemp-isa-0000", "coretemp-isa-0001"]
         temp_result = get_core_temp(cpus, sensors)
         if temp_result["status"] != 200:
@@ -130,12 +132,18 @@ def auto_set_fan_speed(
     temperature_power: int = 5,
 ):
     logger = logging.getLogger("FanManager")
-    logger.info("Starting fan manager service")
     temp_result = get_temp()
     if temp_result["status"] != 200:
         logger.error(
-            f"Skipping fan adjustment due to temperature error: {temp_result.get('error', 'Unknown error')}"
+            f"Skipping fan adjustment due to temperature error: {temp_result.get('error', 'Unknown error')}. Setting fan to maximum as fallback."
         )
+        fan_result = set_fan(int(maximum_fan_speed))
+        if fan_result["status"] != 200:
+            logger.error(
+                f"Failed to set fallback fan: {fan_result.get('error', 'Unknown error')}"
+            )
+        return  # Exit early to avoid computation with None
+
     cpu_temperature = temp_result["response"]
     x: float = min(
         1.0,

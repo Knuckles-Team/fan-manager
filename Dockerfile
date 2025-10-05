@@ -1,4 +1,4 @@
-FROM python:3-slim
+FROM debian:bookworm-slim
 
 # ARG FOR FAN MANAGER
 ARG INTENSITY=5
@@ -26,9 +26,12 @@ ENV HOST=${HOST}
 ENV PORT=${PORT}
 ENV TRANSPORT=${TRANSPORT}
 
-
 ENV PATH="/usr/local/bin:${PATH}"
-RUN pip install uv \
+RUN apt update  \
+    && apt upgrade -y  \
+    && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt install -y --no-install-recommends  \
+    lm-sensors ipmitool wget curl git python3 python-is-python3 python3-pip gcc \
+    && python -m pip install --root-user-action --break-system-packages uv \
     && uv pip install --system fan-manager>=1.0.0
 
 # Set ENTRYPOINT to handle both modes using a shell command

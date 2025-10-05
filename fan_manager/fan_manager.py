@@ -38,7 +38,6 @@ def get_core_temp(cpus: list, sensors: dict) -> Dict[str, Any]:
     highest_core = 0
     highest_cpu = ""
     cores = 0
-    temp_cpu = 0.0
     command = "sensors -j"
 
     try:

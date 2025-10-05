@@ -31,8 +31,8 @@ RUN apt update  \
     && apt upgrade -y  \
     && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt install -y --no-install-recommends  \
     lm-sensors ipmitool wget curl git python3 python-is-python3 python3-pip gcc \
-    && python -m pip install --root-user-action --break-system-packages uv \
-    && uv pip install --system fan-manager>=1.0.2
+    && python -m pip install --root-user-action uv \
+    && uv pip install --system fan-manager>=1.0.3
 
 # Set ENTRYPOINT to handle both modes using a shell command
 ENTRYPOINT ["/bin/sh", "-c", "if [ \"$MODE\" = \"fan-manager\" ]; then exec fan-manager --intensity \"$INTENSITY\" --cold \"$COLD\" --warm \"$WARM\" --slow \"$SLOW\" --fast \"$FAST\" --poll-rate \"$POLL_RATE\"; elif [ \"$MODE\" = \"fan-manager-mcp\" ]; then exec fan-manager-mcp --transport \"$TRANSPORT\" --host \"$HOST\" --port \"$PORT\"; else echo \"Error: MODE must be 'fan-manager' or 'fan-manager-mcp'\"; exit 1; fi"]

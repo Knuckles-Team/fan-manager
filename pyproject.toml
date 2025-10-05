@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fan-manager"
-version = "0.6.7"
+version = "1.0.0"
 description = "Manager your Dell PowerEdge Fan Speed with this handy tool and MCP Server!"
 readme = "README.md"
 authors = [{ name = "Audel Rouhi", email = "knucklessg1@gmail.com" }]

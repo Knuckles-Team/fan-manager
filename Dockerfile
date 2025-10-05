@@ -29,7 +29,7 @@ ENV TRANSPORT=${TRANSPORT}
 
 ENV PATH="/usr/local/bin:${PATH}"
 RUN pip install uv \
-    && uv pip install --system fan-manager
+    && uv pip install --system fan-manager>=1.0.0
 
 # Set ENTRYPOINT to handle both modes using a shell command
 ENTRYPOINT ["/bin/sh", "-c", "if [ \"$MODE\" = \"fan-manager\" ]; then exec fan-manager --intensity \"$INTENSITY\" --cold \"$COLD\" --warm \"$WARM\" --slow \"$SLOW\" --fast \"$FAST\" --poll-rate \"$POLL_RATE\"; elif [ \"$MODE\" = \"fan-manager-mcp\" ]; then exec fan-manager-mcp --transport \"$TRANSPORT\" --host \"$HOST\" --port \"$PORT\"; else echo \"Error: MODE must be 'fan-manager' or 'fan-manager-mcp'\"; exit 1; fi"]

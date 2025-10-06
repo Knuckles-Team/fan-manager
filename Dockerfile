@@ -34,7 +34,7 @@ RUN apt update  \
     && rm -rf /usr/lib/python3*/EXTERNALLY-MANAGED \
     && rm -rf /var/lib/python3*/EXTERNALLY-MANAGED \
     && python -m pip install uv \
-    && uv pip install --system fan-manager>=1.0.4
+    && uv pip install --system --upgrade fan-manager>=1.0.5
 
 # Set ENTRYPOINT to handle both modes using a shell command
 ENTRYPOINT ["/bin/sh", "-c", "if [ \"$MODE\" = \"fan-manager\" ]; then exec fan-manager --intensity \"$INTENSITY\" --cold \"$COLD\" --warm \"$WARM\" --slow \"$SLOW\" --fast \"$FAST\" --poll-rate \"$POLL_RATE\"; elif [ \"$MODE\" = \"fan-manager-mcp\" ]; then exec fan-manager-mcp --transport \"$TRANSPORT\" --host \"$HOST\" --port \"$PORT\"; else echo \"Error: MODE must be 'fan-manager' or 'fan-manager-mcp'\"; exit 1; fi"]

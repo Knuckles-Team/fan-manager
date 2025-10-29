@@ -64,6 +64,7 @@ ENV EUNOMIA_TYPE=${EUNOMIA_TYPE}
 ENV EUNOMIA_POLICY_FILE=${EUNOMIA_POLICY_FILE}
 ENV EUNOMIA_REMOTE_URL=${EUNOMIA_REMOTE_URL}
 ENV PATH="/usr/local/bin:${PATH}"
+ENV UV_HTTP_TIMEOUT=600
 
 RUN apt update  \
     && apt upgrade -y  \
@@ -72,7 +73,7 @@ RUN apt update  \
     && rm -rf /usr/lib/python3*/EXTERNALLY-MANAGED \
     && rm -rf /var/lib/python3*/EXTERNALLY-MANAGED \
     && python -m pip install uv \
-    && uv pip install --system --upgrade fan-manager>=1.0.7
+    && uv pip install --system --upgrade fan-manager>=1.0.8
 
 # Set ENTRYPOINT to handle both modes using a shell command
 ENTRYPOINT ["/bin/sh", "-c", "if [ \"$MODE\" = \"fan-manager\" ]; then exec fan-manager --intensity \"$INTENSITY\" --cold \"$COLD\" --warm \"$WARM\" --slow \"$SLOW\" --fast \"$FAST\" --poll-rate \"$POLL_RATE\"; elif [ \"$MODE\" = \"fan-manager-mcp\" ]; then exec fan-manager-mcp --transport \"$TRANSPORT\" --host \"$HOST\" --port \"$PORT\" --auth-type \"$AUTH_TYPE\" $( [ -n \"$TOKEN_JWKS_URI\" ] && echo \"--token-jwks-uri $TOKEN_JWKS_URI\" ) $( [ -n \"$TOKEN_ISSUER\" ] && echo \"--token-issuer $TOKEN_ISSUER\" ) $( [ -n \"$TOKEN_AUDIENCE\" ] && echo \"--token-audience $TOKEN_AUDIENCE\" ) $( [ -n \"$OAUTH_UPSTREAM_AUTH_ENDPOINT\" ] && echo \"--oauth-upstream-auth-endpoint $OAUTH_UPSTREAM_AUTH_ENDPOINT\" ) $( [ -n \"$OAUTH_UPSTREAM_TOKEN_ENDPOINT\" ] && echo \"--oauth-upstream-token-endpoint $OAUTH_UPSTREAM_TOKEN_ENDPOINT\" ) $( [ -n \"$OAUTH_UPSTREAM_CLIENT_ID\" ] && echo \"--oauth-upstream-client-id $OAUTH_UPSTREAM_CLIENT_ID\" ) $( [ -n \"$OAUTH_UPSTREAM_CLIENT_SECRET\" ] && echo \"--oauth-upstream-client-secret $OAUTH_UPSTREAM_CLIENT_SECRET\" ) $( [ -n \"$OAUTH_BASE_URL\" ] && echo \"--oauth-base-url $OAUTH_BASE_URL\" ) $( [ -n \"$OIDC_CONFIG_URL\" ] && echo \"--oidc-config-url $OIDC_CONFIG_URL\" ) $( [ -n \"$OIDC_CLIENT_ID\" ] && echo \"--oidc-client-id $OIDC_CLIENT_ID\" ) $( [ -n \"$OIDC_CLIENT_SECRET\" ] && echo \"--oidc-client-secret $OIDC_CLIENT_SECRET\" ) $( [ -n \"$OIDC_BASE_URL\" ] && echo \"--oidc-base-url $OIDC_BASE_URL\" ) $( [ -n \"$REMOTE_AUTH_SERVERS\" ] && echo \"--remote-auth-servers $REMOTE_AUTH_SERVERS\" ) $( [ -n \"$REMOTE_BASE_URL\" ] && echo \"--remote-base-url $REMOTE_BASE_URL\" ) $( [ -n \"$ALLOWED_CLIENT_REDIRECT_URIS\" ] && echo \"--allowed-client-redirect-uris $ALLOWED_CLIENT_REDIRECT_URIS\" ) $( [ -n \"$EUNOMIA_TYPE\" ] && echo \"--eunomia-type $EUNOMIA_TYPE\" ) $( [ -n \"$EUNOMIA_POLICY_FILE\" ] && echo \"--eunomia-policy-file $EUNOMIA_POLICY_FILE\" ) $( [ -n \"$EUNOMIA_REMOTE_URL\" ] && echo \"--eunomia-remote-url $EUNOMIA_REMOTE_URL\" ); else echo \"Error: MODE must be 'fan-manager' or 'fan-manager-mcp'\"; exit 1; fi"]

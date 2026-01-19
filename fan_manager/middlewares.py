@@ -1,5 +1,6 @@
 from fastmcp.server.middleware import MiddlewareContext, Middleware
 
+
 class UserTokenMiddleware(Middleware):
     async def on_request(self, context: MiddlewareContext, call_next):
         logger.debug(f"Delegation enabled: {config['enable_delegation']}")

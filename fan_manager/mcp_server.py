@@ -34,7 +34,11 @@ logger = logging.getLogger("FanManagerMCP")
 
 
 def get_mcp_instance():
-    """Build the FastMCP server, register enabled tool domains, and return it."""
+    """Build the FastMCP server, register enabled tool domains, and return it.
+
+    Registers the temperature (CONCEPT:FAN-001) and fan-control (CONCEPT:FAN-002)
+    tool domains, each gated behind its env toggle.
+    """
     args, mcp, middlewares = create_mcp_server(
         name="Fan Manager",
         version=__version__,
@@ -63,7 +67,11 @@ def get_mcp_instance():
 
 
 def mcp_server() -> None:
-    """Console-script entrypoint: start the MCP server on the chosen transport."""
+    """Console-script entrypoint: start the MCP server on the chosen transport.
+
+    Serves the CONCEPT:FAN-001 (temperature) and CONCEPT:FAN-002 (fan-control)
+    tool domains over the selected transport.
+    """
     mcp, args, middlewares, registered_tags = get_mcp_instance()
     print(f"fan-manager MCP v{__version__}", file=sys.stderr)
     print("\nStarting MCP Server", file=sys.stderr)

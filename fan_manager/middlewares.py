@@ -30,6 +30,7 @@ class UserTokenMiddleware(Middleware):
         )
 
     async def on_request(self, context: MiddlewareContext, call_next):
+        """Extract and stash a Bearer token for OIDC delegation when enabled."""
         logger.debug(f"Delegation enabled: {self.enable_delegation}")
         if self.enable_delegation:
             headers = getattr(context.message, "headers", {}) or {}
@@ -55,6 +56,7 @@ class JWTClaimsLoggingMiddleware(Middleware):
     """Log JWT claims on responses when present."""
 
     async def on_response(self, context: MiddlewareContext, call_next):
+        """Log JWT claims on the response when present (audit trail)."""
         response = await call_next(context)
         if hasattr(context, "auth") and hasattr(context.auth, "claims"):
             logger.info(

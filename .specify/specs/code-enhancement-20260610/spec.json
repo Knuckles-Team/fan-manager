@@ -1,0 +1,177 @@
+{
+  "feature_id": "code-enhancement-20260610",
+  "title": "Code Enhancement: fan-manager",
+  "created": "2026-06-10T14:09:12.770926+00:00",
+  "overview": "Automated code enhancement review for fan-manager. Covers 17 analysis domains.",
+  "user_stories": [
+    {
+      "role": "developer",
+      "action": "address Project Analysis findings (grade: C, score: 74)",
+      "value": "improve project project analysis from C to at least B (80+)"
+    },
+    {
+      "role": "developer",
+      "action": "address Test Coverage findings (grade: C, score: 75)",
+      "value": "improve project test coverage from C to at least B (80+)"
+    },
+    {
+      "role": "developer",
+      "action": "address Architecture & Design Patterns findings (grade: C, score: 75)",
+      "value": "improve project architecture & design patterns from C to at least B (80+)"
+    },
+    {
+      "role": "developer",
+      "action": "address Concept Traceability findings (grade: F, score: 23)",
+      "value": "improve project concept traceability from F to at least B (80+)"
+    },
+    {
+      "role": "developer",
+      "action": "address Changelog Audit findings (grade: C, score: 75)",
+      "value": "improve project changelog audit from C to at least B (80+)"
+    },
+    {
+      "role": "developer",
+      "action": "address Environment Variables findings (grade: C, score: 79)",
+      "value": "improve project environment variables from C to at least B (80+)"
+    },
+    {
+      "role": "developer",
+      "action": "address XDG Compliance (KG) findings (grade: N/A, score: 100)",
+      "value": "improve project xdg compliance (kg) from N/A to at least B (80+)"
+    }
+  ],
+  "functional_requirements": [
+    {
+      "id": "FR-001",
+      "description": "Detected 3 agent skill(s) \u2014 will grade in CE-026",
+      "testable": true
+    },
+    {
+      "id": "FR-002",
+      "description": "Minor update: pytest-asyncio 1.3.0 (installed) -> 1.4.0",
+      "testable": true
+    },
+    {
+      "id": "FR-003",
+      "description": "Minor update: agent-utilities 0.2.40 (installed) -> 0.47.0",
+      "testable": true
+    },
+    {
+      "id": "FR-004",
+      "description": "Test suite lacks intent diversity (only one type)",
+      "testable": true
+    },
+    {
+      "id": "FR-005",
+      "description": "15 potential doc-test drift items",
+      "testable": true
+    },
+    {
+      "id": "FR-006",
+      "description": "README.md missing sections: usage|quick start",
+      "testable": true
+    },
+    {
+      "id": "FR-007",
+      "description": "README missing: Has a Table of Contents",
+      "testable": true
+    },
+    {
+      "id": "FR-008",
+      "description": "README missing: Has usage examples with code blocks",
+      "testable": true
+    },
+    {
+      "id": "FR-009",
+      "description": "No discernible layer architecture (no domain/service/adapter separation)",
+      "testable": true
+    },
+    {
+      "id": "FR-010",
+      "description": "Low dependency injection ratio: 0%",
+      "testable": true
+    },
+    {
+      "id": "FR-011",
+      "description": "Low traceability ratio: 0% concepts fully traced",
+      "testable": true
+    },
+    {
+      "id": "FR-012",
+      "description": "7 orphaned concepts (only in one source)",
+      "testable": true
+    },
+    {
+      "id": "FR-013",
+      "description": "15 test functions missing concept markers",
+      "testable": true
+    },
+    {
+      "id": "FR-014",
+      "description": "24 significant functions (>10 lines) missing concept markers in docstrings",
+      "testable": true
+    },
+    {
+      "id": "FR-015",
+      "description": "Total lint findings: 3 (high/error: 3, medium/warning: 0, low: 0)",
+      "testable": true
+    },
+    {
+      "id": "FR-016",
+      "description": "2 hook(s) may be outdated: ruff-pre-commit, uv-pre-commit",
+      "testable": true
+    },
+    {
+      "id": "FR-017",
+      "description": "CHANGELOG.md exists but could not be parsed \u2014 check format compliance",
+      "testable": true
+    },
+    {
+      "id": "FR-018",
+      "description": "No changelog entries within the last 30 days",
+      "testable": true
+    },
+    {
+      "id": "FR-019",
+      "description": "keepachangelog not installed \u2014 pip install 'universal-skills[code-enhancer]'",
+      "testable": true
+    },
+    {
+      "id": "FR-020",
+      "description": "Partial env var documentation: 38% coverage",
+      "testable": true
+    },
+    {
+      "id": "FR-021",
+      "description": "Undocumented env vars: AUTH_TYPE, ENABLE_DELEGATION, ENABLE_OTEL, EUNOMIA_POLICY_FILE, EUNOMIA_TYPE, IPMITOOL_PATH, SENSORS_PATH, UV_COMPILE_BYTECODE",
+      "testable": true
+    },
+    {
+      "id": "FR-022",
+      "description": "3 Python env vars not in .env.example: ENABLE_DELEGATION, IPMITOOL_PATH, SENSORS_PATH",
+      "testable": true
+    },
+    {
+      "id": "FR-023",
+      "description": "Check skipped: required agent-utilities/networkx dependencies not found.",
+      "testable": true
+    }
+  ],
+  "success_criteria": [
+    {
+      "metric": "Overall GPA",
+      "current": 2.88,
+      "target": 3.0
+    },
+    {
+      "metric": "Domains at B or above",
+      "current": 10,
+      "target": 17
+    },
+    {
+      "metric": "Actionable findings",
+      "current": 23,
+      "target": 0
+    }
+  ]
+}

@@ -9,6 +9,25 @@
 - Domain: **local** Dell PowerEdge thermal control — `ipmitool` (fan) + `lm-sensors` (temperature). No remote API/credentials.
 - Key principles: Functional patterns, Pydantic for data validation, asynchronous tool execution, action-routed MCP tools.
 
+### Architecture & Deliberate Simplicity
+
+Fan Manager is a **small local tool**, so it deliberately avoids a full
+domain/adapter/port hexagonal split — that would be over-engineering for a
+two-concept package. The design makes exactly the highest-value seam instead:
+
+- **Adapter seam (DI):** `CommandRunner` (a `Protocol` in `fan_manager.fan_manager`)
+  abstracts the `sensors`/`ipmitool` shell-out; `SubprocessCommandRunner` is the
+  production implementation. Tests inject a fake runner rather than monkeypatching
+  `subprocess` globally.
+- **Service layer (DI):** `fan_manager/services/FanControlService` composes the
+  injected `CommandRunner` + runtime config and exposes the temperature
+  (`CONCEPT:FAN-001`) and fan-control (`CONCEPT:FAN-002`) operations. The `Api`
+  facade composes this service.
+- **Model layer:** `fan_manager/models.py` holds the Pydantic envelopes.
+
+Anything beyond this (separate `domain/`, `ports/`, `adapters/` packages) is
+intentionally *not* added — it would add indirection without value at this size.
+
 ### Architecture Diagram
 ```mermaid
 graph TD
@@ -16,8 +35,11 @@ graph TD
     Agent --> MCP[MCP Server / FastMCP]
     MCP --> Temp[temperature tool — CONCEPT:FAN-001]
     MCP --> Fan[fan-control tool — CONCEPT:FAN-002]
-    Temp --> Sensors([lm-sensors])
-    Fan --> IPMI([BMC via ipmitool])
+    Temp --> Service[FanControlService - DI]
+    Fan --> Service
+    Service --> Runner[CommandRunner adapter]
+    Runner --> Sensors([lm-sensors])
+    Runner --> IPMI([BMC via ipmitool])
 ```
 
 ## Commands (run these exactly)

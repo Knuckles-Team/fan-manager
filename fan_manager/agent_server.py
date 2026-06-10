@@ -8,8 +8,26 @@ import logging
 import os
 import sys
 import warnings
+from pathlib import Path
 
 __version__ = "1.1.0"
+
+# Externalized system prompt (agent-utilities standard). The repo keeps the
+# canonical agent system prompt in ``prompts/main_agent.md`` so it can be edited
+# without touching code; ``agent_data/IDENTITY.md`` mirrors it for the identity
+# loader.
+_PROMPT_FILE = Path(__file__).resolve().parent.parent / "prompts" / "main_agent.md"
+
+
+def _load_externalized_prompt() -> str | None:
+    """Return the externalized ``prompts/main_agent.md`` body, if present."""
+    try:
+        if _PROMPT_FILE.is_file():
+            return _PROMPT_FILE.read_text(encoding="utf-8").strip() or None
+    except OSError:
+        return None
+    return None
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,6 +43,12 @@ DEFAULT_AGENT_SYSTEM_PROMPT = None
 
 
 def agent_server():
+    """Console-script entrypoint: build and run the A2A agent server.
+
+    Wires the agent identity/system prompt and starts the Pydantic AI agent that
+    fronts the CONCEPT:FAN-001 (temperature) and CONCEPT:FAN-002 (fan-control)
+    MCP tools, with optional logfire/OTEL observability.
+    """
     from agent_utilities import (
         build_system_prompt_from_workspace,
         create_agent_parser,
@@ -48,7 +72,9 @@ def agent_server():
     )
     DEFAULT_AGENT_SYSTEM_PROMPT = os.getenv(
         "AGENT_SYSTEM_PROMPT",
-        meta.get("content") or build_system_prompt_from_workspace(),
+        _load_externalized_prompt()
+        or meta.get("content")
+        or build_system_prompt_from_workspace(),
     )
 
     warnings.filterwarnings("ignore", message=".*urllib3.*or chardet.*")

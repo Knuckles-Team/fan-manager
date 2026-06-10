@@ -61,8 +61,8 @@ All agents in the ecosystem inherit enterprise-grade infrastructure from
 | Feature | Status | Source |
 |:--------|:-------|:-------|
 | **OpenTelemetry Instrumentation** | ✅ Built-in | `agent-utilities[logfire]` |
-| **Audit Logging** | ✅ Built-in | Append-only compliance trail (CONCEPT:OS-5.4) |
-| **Prompt Injection Defense** | ✅ Built-in | Pattern scanner + jailbreak taxonomy (CONCEPT:OS-5.1) |
-| **Guardrail Engine** | ✅ Built-in | Input/output interception (CONCEPT:OS-5.3) |
+| **Audit Logging** | ✅ Built-in | Append-only compliance trail (external `OS-5.4`) |
+| **Prompt Injection Defense** | ✅ Built-in | Pattern scanner + jailbreak taxonomy (external `OS-5.1`) |
+| **Guardrail Engine** | ✅ Built-in | Input/output interception (external `OS-5.3`) |
 
 > 📖 **Full Registry**: See [`agent-utilities/docs/overview.md`](https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/overview.md) for the complete 5-Pillar concept index.

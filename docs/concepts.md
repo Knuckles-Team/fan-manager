@@ -2,7 +2,7 @@
 
 > **Prefix**: `CONCEPT:FAN-*`
 > **Version**: 1.1.0
-> **Bridge**: [`CONCEPT:ECO-4.0`](https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/concepts.md) (Unified Toolkit Ingestion)
+> **Bridge**: [`ECO-4.0`](https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/concepts.md) (Unified Toolkit Ingestion)
 
 ---
 
@@ -15,19 +15,24 @@
 
 ## Cross-Project References (from agent-utilities)
 
-| Concept ID | Name | Origin |
-|------------|------|--------|
-| `CONCEPT:ECO-4.0` | Unified Toolkit Ingestion | agent-utilities |
-| `CONCEPT:ORCH-1.2` | Confidence-Gated Router | agent-utilities |
-| `CONCEPT:OS-5.1` | Prompt Injection Defense | agent-utilities |
-| `CONCEPT:OS-5.2` | Cognitive Scheduler | agent-utilities |
-| `CONCEPT:OS-5.3` | Guardrail Engine | agent-utilities |
-| `CONCEPT:OS-5.4` | Audit Logging | agent-utilities |
-| `CONCEPT:KG-2.0` | Knowledge Graph Core | agent-utilities |
+> These are **external** concepts owned by the [`agent-utilities`](https://github.com/Knuckles-Team/agent-utilities)
+> project, not project-specific `CONCEPT:FAN-*` concepts. They are listed here as
+> bare IDs (without the `CONCEPT:` marker prefix) so traceability tooling treats
+> them as external bridges rather than orphaned local concepts.
+
+| External Concept ID | Name | Origin |
+|---------------------|------|--------|
+| `ECO-4.0` | Unified Toolkit Ingestion | agent-utilities |
+| `ORCH-1.2` | Confidence-Gated Router | agent-utilities |
+| `OS-5.1` | Prompt Injection Defense | agent-utilities |
+| `OS-5.2` | Cognitive Scheduler | agent-utilities |
+| `OS-5.3` | Guardrail Engine | agent-utilities |
+| `OS-5.4` | Audit Logging | agent-utilities |
+| `KG-2.0` | Knowledge Graph Core | agent-utilities |
 
 ## Synergy with agent-utilities
 
-This project integrates with `agent-utilities` via `CONCEPT:ECO-4.0` (Unified
-Toolkit Ingestion). The `fan_manager` MCP server registers its tools with the
-agent-utilities FastMCP middleware, enabling automatic discovery, telemetry, and
-Knowledge Graph ingestion of all FAN-* concepts.
+This project integrates with `agent-utilities` via the `ECO-4.0` (Unified
+Toolkit Ingestion) bridge. The `fan_manager` MCP server registers its tools with
+the agent-utilities FastMCP middleware, enabling automatic discovery, telemetry,
+and Knowledge Graph ingestion of all `CONCEPT:FAN-*` concepts.

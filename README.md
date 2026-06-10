@@ -181,6 +181,35 @@ Interface alongside the MCP server. See
 
 ---
 
+## Environment Variables
+
+Fan Manager reads the following environment variables (all optional — every one
+has a safe default). They can be set in the process environment, in a `.env`
+file (auto-loaded), or in the MCP client's `env` block. See
+[`.env.example`](.env.example) for a ready-to-copy template.
+
+| Variable | Default | Scope | Description |
+|----------|---------|-------|-------------|
+| `HOST` | `0.0.0.0` | MCP server | Bind address for `streamable-http`/`sse` transports. |
+| `PORT` | `8000` | MCP server | Bind port for `streamable-http`/`sse` transports. |
+| `TRANSPORT` | `stdio` | MCP server | Transport: `stdio`, `streamable-http`, or `sse`. |
+| `AUTH_TYPE` | `none` | MCP server | Auth strategy passed to the `agent-utilities` MCP factory (`none` for this local tool). |
+| `FASTMCP_LOG_LEVEL` | `INFO` | MCP server | Log verbosity for the underlying FastMCP server. |
+| `TEMPERATURETOOL` | `True` | Tool toggle | Register the `temperature` tool domain (`CONCEPT:FAN-001`). |
+| `FANCONTROLTOOL` | `True` | Tool toggle | Register the `fan-control` tool domain (`CONCEPT:FAN-002`). |
+| `IPMITOOL_PATH` | `ipmitool` | Local tooling | Path/name of the `ipmitool` binary used to drive the BMC. |
+| `SENSORS_PATH` | `sensors` | Local tooling | Path/name of the `lm-sensors` binary used to read temperatures. |
+| `ENABLE_OTEL` | `True` | Observability | Enable OpenTelemetry/logfire instrumentation for the agent. |
+| `ENABLE_DELEGATION` | `False` | Security | Enable OIDC Bearer-token delegation middleware (inert by default — Fan Manager is a local tool). |
+| `EUNOMIA_TYPE` | `none` | Security | Eunomia policy mode: `none`, `embedded`, or `remote`. |
+| `EUNOMIA_POLICY_FILE` | `mcp_policies.json` | Security | Path to the Eunomia policy file when `EUNOMIA_TYPE` is set. |
+
+> **Build-time only (not application config):** `UV_COMPILE_BYTECODE`, `NO_COLOR`,
+> and `TERM` are consumed by the build/runtime environment (Docker image build,
+> terminal rendering) and are not read by the application code.
+
+---
+
 ## Security & Governance
 
 Built directly upon the enterprise-ready

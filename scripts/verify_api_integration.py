@@ -41,7 +41,7 @@ NON_TOOL_METHODS = {"authenticate", "run_service"}
 
 
 def parse_api_client(filepath):
-    """Parse api_client.py for the public methods of the Api/Client class."""
+    """Parse api_client.py for the public Api/Client methods (CONCEPT:FAN-001/FAN-002 surface)."""
     with open(filepath, "r", encoding="utf-8") as f:
         tree = ast.parse(f.read(), filename=filepath)
 
@@ -71,6 +71,7 @@ class CallVisitor(ast.NodeVisitor):
         self.called_names = set()
 
     def visit_Call(self, node):
+        """Record direct/indirect calls wiring the CONCEPT:FAN-001/FAN-002 callables."""
         func = node.func
         # Direct call: set_fan(...), get_temp(...)
         if isinstance(func, ast.Name):
@@ -114,6 +115,7 @@ def collect_called_names(filepaths):
 
 
 def verify_agent(agent_dir):
+    """Verify every Api method is wired into an MCP tool (CONCEPT:FAN-001/FAN-002)."""
     api_clients = glob.glob(
         os.path.join(agent_dir, "**", "api_client.py"), recursive=True
     )
@@ -157,6 +159,7 @@ def verify_agent(agent_dir):
 
 
 def main():
+    """CLI entrypoint for the API-to-MCP parity check (CONCEPT:FAN-001/FAN-002)."""
     args = sys.argv[1:]
     # Always operate in local single-package mode for this repo.
     if "--local" in args or "--pre-commit" in args or not args:

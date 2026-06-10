@@ -25,7 +25,7 @@ text = "MIT"
 
 [project.optional-dependencies]
 mcp = ["agent-utilities[mcp]>=0.47.0"]
-agent = ["agent-utilities[agent,logfire]>=0.47.0"]
+agent = ["agent-utilities[agent,logfire]>=0.47.0", "logfire>=0.50.0"]
 all = ["fan-manager[mcp,agent]>=1.1.0"]
 test = ["pytest-xdist>=3.6.0", "pytest", "pytest-asyncio", "pytest-cov"]
 

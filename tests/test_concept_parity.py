@@ -5,6 +5,8 @@ registered in docs/concepts.md.
 import os
 import re
 
+import pytest
+
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MCP_DIR = os.path.join(ROOT_DIR, "fan_manager", "mcp")
 CONCEPTS_DOC = os.path.join(ROOT_DIR, "docs", "concepts.md")
@@ -28,6 +30,8 @@ def _concepts_in_dir(directory: str) -> set[str]:
     return found
 
 
+@pytest.mark.concept("FAN-001")
+@pytest.mark.concept("FAN-002")
 def test_mcp_concepts_are_documented():
     """Each CONCEPT:FAN-* in the MCP tool modules is in docs/concepts.md."""
     tool_concepts = _concepts_in_dir(MCP_DIR)
@@ -41,6 +45,8 @@ def test_mcp_concepts_are_documented():
     )
 
 
+@pytest.mark.concept("FAN-001")
+@pytest.mark.concept("FAN-002")
 def test_expected_concepts_present():
     """The two core fan-manager concepts exist in the registry."""
     documented = _concepts_in(CONCEPTS_DOC)

@@ -1,0 +1,51 @@
+# Tasks: Code Enhancement: fan-manager
+
+Generated: 2026-06-10T14:09:12.770926+00:00
+Skipped informational: 4
+
+- [ ] [P] **T001** [Project Analysis] Detected 3 agent skill(s) — will grade in CE-026
+  - Priority: P2-Medium | Effort: Medium
+- [ ] [P] **T002** [Dependency Audit] Minor update: pytest-asyncio 1.3.0 (installed) -> 1.4.0
+  - Priority: P3-Low | Effort: Small
+- [ ] [P] **T003** [Dependency Audit] Minor update: agent-utilities 0.2.40 (installed) -> 0.47.0
+  - Priority: P3-Low | Effort: Small
+- [ ] [P] **T004** [Test Coverage] Test suite lacks intent diversity (only one type)
+  - Priority: P2-Medium | Effort: Medium
+- [ ] [P] **T005** [Test Coverage] 15 potential doc-test drift items
+  - Priority: P2-Medium | Effort: Medium
+- [ ] [P] **T006** [Documentation & Governance] README.md missing sections: usage|quick start
+  - Priority: P4-Enhancement | Effort: Small
+- [ ] [P] **T007** [Documentation & Governance] README missing: Has a Table of Contents
+  - Priority: P4-Enhancement | Effort: Small
+- [ ] [P] **T008** [Documentation & Governance] README missing: Has usage examples with code blocks
+  - Priority: P4-Enhancement | Effort: Small
+- [ ] [P] **T009** [Architecture & Design Patterns] No discernible layer architecture (no domain/service/adapter separation)
+  - Priority: P2-Medium | Effort: Medium
+- [ ] [P] **T010** [Architecture & Design Patterns] Low dependency injection ratio: 0%
+  - Priority: P2-Medium | Effort: Medium
+- [ ] [P] **T011** [Concept Traceability] Low traceability ratio: 0% concepts fully traced
+  - Priority: P4-Enhancement | Effort: Medium
+- [ ] [P] **T012** [Concept Traceability] 7 orphaned concepts (only in one source)
+  - Priority: P4-Enhancement | Effort: Medium
+- [ ] [P] **T013** [Concept Traceability] 15 test functions missing concept markers
+  - Priority: P4-Enhancement | Effort: Small
+- [ ] [P] **T014** [Concept Traceability] 24 significant functions (>10 lines) missing concept markers in docstrings
+  - Priority: P4-Enhancement | Effort: Small
+- [ ] [P] **T015** [Linting & Formatting] Total lint findings: 3 (high/error: 3, medium/warning: 0, low: 0)
+  - Priority: P3-Low | Effort: Medium
+- [ ] [P] **T016** [Pre-Commit Compliance] 2 hook(s) may be outdated: ruff-pre-commit, uv-pre-commit
+  - Priority: P2-Medium | Effort: Small
+- [ ] [P] **T017** [Changelog Audit] CHANGELOG.md exists but could not be parsed — check format compliance
+  - Priority: P3-Low | Effort: Medium
+- [ ] [P] **T018** [Changelog Audit] No changelog entries within the last 30 days
+  - Priority: P3-Low | Effort: Medium
+- [ ] [P] **T019** [Changelog Audit] keepachangelog not installed — pip install 'universal-skills[code-enhancer]'
+  - Priority: P3-Low | Effort: Small
+- [ ] [P] **T020** [Environment Variables] Partial env var documentation: 38% coverage
+  - Priority: P2-Medium | Effort: Medium
+- [ ] [P] **T021** [Environment Variables] Undocumented env vars: AUTH_TYPE, ENABLE_DELEGATION, ENABLE_OTEL, EUNOMIA_POLICY
+  - Priority: P2-Medium | Effort: Medium
+- [ ] [P] **T022** [Environment Variables] 3 Python env vars not in .env.example: ENABLE_DELEGATION, IPMITOOL_PATH, SENSORS
+  - Priority: P2-Medium | Effort: Medium
+- [ ] [P] **T023** [XDG Compliance (KG)] Check skipped: required agent-utilities/networkx dependencies not found.
+  - Priority: P2-Medium | Effort: Medium

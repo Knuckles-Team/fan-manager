@@ -52,6 +52,7 @@ def _import_module_safely(module_name: str):
 
 
 def __getattr__(name: str) -> Any:
+    """Lazily expose optional MCP/agent members and availability flags."""
     if name == "_MCP_AVAILABLE":
         return _import_module_safely("fan_manager.mcp_server") is not None
     if name == "_AGENT_AVAILABLE":

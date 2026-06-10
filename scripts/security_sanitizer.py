@@ -41,6 +41,7 @@ PLACEHOLDER_SUBSTRINGS = [
 ]
 
 def is_placeholder(match_str: str) -> bool:
+    """Return True if a matched secret-like string is an obvious placeholder/mask."""
     match_lower = match_str.lower()
     for placeholder in PLACEHOLDER_SUBSTRINGS:
         if placeholder in match_lower:
@@ -59,6 +60,7 @@ def is_placeholder(match_str: str) -> bool:
     return False
 
 def get_repo_files(repo_path: Path):
+    """List tracked/untracked repo files, skipping excluded directories."""
     try:
         result = subprocess.run(
             ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
@@ -85,6 +87,7 @@ def get_repo_files(repo_path: Path):
         return files
 
 def scan_repository(repo_path: Path):
+    """Scan the repo for unmasked secrets and transient/garbage files."""
     violations = []
     files_to_scan = get_repo_files(repo_path)
 
@@ -140,6 +143,7 @@ def scan_repository(repo_path: Path):
     return violations
 
 def main():
+    """CLI entrypoint: scan the current repo and exit non-zero on violations."""
     repo_path = Path.cwd()
 
     print("🔒 Running Security and Garbage Sanitizer...")

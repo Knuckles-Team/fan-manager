@@ -1208,9 +1208,11 @@ dependencies = [
 [package.optional-dependencies]
 agent = [
     { name = "agent-utilities", extra = ["agent", "logfire"] },
+    { name = "logfire" },
 ]
 all = [
     { name = "agent-utilities", extra = ["agent", "logfire", "mcp"] },
+    { name = "logfire" },
 ]
 mcp = [
     { name = "agent-utilities", extra = ["mcp"] },
@@ -1233,6 +1235,7 @@ requires-dist = [
     { name = "agent-utilities", extras = ["agent", "logfire"], marker = "extra == 'agent'", specifier = ">=0.47.0" },
     { name = "agent-utilities", extras = ["mcp"], marker = "extra == 'mcp'", specifier = ">=0.47.0" },
     { name = "fan-manager", extras = ["mcp", "agent"], marker = "extra == 'all'", specifier = ">=1.1.0" },
+    { name = "logfire", marker = "extra == 'agent'", specifier = ">=0.50.0" },
     { name = "pytest", marker = "extra == 'test'" },
     { name = "pytest-asyncio", marker = "extra == 'test'" },
     { name = "pytest-cov", marker = "extra == 'test'" },

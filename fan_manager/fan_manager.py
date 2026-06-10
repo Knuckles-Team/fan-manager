@@ -7,7 +7,53 @@ import shutil
 import subprocess
 import sys
 import time
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
+
+
+@runtime_checkable
+class CommandRunner(Protocol):
+    """Seam for resolving and executing the local ``sensors``/``ipmitool`` binaries.
+
+    Fan Manager shells out to hardware tools (CONCEPT:FAN-001 reads temperature
+    via ``sensors``; CONCEPT:FAN-002 drives the BMC via ``ipmitool``). Injecting
+    this runner lets callers and tests substitute the shell-out without globally
+    monkeypatching :mod:`subprocess`, keeping the dependency-injection seam
+    explicit and the tests hermetic.
+    """
+
+    def which(self, name: str) -> str | None:
+        """Resolve an executable on ``PATH`` (``None`` if absent)."""
+        ...
+
+    def run(self, argv: list[str], *, check: bool = True) -> str:
+        """Run a fixed argv with ``shell=False`` and return captured stdout."""
+        ...
+
+
+class SubprocessCommandRunner:
+    """Default :class:`CommandRunner` backed by ``shutil.which``/``subprocess.run``.
+
+    Uses fixed argv with ``shell=False`` and resolves binaries via
+    ``shutil.which`` so no user input ever reaches a command line.
+    """
+
+    def which(self, name: str) -> str | None:
+        return shutil.which(name)
+
+    def run(self, argv: list[str], *, check: bool = True) -> str:
+        # Fixed argv, shell=False: no user input reaches the command line.
+        completed = subprocess.run(  # nosec B603 - fixed argv, no shell, no user input
+            argv,
+            capture_output=True,
+            text=True,
+            check=check,
+        )
+        return completed.stdout
+
+
+# Module-level default runner. Callers may pass their own ``CommandRunner`` to
+# the temperature/fan functions for testing or alternate execution backends.
+_DEFAULT_RUNNER: CommandRunner = SubprocessCommandRunner()
 
 
 def setup_logging(
@@ -15,6 +61,9 @@ def setup_logging(
 ) -> None:
     """
     Configure logging for the fan manager application.
+
+    Bootstraps the logging used across the CONCEPT:FAN-001 temperature read path
+    and the CONCEPT:FAN-002 fan-control path.
     """
     logging.basicConfig(
         level=logging.DEBUG,
@@ -30,7 +79,9 @@ def setup_logging(
 
 def get_core_temp(cpus: list, sensors: dict) -> dict[str, Any]:
     """
-    Get the highest core temperature from the specified CPUs.
+    Get the highest core temperature from the specified CPUs (CONCEPT:FAN-001).
+
+    Pure computation over a supplied ``sensors`` mapping (no shell-out).
     Returns a dictionary with response, command, and status.
     """
     logger = logging.getLogger("FanManager")
@@ -62,24 +113,22 @@ def get_core_temp(cpus: list, sensors: dict) -> dict[str, Any]:
         return {"response": None, "command": command, "status": 500, "error": str(e)}
 
 
-def get_temp() -> dict[str, Any]:
+def get_temp(runner: CommandRunner | None = None) -> dict[str, Any]:
     """
-    Get the current CPU temperature.
+    Get the current CPU temperature (CONCEPT:FAN-001).
+
+    Reads the host's sensors via the injected :class:`CommandRunner` (defaulting
+    to a real ``sensors -j`` shell-out) and returns the hottest core temperature.
     Returns a dictionary with response, command, and status.
     """
+    runner = runner or _DEFAULT_RUNNER
     logger = logging.getLogger("FanManager")
     command = "sensors -j"
     try:
-        sensors_bin = shutil.which("sensors")
+        sensors_bin = runner.which("sensors")
         if sensors_bin is None:
             raise RuntimeError("'sensors' executable not found on PATH")
-        # Fixed argv, shell=False: no user input reaches the command line.
-        sensors_output = subprocess.run(  # nosec B603 - fixed argv, no shell, no user input
-            [sensors_bin, "-j"],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout
+        sensors_output = runner.run([sensors_bin, "-j"], check=True)
         if not sensors_output.strip():
             raise RuntimeError("No output from 'sensors -j' command")
         sensors = json.loads(sensors_output)
@@ -97,17 +146,21 @@ def get_temp() -> dict[str, Any]:
         return {"response": None, "command": command, "status": 500, "error": str(e)}
 
 
-def set_fan(fan_level: int) -> dict[str, Any]:
+def set_fan(fan_level: int, runner: CommandRunner | None = None) -> dict[str, Any]:
     """
-    Set the fan speed to the specified level.
+    Set the fan speed to the specified level (CONCEPT:FAN-002).
+
+    Validates ``fan_level`` (0-100) and drives the BMC through the injected
+    :class:`CommandRunner` (defaulting to ``ipmitool`` raw commands).
     Returns a dictionary with response, command, and status.
     """
+    runner = runner or _DEFAULT_RUNNER
     logger = logging.getLogger("FanManager")
     cmd2_str = "ipmitool raw"
     try:
         if not (0 <= fan_level <= 100):
             raise ValueError(f"Fan level {fan_level} is out of range (0-100)")
-        ipmitool_bin = shutil.which("ipmitool")
+        ipmitool_bin = runner.which("ipmitool")
         if ipmitool_bin is None:
             raise RuntimeError("'ipmitool' executable not found on PATH")
         # fan_level is validated to be an int in [0, 100] above; hex() yields a
@@ -117,9 +170,9 @@ def set_fan(fan_level: int) -> dict[str, Any]:
         cmd2 = [ipmitool_bin, "raw", "0x30", "0x30", "0x02", "0xff", hex(fan_level)]
         cmd2_str = " ".join(cmd2)
         # Enable manual fan control.
-        subprocess.run(cmd1, check=True)  # nosec B603 - fixed argv, no shell
+        runner.run(cmd1, check=True)
         # Apply the requested fan level.
-        subprocess.run(cmd2, check=True)  # nosec B603 - fixed argv, no shell
+        runner.run(cmd2, check=True)
         logger.info(f"Set fan level to {fan_level}")
         return {
             "response": None,
@@ -150,14 +203,22 @@ def auto_set_fan_speed(
     minimum_temperature: int | float = 50,
     maximum_temperature: int | float = 80,
     temperature_power: int = 5,
+    runner: CommandRunner | None = None,
 ):
+    """Drive the temperature-to-fan-speed curve once (CONCEPT:FAN-002).
+
+    Reads the current temperature (CONCEPT:FAN-001) via the injected
+    :class:`CommandRunner` and applies a logarithmic temperature-to-speed curve.
+    On a temperature read error, the fans fail safe to ``maximum_fan_speed``.
+    """
+    runner = runner or _DEFAULT_RUNNER
     logger = logging.getLogger("FanManager")
-    temp_result = get_temp()
+    temp_result = get_temp(runner=runner)
     if temp_result["status"] != 200:
         logger.error(
             f"Skipping fan adjustment due to temperature error: {temp_result.get('error', 'Unknown error')}. Setting fan to maximum as fallback."
         )
-        fan_result = set_fan(int(maximum_fan_speed))
+        fan_result = set_fan(int(maximum_fan_speed), runner=runner)
         if fan_result["status"] != 200:
             logger.error(
                 f"Failed to set fallback fan: {fan_result.get('error', 'Unknown error')}"
@@ -183,7 +244,7 @@ def auto_set_fan_speed(
             ),
         )
     )
-    fan_result = set_fan(fan_level)
+    fan_result = set_fan(fan_level, runner=runner)
     if fan_result["status"] != 200:
         logger.error(f"Failed to set fan: {fan_result.get('error', 'Unknown error')}")
 
@@ -195,7 +256,15 @@ def run_service(
     minimum_temperature: int | float = 50,
     maximum_temperature: int | float = 80,
     temperature_power: int = 5,
+    runner: CommandRunner | None = None,
 ):
+    """Continuously poll temperature and adjust fans (CONCEPT:FAN-002 loop).
+
+    Each tick re-runs :func:`auto_set_fan_speed` (CONCEPT:FAN-001 read +
+    CONCEPT:FAN-002 write) through the injected :class:`CommandRunner`, then
+    sleeps for ``temperature_poll_rate`` seconds.
+    """
+    runner = runner or _DEFAULT_RUNNER
     logger = logging.getLogger("FanManager")
     logger.info("Starting fan manager service")
     while True:
@@ -205,11 +274,13 @@ def run_service(
             minimum_temperature=minimum_temperature,
             maximum_temperature=maximum_temperature,
             temperature_power=temperature_power,
+            runner=runner,
         )
         time.sleep(temperature_poll_rate)
 
 
 def usage():
+    """Print CLI usage for the fan-control service (CONCEPT:FAN-002)."""
     logger = logging.getLogger("FanManager")
     logger.info(
         "Usage: \n"
@@ -226,6 +297,11 @@ def usage():
 
 
 def fan_manager():
+    """CLI entrypoint: parse args and run the fan-management service loop.
+
+    Wires the temperature read (CONCEPT:FAN-001) and fan-control (CONCEPT:FAN-002)
+    paths together as a long-running poller.
+    """
     setup_logging()
     logger = logging.getLogger("FanManager")
     logger.debug("Initializing fan manager")

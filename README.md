@@ -1,187 +1,237 @@
-# Fan-Manager
+# Fan Manager
+## CLI | MCP | Agent
 
 ![PyPI - Version](https://img.shields.io/pypi/v/fan-manager)
+![MCP Server](https://badge.mcpx.dev?type=server 'MCP Server')
 ![PyPI - Downloads](https://img.shields.io/pypi/dd/fan-manager)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Knuckles-Team/fan-manager)
 ![GitHub forks](https://img.shields.io/github/forks/Knuckles-Team/fan-manager)
 ![GitHub contributors](https://img.shields.io/github/contributors/Knuckles-Team/fan-manager)
 ![PyPI - License](https://img.shields.io/pypi/l/fan-manager)
 ![GitHub](https://img.shields.io/github/license/Knuckles-Team/fan-manager)
-
 ![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/Knuckles-Team/fan-manager)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/Knuckles-Team/fan-manager)
 ![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/Knuckles-Team/fan-manager)
 ![GitHub issues](https://img.shields.io/github/issues/Knuckles-Team/fan-manager)
-
 ![GitHub top language](https://img.shields.io/github/languages/top/Knuckles-Team/fan-manager)
 ![GitHub language count](https://img.shields.io/github/languages/count/Knuckles-Team/fan-manager)
 ![GitHub repo size](https://img.shields.io/github/repo-size/Knuckles-Team/fan-manager)
-![GitHub repo file count (file type)](https://img.shields.io/github/directory-file-count/Knuckles-Team/fan-manager)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/fan-manager)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/fan-manager)
 
-*Version: 1.0.9*
+*Version: 1.1.0*
 
-Manager your Dell PowerEdge Fan Speed with this handy tool!
+> **Documentation** — Installation, deployment, and usage across the CLI and MCP
+> interfaces, plus the integrated A2A agent server, are maintained in the
+> [official documentation](https://knuckles-team.github.io/fan-manager/).
 
-MCP Server for Agentic AI! Get started with Pip or Docker as well
+---
 
-This repository is actively maintained - Contributions are welcome!
+## Overview
 
-Contribution Opportunities:
-- Increase support of Dell PowerEdge Devices
-- Support Non-PowerEdge Devices
-- Support Non-Dell Devices
+**Fan Manager** controls the fan speed of Dell PowerEdge servers based on CPU
+temperature. It is a **local** tool: it reads temperatures via `lm-sensors`
+(`sensors -j`) and drives the server's BMC via `ipmitool` raw commands. It ships
+as a CLI, a Model Context Protocol (MCP) server, and an integrated A2A agent for
+the [`agent-utilities`](https://github.com/Knuckles-Team/agent-utilities) ecosystem.
 
-<details>
-  <summary><b>Usage:</b></summary>
+Because fan control happens against the local host, **no service URL or token is
+required** — the connector degrades to a no-op/local config for authentication.
 
-### CLI
-| Short Flag | Long Flag   | Description                                            |
-|------------|-------------|--------------------------------------------------------|
-| -h         | --help      | See usage for fan-manager                              |
-| -i         | --intensity | Intensity of Fan Speed - Scales Logarithmically (0-10) |
-| -c         | --cold      | Minimum Temperature for Fan Speed                      |
-| -w         | --warm      | Maximum Temperature for Fan Speed                      |
-| -s         | --slow      | Minimum Fan Speed                                      |
-| -f         | --fast      | Maximum Fan Speed                                      |
-| -p         | --poll-rate | Poll Rate for CPU Temperature in Seconds               |
+---
+
+## Key Features
+
+- **Temperature-Driven Curve:** Logarithmic CPU-temperature-to-fan-speed scaling with configurable min/max bounds and intensity.
+- **Consolidated Action-Routed MCP Tools:** Two togglable tool modules (`temperature`, `fan-control`) minimize token overhead in LLM contexts.
+- **Fail-Safe Defaults:** On a temperature read error during automatic control, the fans default to maximum.
+- **Integrated Agent:** Built-in Pydantic AI agent supporting the Agent Control Protocol (ACP) and Web UI (AG-UI).
+
+---
+
+## CLI
+
+The classic continuous service that polls temperature and adjusts the fans:
 
 ```bash
 fan-manager --intensity 5 --cold 50 --warm 80 --slow 5 --fast 100 --poll-rate 24
 ```
 
-### MCP CLI
+| Flag | Meaning |
+|------|---------|
+| `-i, --intensity` | Temperature power intensity (scales logarithmically, 0-10) |
+| `-c, --cold` | Minimum temperature for fan scaling (°C) |
+| `-w, --warm` | Maximum temperature for fan scaling (°C) |
+| `-s, --slow` | Minimum fan speed (0-100) |
+| `-f, --fast` | Maximum fan speed (0-100) |
+| `-p, --poll-rate` | Temperature poll rate in seconds |
 
-| Short Flag | Long Flag                          | Description                                                                 |
-|------------|------------------------------------|-----------------------------------------------------------------------------|
-| -h         | --help                             | Display help information                                                    |
-| -t         | --transport                        | Transport method: 'stdio', 'http', or 'sse' [legacy] (default: stdio)       |
-| -s         | --host                             | Host address for HTTP transport (default: 0.0.0.0)                          |
-| -p         | --port                             | Port number for HTTP transport (default: 8000)                              |
-|            | --auth-type                        | Authentication type: 'none', 'static', 'jwt', 'oauth-proxy', 'oidc-proxy', 'remote-oauth' (default: none) |
-|            | --token-jwks-uri                   | JWKS URI for JWT verification                                              |
-|            | --token-issuer                     | Issuer for JWT verification                                                |
-|            | --token-audience                   | Audience for JWT verification                                              |
-|            | --oauth-upstream-auth-endpoint     | Upstream authorization endpoint for OAuth Proxy                             |
-|            | --oauth-upstream-token-endpoint    | Upstream token endpoint for OAuth Proxy                                    |
-|            | --oauth-upstream-client-id         | Upstream client ID for OAuth Proxy                                         |
-|            | --oauth-upstream-client-secret     | Upstream client secret for OAuth Proxy                                     |
-|            | --oauth-base-url                   | Base URL for OAuth Proxy                                                   |
-|            | --oidc-config-url                  | OIDC configuration URL                                                     |
-|            | --oidc-client-id                   | OIDC client ID                                                             |
-|            | --oidc-client-secret               | OIDC client secret                                                         |
-|            | --oidc-base-url                    | Base URL for OIDC Proxy                                                    |
-|            | --remote-auth-servers              | Comma-separated list of authorization servers for Remote OAuth             |
-|            | --remote-base-url                  | Base URL for Remote OAuth                                                  |
-|            | --allowed-client-redirect-uris     | Comma-separated list of allowed client redirect URIs                       |
-|            | --eunomia-type                     | Eunomia authorization type: 'none', 'embedded', 'remote' (default: none)   |
-|            | --eunomia-policy-file              | Policy file for embedded Eunomia (default: mcp_policies.json)              |
-|            | --eunomia-remote-url               | URL for remote Eunomia server                                              |
+> Requires `ipmitool` and `lm-sensors` installed on the host, and privileges to
+> issue raw IPMI commands to the BMC.
 
-### Using as an MCP Server
-
-The MCP Server can be run in two modes: `stdio` (for local testing) or `http` (for networked access). To start the server, use the following commands:
-
-#### Run in stdio mode (default):
-```bash
-fan-manager-mcp --transport "stdio"
-```
-
-#### Run in HTTP mode:
-```bash
-fan-manager-mcp --transport "http"  --host "0.0.0.0"  --port "8000"
-```
-
-Docker Compose
-
-Fan Manager
-```docker-compose
 ---
-services:
-  fan-manager:
-    image: knucklessg1/fan-manager:latest
-    container_name: server_fan_speed
-    privileged: true
-    environment:
-      MODE: "fan-manager"
-      INTENSITY: ${INTENSITY}
-      COLD: ${COLD}
-      WARM: ${WARM}
-      SLOW: ${SLOW}
-      FAST: ${FAST}
-      POLL_RATE: ${POLL_RATE}
-    volumes:
-      - /dev/ipmi0:/dev/ipmi0
-    restart: unless-stopped
-```
 
-Fan Manager MCP Server
-```docker-compose
+## MCP
+
+This server uses dynamic Action-Routed tools to optimize token overhead and
+maximize IDE compatibility.
+
+### Available MCP Tools
+| Tool Module | Toggle Env Var | Enabled by Default | Description & Nested Methods |
+|-------------|----------------|--------------------|------------------------------|
+| **Temperature** | `TEMPERATURETOOL` | `True` | Read CPU/sensor temperature (`CONCEPT:FAN-001`). Action-routed methods: `get`, `get_core`. |
+| **Fan Control** | `FANCONTROLTOOL` | `True` | Control fan speed via IPMI (`CONCEPT:FAN-002`). Action-routed methods: `set`, `auto`. |
+
+### Dynamic Tool Selection & Visibility
+
+This MCP server supports dynamic toolset selection and visibility filtering at
+runtime, so you can restrict the exposed tools and avoid blowing up the LLM's
+context window. Configure filtering via:
+
+- **CLI Arguments:** `--tools` / `--toolsets` (and `--disabled-tools` / `--disabled-toolsets`).
+- **Environment Variables:** `MCP_ENABLED_TOOLS` / `MCP_DISABLED_TOOLS`, `MCP_ENABLED_TAGS` / `MCP_DISABLED_TAGS`.
+- **HTTP Headers:** `x-mcp-enabled-tools` / `x-mcp-disabled-tags`, etc.
+- **Query Parameters:** `?tools=tool1,tool2` or `?tags=fan-control`.
+
 ---
-services:
-  fan-manager-mcp:
-    image: knucklessg1/fan-manager:latest
-    container_name: server_fan_speed
-    privileged: true
-    environment:
-      MODE: "fan-manager-mcp"
-      HOST: 0.0.0.0
-      PORT: 8030
-      TRANSPORT: "http"
-    volumes:
-      - /dev/ipmi0:/dev/ipmi0
-    restart: unless-stopped
-```
 
-Docker Run
-```bash
-docker run -it -d knucklessg1/fan-manager:latest fan-manager
-```
+### MCP Configuration Examples
 
-Docker Compose
-```bash
-docker-compose up --build -d
-```
-
-#### Configure `mcp.json` for AI Integration
+#### stdio Transport (Recommended for local IDEs e.g., Cursor, Claude Desktop)
 
 ```json
 {
   "mcpServers": {
     "fan-manager": {
-      "command": "uv",
-      "args": [
-        "run",
-        "--with",
-        "fan-manager",
-        "fan-manager-mcp"
-      ],
-      "timeout": 200000
+      "command": "uvx",
+      "args": ["--from", "fan-manager", "fan-manager-mcp"],
+      "env": {
+        "TEMPERATURETOOL": "True",
+        "FANCONTROLTOOL": "True"
+      }
     }
   }
 }
 ```
 
-</details>
+#### Streamable-HTTP Transport (Recommended for production deployments)
 
-<details>
-  <summary><b>Installation Instructions:</b></summary>
-
-Install Python Package
-
-```bash
-python -m pip install fan-manager
+```json
+{
+  "mcpServers": {
+    "fan-manager": {
+      "command": "uvx",
+      "args": ["--from", "fan-manager", "fan-manager-mcp"],
+      "env": {
+        "TRANSPORT": "streamable-http",
+        "HOST": "0.0.0.0",
+        "PORT": "8000"
+      }
+    }
+  }
+}
 ```
 
-</details>
+Connect to a pre-deployed remote or local Streamable-HTTP instance:
 
-<details>
-  <summary><b>Repository Owners:</b></summary>
+```json
+{
+  "mcpServers": {
+    "fan-manager": {
+      "url": "http://localhost:8000/fan-manager/mcp"
+    }
+  }
+}
+```
 
+Deploying the Streamable-HTTP server via Docker:
 
-<img width="100%" height="180em" src="https://github-readme-stats.vercel.app/api?username=Knucklessg1&show_icons=true&hide_border=true&&count_private=true&include_all_commits=true" />
+```bash
+docker run -d \
+  --name fan-manager-mcp \
+  --privileged \
+  -p 8000:8000 \
+  -e TRANSPORT=streamable-http \
+  -e PORT=8000 \
+  knucklessg1/fan-manager:latest
+```
 
-![GitHub followers](https://img.shields.io/github/followers/Knucklessg1)
-![GitHub User's stars](https://img.shields.io/github/stars/Knucklessg1)
-</details>
+> The container needs access to the host's IPMI device (`--privileged` or
+> `--device /dev/ipmi0`) to drive the BMC.
+
+---
+
+## Agent
+
+This repository features a fully integrated Pydantic AI Graph Agent. It
+communicates over the **Agent Control Protocol (ACP)** and interacts with the
+**Agent Web UI (AG-UI)** and Terminal interface.
+
+### Running the Agent CLI
+
+```bash
+fan-manager-agent --provider openai --model-id gpt-4o
+```
+
+### Docker Compose Orchestration
+
+The `docker/agent.compose.yml` configures the Agent, Web UI, and Terminal
+Interface alongside the MCP server. See
+[docs/deployment.md](docs/deployment.md) for the full Compose stack.
+
+---
+
+## Security & Governance
+
+Built directly upon the enterprise-ready
+[`agent-utilities`](https://github.com/Knuckles-Team/agent-utilities) core,
+standard security parameters are fully supported:
+
+### Access Control & Policy Enforcement
+- **Eunomia Policies:** Fine-grained, policy-driven tool authorization (`none`, `embedded`, or `remote`).
+- **OIDC Token Delegation:** Optional RFC 8693 token exchange (inert by default — Fan Manager is a local tool).
+
+### Runtime Security Grid
+| Feature | Functionality | Enablement |
+|---------|---------------|------------|
+| **Tool Guard** | Sensitivity inspection with human-in-the-loop validation | Enabled by default |
+| **Prompt Injection Defense** | Input scanning, repetition monitoring, and recursive loop blocks | Enabled by default |
+| **Context Safety Guard** | Stuck-loop detectors and contextual overflow preemptive alerts | Enabled by default |
+
+---
+
+## Installation
+
+```bash
+# Using uv (highly recommended)
+uv pip install fan-manager[all]
+
+# Using standard pip
+python -m pip install fan-manager[all]
+```
+
+---
+
+## Documentation
+
+The complete documentation is published as the
+[official documentation site](https://knuckles-team.github.io/fan-manager/).
+
+| Page | Contents |
+|---|---|
+| [Installation](https://knuckles-team.github.io/fan-manager/installation/) | pip, source, extras, prebuilt Docker image |
+| [Deployment](https://knuckles-team.github.io/fan-manager/deployment/) | run the MCP and agent servers, Compose, env config |
+| [Usage](https://knuckles-team.github.io/fan-manager/usage/) | the MCP tools, the `Api` facade, the CLI |
+| [Overview](https://knuckles-team.github.io/fan-manager/overview/) | the action-routed tool surface and architecture |
+| [Concepts](https://knuckles-team.github.io/fan-manager/concepts/) | concept registry (`CONCEPT:FAN-*`) |
+
+---
+
+## Contribute
+
+Contributions are welcome! Please ensure code quality by executing local checks
+before submitting pull requests:
+- Format code using `ruff format .`
+- Lint code using `ruff check .`
+- Validate type-safety with `mypy .`
+- Execute test suites using `pytest`

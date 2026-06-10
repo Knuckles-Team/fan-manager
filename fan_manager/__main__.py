@@ -1,8 +1,5 @@
 #!/usr/bin/python
-# coding: utf-8
-from fan_manager.fan_manager import fan_manager
-from fan_manager.fan_manager_mcp import fan_manager_mcp
+from fan_manager.agent_server import agent_server
 
 if __name__ == "__main__":
-    fan_manager()
-    fan_manager_mcp()
+    agent_server()

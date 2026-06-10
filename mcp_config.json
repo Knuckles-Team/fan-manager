@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "fan-manager": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "fan-manager",
+        "fan-manager-mcp"
+      ],
+      "env": {
+        "TRANSPORT": "stdio",
+        "TEMPERATURETOOL": "True",
+        "FANCONTROLTOOL": "True"
+      }
+    }
+  }
+}

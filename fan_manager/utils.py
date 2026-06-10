@@ -1,28 +1,27 @@
 #!/usr/bin/python
-# coding: utf-8
 
 import os
 import pickle
+from importlib.resources import as_file, files
 from pathlib import Path
-from typing import Any, Union, List
-from importlib.resources import files, as_file
+from typing import Any
 
 import yaml
 from fasta2a import Skill
 
 
-def to_integer(string: Union[str, int] = None) -> int:
+def to_integer(string: str | int = None) -> int:
     if isinstance(string, int):
         return string
     if not string:
         return 0
     try:
         return int(string.strip())
-    except ValueError:
-        raise ValueError(f"Cannot convert '{string}' to integer")
+    except ValueError as err:
+        raise ValueError(f"Cannot convert '{string}' to integer") from err
 
 
-def to_boolean(string: Union[str, bool] = None) -> bool:
+def to_boolean(string: str | bool = None) -> bool:
     if isinstance(string, bool):
         return string
     if not string:
@@ -65,7 +64,7 @@ def get_mcp_config_path() -> str:
     return mcp_config_path
 
 
-def load_skills_from_directory(directory: str) -> List[Skill]:
+def load_skills_from_directory(directory: str) -> list[Skill]:
     skills = []
     base_path = Path(directory)
 
@@ -78,7 +77,7 @@ def load_skills_from_directory(directory: str) -> List[Skill]:
             skill_file = item / "SKILL.md"
             if skill_file.exists():
                 try:
-                    with open(skill_file, "r") as f:
+                    with open(skill_file) as f:
                         # Extract frontmatter
                         content = f.read()
                         if content.startswith("---"):

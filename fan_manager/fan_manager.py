@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-# coding: utf-8
 
-import os
-import sys
 import argparse
 import json
-import time
 import logging
-from typing import Union, Dict, Any
+import os
+import sys
+import time
+from typing import Any
 
 
 def setup_logging(
@@ -28,7 +27,7 @@ def setup_logging(
     )
 
 
-def get_core_temp(cpus: list, sensors: dict) -> Dict[str, Any]:
+def get_core_temp(cpus: list, sensors: dict) -> dict[str, Any]:
     """
     Get the highest core temperature from the specified CPUs.
     Returns a dictionary with response, command, and status.
@@ -62,7 +61,7 @@ def get_core_temp(cpus: list, sensors: dict) -> Dict[str, Any]:
         return {"response": None, "command": command, "status": 500, "error": str(e)}
 
 
-def get_temp() -> Dict[str, Any]:
+def get_temp() -> dict[str, Any]:
     """
     Get the current CPU temperature.
     Returns a dictionary with response, command, and status.
@@ -88,7 +87,7 @@ def get_temp() -> Dict[str, Any]:
         return {"response": None, "command": command, "status": 500, "error": str(e)}
 
 
-def set_fan(fan_level: int) -> Dict[str, Any]:
+def set_fan(fan_level: int) -> dict[str, Any]:
     """
     Set the fan speed to the specified level.
     Returns a dictionary with response, command, and status.
@@ -124,10 +123,10 @@ def set_fan(fan_level: int) -> Dict[str, Any]:
 
 
 def auto_set_fan_speed(
-    minimum_fan_speed: Union[int, float] = 5,
-    maximum_fan_speed: Union[int, float] = 100,
-    minimum_temperature: Union[int, float] = 50,
-    maximum_temperature: Union[int, float] = 80,
+    minimum_fan_speed: int | float = 5,
+    maximum_fan_speed: int | float = 100,
+    minimum_temperature: int | float = 50,
+    maximum_temperature: int | float = 80,
     temperature_power: int = 5,
 ):
     logger = logging.getLogger("FanManager")
@@ -169,10 +168,10 @@ def auto_set_fan_speed(
 
 def run_service(
     temperature_poll_rate: int = 24,
-    minimum_fan_speed: Union[int, float] = 5,
-    maximum_fan_speed: Union[int, float] = 100,
-    minimum_temperature: Union[int, float] = 50,
-    maximum_temperature: Union[int, float] = 80,
+    minimum_fan_speed: int | float = 5,
+    maximum_fan_speed: int | float = 100,
+    minimum_temperature: int | float = 50,
+    maximum_temperature: int | float = 80,
     temperature_power: int = 5,
 ):
     logger = logging.getLogger("FanManager")

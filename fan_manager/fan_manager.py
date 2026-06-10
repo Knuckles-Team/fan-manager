@@ -3,7 +3,8 @@
 import argparse
 import json
 import logging
-import os
+import shutil
+import subprocess
 import sys
 import time
 from typing import Any
@@ -69,7 +70,16 @@ def get_temp() -> dict[str, Any]:
     logger = logging.getLogger("FanManager")
     command = "sensors -j"
     try:
-        sensors_output = os.popen("sensors -j").read()
+        sensors_bin = shutil.which("sensors")
+        if sensors_bin is None:
+            raise RuntimeError("'sensors' executable not found on PATH")
+        # Fixed argv, shell=False: no user input reaches the command line.
+        sensors_output = subprocess.run(  # nosec B603 - fixed argv, no shell, no user input
+            [sensors_bin, "-j"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
         if not sensors_output.strip():
             raise RuntimeError("No output from 'sensors -j' command")
         sensors = json.loads(sensors_output)
@@ -93,22 +103,34 @@ def set_fan(fan_level: int) -> dict[str, Any]:
     Returns a dictionary with response, command, and status.
     """
     logger = logging.getLogger("FanManager")
+    cmd2_str = "ipmitool raw"
     try:
         if not (0 <= fan_level <= 100):
             raise ValueError(f"Fan level {fan_level} is out of range (0-100)")
-        # Manual fan control
-        cmd1 = "ipmitool raw 0x30 0x30 0x01 0x00"
-        os.system(cmd1)
-        # Set fan level
-        cmd2 = f"ipmitool raw 0x30 0x30 0x02 0xff {hex(fan_level)}"
-        os.system(cmd2)
+        ipmitool_bin = shutil.which("ipmitool")
+        if ipmitool_bin is None:
+            raise RuntimeError("'ipmitool' executable not found on PATH")
+        # fan_level is validated to be an int in [0, 100] above; hex() yields a
+        # safe "0x.." token. argv is fixed and shell=False, so no injection is
+        # possible despite the BMC raw command.
+        cmd1 = [ipmitool_bin, "raw", "0x30", "0x30", "0x01", "0x00"]
+        cmd2 = [ipmitool_bin, "raw", "0x30", "0x30", "0x02", "0xff", hex(fan_level)]
+        cmd2_str = " ".join(cmd2)
+        # Enable manual fan control.
+        subprocess.run(cmd1, check=True)  # nosec B603 - fixed argv, no shell
+        # Apply the requested fan level.
+        subprocess.run(cmd2, check=True)  # nosec B603 - fixed argv, no shell
         logger.info(f"Set fan level to {fan_level}")
-        return {"response": None, "command": f"{cmd1}; {cmd2}", "status": 200}
+        return {
+            "response": None,
+            "command": f"{' '.join(cmd1)}; {cmd2_str}",
+            "status": 200,
+        }
     except ValueError as e:
         logger.error(f"Invalid fan level: {str(e)}")
         return {
             "response": None,
-            "command": cmd2 if "cmd2" in locals() else "ipmitool raw",
+            "command": cmd2_str,
             "status": 400,
             "error": str(e),
         }
@@ -116,7 +138,7 @@ def set_fan(fan_level: int) -> dict[str, Any]:
         logger.error(f"Failed to set fan level: {str(e)}")
         return {
             "response": None,
-            "command": cmd2 if "cmd2" in locals() else "ipmitool raw",
+            "command": cmd2_str,
             "status": 500,
             "error": str(e),
         }

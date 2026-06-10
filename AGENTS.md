@@ -77,7 +77,6 @@ pre-commit run --all-files
 │   ├── models.py
 │   ├── auth.py               # no-op/local auth
 │   ├── middlewares.py
-│   ├── utils.py
 │   ├── mcp_server.py
 │   ├── agent_server.py
 │   ├── main_agent.json
@@ -93,6 +92,7 @@ pre-commit run --all-files
 ├── pyproject.toml
 ├── pytest.ini
 ├── requirements.txt
+├── scripts/                  # pre-commit verifiers (integration parity, sanitizer)
 └── tests/
 ```
 

@@ -51,7 +51,15 @@ def register_fan_control_tools(mcp: FastMCP):
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
         if action == "set":
-            fan_level = int(kwargs.get("fan_level"))
+            raw_level = kwargs.get("fan_level")
+            if raw_level is None:
+                return {"error": "The 'set' action requires a 'fan_level' (0-100)."}
+            try:
+                fan_level = int(raw_level)
+            except (TypeError, ValueError):
+                return {
+                    "error": f"Invalid 'fan_level': {raw_level!r} is not an integer."
+                }
             return set_fan(fan_level=fan_level)
         if action == "auto":
             result = auto_set_fan_speed(

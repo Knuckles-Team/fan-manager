@@ -2,8 +2,15 @@
 __pycache__/
 *.py[cod]
 *$py.class
+/__pycache__/
+/.idea/
+*.pyc
+*.log
+*.db
+*.wal
 
-
+/.ruff_cache/
+/mcp/
 # C extensions
 *.so
 
@@ -15,7 +22,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -26,10 +32,6 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-/__pycache__/
-/.idea/
-*.pyc
-*.log
 MANIFEST
 
 # PyInstaller
@@ -132,3 +134,26 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/models/
+**/agent_data/chats/
+
+# Graph Database
+knowledge_graph.db*
+.repo_graph/
+.ladybug/
+# Model-generated transient scripts at root level
+/test_*.py
+/fix_*.py
+/debug_*.py
+/scratch_*.py
+/temp_*.py
+
+# Transient logs, traces, patch files, and test outputs
+*.orig
+*.rej
+*.patch
+*.log
+*output*.txt
+*errors*.txt
+failed_tests.txt
+trace.txt

@@ -1,0 +1,115 @@
+#!/usr/bin/python
+"""Fan Manager A2A agent server entrypoint.
+
+Console script: ``fan-manager-agent`` -> ``fan_manager.agent_server:agent_server``
+"""
+
+import logging
+import os
+import sys
+import warnings
+from pathlib import Path
+
+__version__ = "1.1.0"
+
+# Externalized system prompt (agent-utilities standard). The repo keeps the
+# canonical agent system prompt in ``prompts/main_agent.md`` so it can be edited
+# without touching code; ``agent_data/IDENTITY.md`` mirrors it for the identity
+# loader.
+_PROMPT_FILE = Path(__file__).resolve().parent.parent / "prompts" / "main_agent.md"
+
+
+def _load_externalized_prompt() -> str | None:
+    """Return the externalized ``prompts/main_agent.md`` body, if present."""
+    try:
+        if _PROMPT_FILE.is_file():
+            return _PROMPT_FILE.read_text(encoding="utf-8").strip() or None
+    except OSError:
+        return None
+    return None
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()],
+)
+logger = logging.getLogger(__name__)
+
+
+DEFAULT_AGENT_NAME = None
+DEFAULT_AGENT_DESCRIPTION = None
+DEFAULT_AGENT_SYSTEM_PROMPT = None
+
+
+def agent_server():
+    """Console-script entrypoint: build and run the A2A agent server.
+
+    Wires the agent identity/system prompt and starts the Pydantic AI agent that
+    fronts the CONCEPT:FAN-001 (temperature) and CONCEPT:FAN-002 (fan-control)
+    MCP tools, with optional logfire/OTEL observability.
+    """
+    from agent_utilities import (
+        build_system_prompt_from_workspace,
+        create_agent_parser,
+        create_agent_server,
+        initialize_workspace,
+        load_identity,
+    )
+
+    global DEFAULT_AGENT_NAME, DEFAULT_AGENT_DESCRIPTION, DEFAULT_AGENT_SYSTEM_PROMPT
+    initialize_workspace()
+    meta = load_identity()
+    DEFAULT_AGENT_NAME = os.getenv(
+        "DEFAULT_AGENT_NAME", meta.get("name", "Fan Manager")
+    )
+    DEFAULT_AGENT_DESCRIPTION = os.getenv(
+        "AGENT_DESCRIPTION",
+        meta.get(
+            "description",
+            "AI agent for Dell PowerEdge fan and temperature management.",
+        ),
+    )
+    DEFAULT_AGENT_SYSTEM_PROMPT = os.getenv(
+        "AGENT_SYSTEM_PROMPT",
+        _load_externalized_prompt()
+        or meta.get("content")
+        or build_system_prompt_from_workspace(),
+    )
+
+    warnings.filterwarnings("ignore", message=".*urllib3.*or chardet.*")
+    warnings.filterwarnings("ignore", category=DeprecationWarning, module="fastmcp")
+
+    print(f"{DEFAULT_AGENT_NAME} v{__version__}", file=sys.stderr)
+    parser = create_agent_parser()
+    args = parser.parse_args()
+
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
+        logger.debug("Debug mode enabled")
+
+    create_agent_server(
+        mcp_url=args.mcp_url,
+        mcp_config=args.mcp_config or "mcp_config.json",
+        host=args.host,
+        port=args.port,
+        provider=args.provider,
+        model_id=args.model_id,
+        router_model=args.model_id,
+        agent_model=args.model_id,
+        base_url=args.base_url,
+        api_key=args.api_key,
+        custom_skills_directory=args.custom_skills_directory,
+        enable_web_ui=args.web,
+        enable_otel=args.otel,
+        otel_endpoint=args.otel_endpoint,
+        otel_headers=args.otel_headers,
+        otel_public_key=args.otel_public_key,
+        otel_secret_key=args.otel_secret_key,
+        otel_protocol=args.otel_protocol,
+        debug=args.debug,
+    )
+
+
+if __name__ == "__main__":
+    agent_server()

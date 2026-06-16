@@ -10,7 +10,7 @@ import sys
 import warnings
 from pathlib import Path
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 # Externalized system prompt (agent-utilities standard). The repo keeps the
 # canonical agent system prompt in ``prompts/main_agent.md`` so it can be edited

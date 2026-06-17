@@ -9,7 +9,7 @@ import importlib.util
 import inspect
 from typing import Any
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 __all__: list[str] = ["__version__"]
 

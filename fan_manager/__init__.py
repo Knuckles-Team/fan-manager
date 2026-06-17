@@ -5,10 +5,11 @@ Local CLI tool + MCP Server + A2A Agent for the agent-utilities ecosystem.
 """
 
 import importlib
+import importlib.util
 import inspect
 from typing import Any
 
-__version__ = "1.1.0"
+__version__ = "1.4.0"
 
 __all__: list[str] = ["__version__"]
 
@@ -25,11 +26,20 @@ OPTIONAL_MODULES = {
 
 
 def _expose_members(module):
-    """Expose public classes and functions from a module into globals and __all__."""
+    """Expose public classes and functions from a module into globals and __all__.
+
+    A member is skipped when its name collides with a submodule of this package
+    (e.g. the ``mcp_server``/``agent_server`` entrypoint functions share the name
+    of their defining submodule). Re-binding those would shadow the submodule and
+    break ``from fan_manager import mcp_server`` (it would yield the function
+    instead of the module).
+    """
     for name, obj in inspect.getmembers(module):
         if (inspect.isclass(obj) or inspect.isfunction(obj)) and not name.startswith(
             "_"
         ):
+            if importlib.util.find_spec(f"{__name__}.{name}") is not None:
+                continue
             globals()[name] = obj
             if name not in __all__:
                 __all__.append(name)

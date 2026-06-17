@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   fan-manager-mcp:
     image: knucklessg1/fan-manager:latest
@@ -7,7 +5,8 @@ services:
     hostname: fan-manager-mcp
     restart: always
     env_file:
-      - ../.env
+      - path: ../.env
+        required: false
     environment:
       - PYTHONUNBUFFERED=1
       - HOST=0.0.0.0
@@ -35,7 +34,8 @@ services:
     depends_on:
       - fan-manager-mcp
     env_file:
-      - ../.env
+      - path: ../.env
+        required: false
     command: [ "fan-manager-agent" ]
     environment:
       - PYTHONUNBUFFERED=1

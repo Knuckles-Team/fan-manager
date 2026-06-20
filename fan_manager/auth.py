@@ -10,10 +10,10 @@ the MCP server and downstream tooling can depend on it uniformly. The returned
 "client" is simply the local-command facade (:class:`fan_manager.api_client.Api`).
 """
 
-import os
 from typing import Any
 
 from agent_utilities.base_utilities import get_logger
+from agent_utilities.core.config import setting
 
 from fan_manager.api_client import Api
 
@@ -34,6 +34,6 @@ def get_client(config: dict | None = None) -> Api:
 def get_config() -> dict[str, Any]:
     """Return the resolved local runtime configuration (env-driven, no secrets)."""
     return {
-        "ipmitool": os.getenv("IPMITOOL_PATH", "ipmitool"),
-        "sensors": os.getenv("SENSORS_PATH", "sensors"),
+        "ipmitool": setting("IPMITOOL_PATH", "ipmitool"),
+        "sensors": setting("SENSORS_PATH", "sensors"),
     }

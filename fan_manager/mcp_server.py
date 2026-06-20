@@ -9,17 +9,20 @@ Console script: ``fan-manager-mcp`` -> ``fan_manager.mcp_server:mcp_server``
 """
 
 import logging
-import os
 import sys
 import warnings
 
 warnings.filterwarnings("ignore", message=".*urllib3.*or chardet.*")
 warnings.filterwarnings("ignore", message=".*urllib3.*or charset_normalizer.*")
 
-from agent_utilities.base_utilities import to_boolean
-from agent_utilities.mcp_utilities import create_mcp_server
-from dotenv import find_dotenv, load_dotenv
+from agent_utilities.mcp_utilities import (
+    create_mcp_server,
+    load_config,
+    register_tool_surface,
+)
 
+from fan_manager.api_client import Api
+from fan_manager.auth import get_client
 from fan_manager.mcp import (
     register_fan_control_tools,
     register_temperature_tools,
@@ -28,9 +31,16 @@ from fan_manager.mcp import (
 __version__ = "1.5.0"
 print(f"Fan Manager MCP v{__version__}", file=sys.stderr)
 
-load_dotenv(find_dotenv(), override=False)
+load_config()
 
 logger = logging.getLogger("FanManagerMCP")
+
+# (tag, env-toggle, registrar) — explicit so the historical FANCONTROLTOOL /
+# TEMPERATURETOOL env names are preserved rather than auto-derived.
+TOOL_REGISTRY = [
+    ("temperature", "TEMPERATURETOOL", register_temperature_tools),
+    ("fan-control", "FANCONTROLTOOL", register_fan_control_tools),
+]
 
 
 def get_mcp_instance():
@@ -48,17 +58,13 @@ def get_mcp_instance():
         ),
     )
 
-    registered_tags: list[str] = []
-
-    DEFAULT_TEMPERATURETOOL = to_boolean(os.getenv("TEMPERATURETOOL", "True"))
-    if DEFAULT_TEMPERATURETOOL:
-        register_temperature_tools(mcp)
-        registered_tags.append("temperature")
-
-    DEFAULT_FANCONTROLTOOL = to_boolean(os.getenv("FANCONTROLTOOL", "True"))
-    if DEFAULT_FANCONTROLTOOL:
-        register_fan_control_tools(mcp)
-        registered_tags.append("fan-control")
+    registered_tags = register_tool_surface(
+        mcp,
+        client_cls=Api,
+        get_client=get_client,
+        service="fan-manager",
+        tool_registry=TOOL_REGISTRY,
+    )
 
     for mw in middlewares:
         mcp.add_middleware(mw)

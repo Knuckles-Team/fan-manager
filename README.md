@@ -77,10 +77,18 @@ This server uses dynamic Action-Routed tools to optimize token overhead and
 maximize IDE compatibility.
 
 ### Available MCP Tools
-| Tool Module | Toggle Env Var | Enabled by Default | Description & Nested Methods |
-|-------------|----------------|--------------------|------------------------------|
-| **Temperature** | `TEMPERATURETOOL` | `True` | Read CPU/sensor temperature (`CONCEPT:FAN-001`). Action-routed methods: `get`, `get_core`. |
-| **Fan Control** | `FANCONTROLTOOL` | `True` | Control fan speed via IPMI (`CONCEPT:FAN-002`). Action-routed methods: `set`, `auto`. |
+
+_Auto-generated from the live MCP server — do not edit by hand._
+
+<!-- MCP-TOOLS-TABLE:START -->
+
+| MCP Tool | Toggle Env Var | Description |
+|----------|----------------|-------------|
+| `fan_manager_fan_control` | `FAN-CONTROLTOOL` | Control Dell PowerEdge fan speed via IPMI (CONCEPT:FAN-002). |
+| `fan_manager_temperature` | `TEMPERATURETOOL` | Read CPU/sensor temperature (CONCEPT:FAN-001). |
+
+_2 action-routed tools (default `MCP_TOOL_MODE=condensed`). Each is enabled unless its toggle is set false; set `MCP_TOOL_MODE=verbose` (or `both`) for the 1:1 per-operation surface. Auto-generated — do not edit._
+<!-- MCP-TOOLS-TABLE:END -->
 
 ### Dynamic Tool Selection & Visibility
 

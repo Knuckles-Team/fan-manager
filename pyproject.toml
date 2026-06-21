@@ -34,11 +34,17 @@ fan-manager = "fan_manager.fan_manager:fan_manager"
 fan-manager-mcp = "fan_manager.mcp_server:mcp_server"
 fan-manager-agent = "fan_manager.agent_server:agent_server"
 
+[project.entry-points."agent_utilities.skill_providers"]
+fan-manager = "fan_manager.skills"
+
+[project.entry-points."agent_utilities.prompt_providers"]
+fan-manager = "fan_manager.prompts"
+
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.package-data]
-fan_manager = ["mcp_config.json", "agent_data/**", "skills/**"]
+fan_manager = ["mcp_config.json", "agent_data/**", "skills/**", "prompts/**",]
 
 [tool.setuptools.packages.find]
 where = ["."]

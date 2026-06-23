@@ -44,7 +44,7 @@ fan-manager = "fan_manager.prompts"
 include-package-data = true
 
 [tool.setuptools.package-data]
-fan_manager = ["mcp_config.json", "agent_data/**", "skills/**", "prompts/**",]
+fan_manager = ["mcp_config.json", "skills/**", "prompts/**",]
 
 [tool.setuptools.packages.find]
 where = ["."]

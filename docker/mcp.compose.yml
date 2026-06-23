@@ -1,6 +1,6 @@
 services:
   fan-manager-mcp:
-    image: knucklessg1/fan-manager:latest
+    image: knucklessg1/fan-manager:mcp
     container_name: fan-manager-mcp
     hostname: fan-manager-mcp
     restart: always

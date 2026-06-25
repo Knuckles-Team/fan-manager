@@ -103,7 +103,6 @@ pre-commit run --all-files
 │   ├── agent_server.py
 │   ├── main_agent.json
 │   ├── mcp_config.json
-│   ├── agent_data/IDENTITY.md
 │   ├── mcp/
 │   │   ├── __init__.py
 │   │   ├── mcp_temperature.py

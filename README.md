@@ -105,6 +105,14 @@ context window. Configure filtering via:
 
 ### MCP Configuration Examples
 
+> **Install the slim `[mcp]` extra.** All examples below install
+> `fan-manager[mcp]` — the MCP-server extra that pulls only the FastMCP /
+> FastAPI tooling (`agent-utilities[mcp]`). It deliberately **excludes** the heavy
+> agent runtime (the epistemic-graph engine, `pydantic-ai`, `dspy`, `llama-index`,
+> `tree-sitter`), so `uvx`/container installs are dramatically smaller and faster.
+> Use the full `[agent]` extra only when you need the integrated Pydantic AI agent
+> (see [Installation](#installation)).
+
 #### stdio Transport (Recommended for local IDEs e.g., Cursor, Claude Desktop)
 
 ```json
@@ -112,7 +120,7 @@ context window. Configure filtering via:
   "mcpServers": {
     "fan-manager": {
       "command": "uvx",
-      "args": ["--from", "fan-manager", "fan-manager-mcp"],
+      "args": ["--from", "fan-manager[mcp]", "fan-manager-mcp"],
       "env": {
         "TEMPERATURETOOL": "True",
         "FANCONTROLTOOL": "True"
@@ -129,7 +137,7 @@ context window. Configure filtering via:
   "mcpServers": {
     "fan-manager": {
       "command": "uvx",
-      "args": ["--from", "fan-manager", "fan-manager-mcp"],
+      "args": ["--from", "fan-manager[mcp]", "fan-manager-mcp"],
       "env": {
         "TRANSPORT": "streamable-http",
         "HOST": "0.0.0.0",
@@ -161,8 +169,14 @@ docker run -d \
   -p 8000:8000 \
   -e TRANSPORT=streamable-http \
   -e PORT=8000 \
-  knucklessg1/fan-manager:latest
+  knucklessg1/fan-manager:mcp
 ```
+
+> The `:mcp` tag is the **slim MCP-server image** (built from
+> `docker/Dockerfile --target mcp`, installing `fan-manager[mcp]`). The default
+> `:latest` tag is the **full agent image** (`--target agent`, `fan-manager[agent]`)
+> which also bundles the Pydantic AI agent and the epistemic-graph engine. See
+> [Container images](#container-images-mcp-vs-agent).
 
 > The container needs access to the host's IPMI device (`--privileged` or
 > `--device /dev/ipmi0`) to drive the BMC.
@@ -254,13 +268,51 @@ standard security parameters are fully supported:
 
 ## Installation
 
-```bash
-# Using uv (highly recommended)
-uv pip install fan-manager[all]
+Pick the extra that matches what you want to run:
 
-# Using standard pip
-python -m pip install fan-manager[all]
+| Extra | Installs | Use when |
+|-------|----------|----------|
+| `fan-manager[mcp]` | Slim MCP server only (`agent-utilities[mcp]` — FastMCP/FastAPI) | You only run the **MCP server** (smallest install / image) |
+| `fan-manager[agent]` | Full agent runtime (`agent-utilities[agent,logfire]` — Pydantic AI + the epistemic-graph engine) | You run the **integrated agent** |
+| `fan-manager[all]` | Everything (`mcp` + `agent` + `logfire`) | Development / both surfaces |
+
+```bash
+# MCP server only (recommended for tool hosting — slim deps)
+uv pip install "fan-manager[mcp]"
+
+# Full agent runtime (Pydantic AI + epistemic-graph engine)
+uv pip install "fan-manager[agent]"
+
+# Everything (development)
+uv pip install "fan-manager[all]"      # or: python -m pip install "fan-manager[all]"
 ```
+
+### Container images (`:mcp` vs `:agent`)
+
+One multi-stage `docker/Dockerfile` builds two right-sized images, selected by `--target`:
+
+| Image tag | Build target | Contents | Entrypoint |
+|-----------|--------------|----------|------------|
+| `knucklessg1/fan-manager:mcp` | `--target mcp` | `fan-manager[mcp]` — **slim**, no engine/`pydantic-ai`/`dspy`/`llama-index`/`tree-sitter` | `fan-manager-mcp` |
+| `knucklessg1/fan-manager:latest` | `--target agent` (default) | `fan-manager[agent]` — **full** agent runtime + epistemic-graph engine | `fan-manager-agent` |
+
+```bash
+docker build --target mcp   -t knucklessg1/fan-manager:mcp    docker/   # slim MCP server
+docker build --target agent -t knucklessg1/fan-manager:latest docker/   # full agent
+```
+
+`docker/mcp.compose.yml` runs the slim `:mcp` server; `docker/agent.compose.yml` runs the
+agent (`:latest`) with a co-located `:mcp` sidecar.
+
+### Knowledge-graph database (`epistemic-graph`)
+
+The **full agent** (`[agent]` / `:latest`) embeds the **epistemic-graph** engine (pulled in
+transitively via `agent-utilities[agent]`). For production — or to share one knowledge graph
+across multiple agents — run **epistemic-graph as its own database container** and point the
+agent at it instead of embedding it. Deployment recipes (single-node + Raft HA), connection
+config, and the full database architecture (with diagrams) are documented in the
+[epistemic-graph deployment guide](https://knuckles-team.github.io/epistemic-graph/deployment/).
+The slim `[mcp]` server does **not** require the database.
 
 ---
 

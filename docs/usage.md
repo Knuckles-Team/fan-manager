@@ -57,7 +57,7 @@ The MCP server exposes two action-routed tools:
 | Env Var | Default | Effect |
 |---------|---------|--------|
 | `TEMPERATURETOOL` | `True` | Registers the `temperature` tool |
-| `FANCONTROLTOOL` | `True` | Registers the `fan-control` tool |
+| `FAN_CONTROLTOOL` | `True` | Registers the `fan-control` tool |
 
 ## Running the MCP server
 

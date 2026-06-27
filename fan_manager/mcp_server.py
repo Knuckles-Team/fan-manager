@@ -35,11 +35,11 @@ load_config()
 
 logger = logging.getLogger("FanManagerMCP")
 
-# (tag, env-toggle, registrar) — explicit so the historical FANCONTROLTOOL /
-# TEMPERATURETOOL env names are preserved rather than auto-derived.
+# (tag, env-toggle, registrar) — toggle names match the framework-derived
+# ``<TAG>TOOL`` convention (``register_<tag>_tools`` -> ``<TAG>TOOL``).
 TOOL_REGISTRY = [
     ("temperature", "TEMPERATURETOOL", register_temperature_tools),
-    ("fan-control", "FANCONTROLTOOL", register_fan_control_tools),
+    ("fan-control", "FAN_CONTROLTOOL", register_fan_control_tools),
 ]
 
 

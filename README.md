@@ -82,12 +82,29 @@ _Auto-generated from the live MCP server — do not edit by hand._
 
 <!-- MCP-TOOLS-TABLE:START -->
 
+#### Condensed action-routed tools (default — `MCP_TOOL_MODE=condensed`)
+
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
-| `fan_manager_fan_control` | `FANCONTROLTOOL` | Control Dell PowerEdge fan speed via IPMI (CONCEPT:FAN-002). |
+| `fan_manager_fan_control` | `FAN_CONTROLTOOL` | Control Dell PowerEdge fan speed via IPMI (CONCEPT:FAN-002). |
 | `fan_manager_temperature` | `TEMPERATURETOOL` | Read CPU/sensor temperature (CONCEPT:FAN-001). |
 
-_2 action-routed tools (default `MCP_TOOL_MODE=condensed`). Each is enabled unless its toggle is set false; set `MCP_TOOL_MODE=verbose` (or `both`) for the 1:1 per-operation surface. Auto-generated — do not edit._
+#### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
+
+<details>
+<summary>5 per-operation tools — one per public API method (click to expand)</summary>
+
+| MCP Tool | Toggle Env Var | Description |
+|----------|----------------|-------------|
+| `fan_manager_auto_set_fan_speed` | `APITOOL` | Adjust fan speed automatically from the current temperature (CONCEPT:FAN-002). |
+| `fan_manager_get_core_temp` | `APITOOL` | Return the highest core temperature from a sensors mapping (CONCEPT:FAN-001). |
+| `fan_manager_get_temp` | `APITOOL` | Return the current highest CPU core temperature (CONCEPT:FAN-001). |
+| `fan_manager_run_service` | `APITOOL` | Run the continuous fan-management service loop (CONCEPT:FAN-002). |
+| `fan_manager_set_fan` | `APITOOL` | Set the fan to a fixed level (0-100) (CONCEPT:FAN-002). |
+
+</details>
+
+_2 action-routed tool(s) (default) · 5 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (`condensed` default · `verbose` 1:1 · `both`). Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->
 
 ### Dynamic Tool Selection & Visibility
@@ -122,8 +139,9 @@ context window. Configure filtering via:
       "command": "uvx",
       "args": ["--from", "fan-manager[mcp]", "fan-manager-mcp"],
       "env": {
+        "MCP_TOOL_MODE": "condensed",
         "TEMPERATURETOOL": "True",
-        "FANCONTROLTOOL": "True"
+        "FAN_CONTROLTOOL": "True"
       }
     }
   }
@@ -232,7 +250,7 @@ Interface alongside the MCP server. See
 | `AUTH_TYPE` | `none` | auth strategy for the agent-utilities MCP factory |
 | `FASTMCP_LOG_LEVEL` | `INFO` |  |
 | `TEMPERATURETOOL` | `True` | register the temperature tool domain (CONCEPT:FAN-001) |
-| `FANCONTROLTOOL` | `True` | register the fan-control tool domain (CONCEPT:FAN-002) |
+| `FAN_CONTROLTOOL` | `True` | register the fan-control tool domain (CONCEPT:FAN-002) |
 | `IPMITOOL_PATH` | `ipmitool` | Fan Manager drives the host's BMC and lm-sensors locally. |
 | `SENSORS_PATH` | `sensors` |  |
 | `ENABLE_OTEL` | `True` |  |
@@ -281,7 +299,7 @@ file (auto-loaded), or in the MCP client's `env` block. See
 | `AUTH_TYPE` | `none` | MCP server | Auth strategy passed to the `agent-utilities` MCP factory (`none` for this local tool). |
 | `FASTMCP_LOG_LEVEL` | `INFO` | MCP server | Log verbosity for the underlying FastMCP server. |
 | `TEMPERATURETOOL` | `True` | Tool toggle | Register the `temperature` tool domain (`CONCEPT:FAN-001`). |
-| `FANCONTROLTOOL` | `True` | Tool toggle | Register the `fan-control` tool domain (`CONCEPT:FAN-002`). |
+| `FAN_CONTROLTOOL` | `True` | Tool toggle | Register the `fan-control` tool domain (`CONCEPT:FAN-002`). |
 | `IPMITOOL_PATH` | `ipmitool` | Local tooling | Path/name of the `ipmitool` binary used to drive the BMC. |
 | `SENSORS_PATH` | `sensors` | Local tooling | Path/name of the `lm-sensors` binary used to read temperatures. |
 | `ENABLE_OTEL` | `True` | Observability | Enable OpenTelemetry/logfire instrumentation for the agent. |

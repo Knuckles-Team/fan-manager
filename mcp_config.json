@@ -8,9 +8,10 @@
         "fan-manager-mcp"
       ],
       "env": {
+        "MCP_TOOL_MODE": "condensed",
         "TRANSPORT": "stdio",
         "TEMPERATURETOOL": "True",
-        "FANCONTROLTOOL": "True"
+        "FAN_CONTROLTOOL": "True"
       }
     }
   }

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Renamed the fan-control tool toggle `FANCONTROLTOOL` -> `FAN_CONTROLTOOL` to
+  match the framework-derived `<TAG>TOOL` convention (`register_<tag>_tools`),
+  aligning the code-read surface with `.env.example`, `mcp_config.json`, and the
+  README env-var table (CONCEPT:OS-5.72).
+
 ## [1.1.0] - 2026-06-10
 
 ### Added

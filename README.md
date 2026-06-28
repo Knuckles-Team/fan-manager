@@ -88,6 +88,7 @@ _Auto-generated from the live MCP server — do not edit by hand._
 |----------|----------------|-------------|
 | `fan_manager_fan_control` | `FAN_CONTROLTOOL` | Control Dell PowerEdge fan speed via IPMI (CONCEPT:FAN-002). |
 | `fan_manager_temperature` | `TEMPERATURETOOL` | Read CPU/sensor temperature (CONCEPT:FAN-001). |
+| `fan_manager_power` / `_sensors` / `_sel` / `_sol` / `_bmc` / `_raw` | `IPMITOOL` | Full IPMI/BMC control — power, chassis, sensors, SEL, Serial-over-LAN, LAN/user config, raw — in-band or out-of-band (`lanplus`) (CONCEPT:FAN-003..008). |
 
 #### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
 
@@ -141,7 +142,8 @@ context window. Configure filtering via:
       "env": {
         "MCP_TOOL_MODE": "condensed",
         "TEMPERATURETOOL": "True",
-        "FAN_CONTROLTOOL": "True"
+        "FAN_CONTROLTOOL": "True",
+        "IPMITOOL": "True"
       }
     }
   }
@@ -251,6 +253,7 @@ Interface alongside the MCP server. See
 | `FASTMCP_LOG_LEVEL` | `INFO` |  |
 | `TEMPERATURETOOL` | `True` | register the temperature tool domain (CONCEPT:FAN-001) |
 | `FAN_CONTROLTOOL` | `True` | register the fan-control tool domain (CONCEPT:FAN-002) |
+| `IPMITOOL` | `True` | register the full IPMI/BMC tool domain (CONCEPT:FAN-003..008) |
 | `IPMITOOL_PATH` | `ipmitool` | Fan Manager drives the host's BMC and lm-sensors locally. |
 | `SENSORS_PATH` | `sensors` |  |
 | `ENABLE_OTEL` | `True` |  |
@@ -300,6 +303,7 @@ file (auto-loaded), or in the MCP client's `env` block. See
 | `FASTMCP_LOG_LEVEL` | `INFO` | MCP server | Log verbosity for the underlying FastMCP server. |
 | `TEMPERATURETOOL` | `True` | Tool toggle | Register the `temperature` tool domain (`CONCEPT:FAN-001`). |
 | `FAN_CONTROLTOOL` | `True` | Tool toggle | Register the `fan-control` tool domain (`CONCEPT:FAN-002`). |
+| `IPMITOOL` | `True` | Tool toggle | Register the full IPMI/BMC tool domain (`CONCEPT:FAN-003..008`). |
 | `IPMITOOL_PATH` | `ipmitool` | Local tooling | Path/name of the `ipmitool` binary used to drive the BMC. |
 | `SENSORS_PATH` | `sensors` | Local tooling | Path/name of the `lm-sensors` binary used to read temperatures. |
 | `ENABLE_OTEL` | `True` | Observability | Enable OpenTelemetry/logfire instrumentation for the agent. |

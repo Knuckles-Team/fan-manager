@@ -11,7 +11,8 @@
         "MCP_TOOL_MODE": "condensed",
         "TRANSPORT": "stdio",
         "TEMPERATURETOOL": "True",
-        "FAN_CONTROLTOOL": "True"
+        "FAN_CONTROLTOOL": "True",
+        "IPMITOOL": "True"
       }
     }
   }

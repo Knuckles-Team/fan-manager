@@ -6,7 +6,11 @@
 ## Tech Stack & Architecture
 - Language/Version: Python 3.11+
 - Core Libraries: `agent-utilities`, `fastmcp` (via `agent-utilities[mcp]`), `pydantic-ai`
-- Domain: **local** Dell PowerEdge thermal control — `ipmitool` (fan) + `lm-sensors` (temperature). No remote API/credentials.
+- Domain: Dell PowerEdge / IPMI 2.0 control via `ipmitool` + `lm-sensors`. Thermal
+  (fan/temperature) runs **local** with no creds; the **IPMI/BMC wrapper**
+  (`CONCEPT:FAN-003..008`: power, sensors, SEL, SoL, BMC LAN/user config, raw) runs
+  **in-band** (local `/dev/ipmi0`) or **out-of-band** over LAN (`-I lanplus -H -U -P`,
+  creds from OpenBao `apps/idrac`).
 - Key principles: Functional patterns, Pydantic for data validation, asynchronous tool execution, action-routed MCP tools.
 
 ### Architecture & Deliberate Simplicity
@@ -35,11 +39,13 @@ graph TD
     Agent --> MCP[MCP Server / FastMCP]
     MCP --> Temp[temperature tool — CONCEPT:FAN-001]
     MCP --> Fan[fan-control tool — CONCEPT:FAN-002]
+    MCP --> Ipmi[ipmi tools — CONCEPT:FAN-003..008]
     Temp --> Service[FanControlService - DI]
     Fan --> Service
     Service --> Runner[CommandRunner adapter]
+    Ipmi --> Runner
     Runner --> Sensors([lm-sensors])
-    Runner --> IPMI([BMC via ipmitool])
+    Runner --> IPMI([BMC via ipmitool: in-band /dev/ipmi0 or lanplus])
 ```
 
 ## Commands (run these exactly)

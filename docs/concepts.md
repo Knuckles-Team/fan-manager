@@ -12,6 +12,12 @@
 |------------|------|-----|-------------|
 | `CONCEPT:FAN-001` | Temperature | `temperature` | MCP tool domain `temperature` — read CPU/sensor temperatures via `lm-sensors`. Action-routed dynamic tool registration. |
 | `CONCEPT:FAN-002` | Fan Control | `fan-control` | MCP tool domain `fan-control` — set fixed or temperature-driven fan speed via IPMI (`ipmitool`). Action-routed dynamic tool registration. |
+| `CONCEPT:FAN-003` | Power & Chassis | `ipmi-power` | Chassis power + boot control (status/on/off/cycle/reset/soft/identify/bootdev) over IPMI, in-band or out-of-band (`lanplus`). |
+| `CONCEPT:FAN-004` | Sensors / SDR | `ipmi-sensors` | Read BMC sensors and the Sensor Data Repository (`sdr list`/`sensor list`/`sdr type <T>`). |
+| `CONCEPT:FAN-005` | System Event Log | `ipmi-sel` | Read/clear the BMC System Event Log (`sel list/elist/info/clear`) — the hardware-event history. |
+| `CONCEPT:FAN-006` | Serial-over-LAN | `ipmi-console` | SoL console status/teardown (`sol info/deactivate`); live `sol activate` recipe surfaced for interactive use. |
+| `CONCEPT:FAN-007` | BMC Configuration | `ipmi-bmc` | BMC LAN (`lan print/set`), user (`user list/set_password/enable/disable`), and management-controller (`mc info/reset/selftest`) ops. |
+| `CONCEPT:FAN-008` | Raw IPMI | `ipmi-raw` | Send raw/vendor IPMI command bytes (`raw 0x.. ..`) for advanced control. |
 
 ## Cross-Project References (from agent-utilities)
 

@@ -746,6 +746,42 @@
 <td><code>fan-control</code></td>
 <td>MCP tool domain <code>fan-control</code> — set fixed or temperature-driven fan speed via IPMI (<code>ipmitool</code>). Action-routed dynamic tool registration.</td>
 </tr>
+<tr>
+<td><code>CONCEPT:FAN-003</code></td>
+<td>Power &amp; Chassis</td>
+<td><code>ipmi-power</code></td>
+<td>Chassis power + boot control (status/on/off/cycle/reset/soft/identify/bootdev) over IPMI, in-band or out-of-band (<code>lanplus</code>).</td>
+</tr>
+<tr>
+<td><code>CONCEPT:FAN-004</code></td>
+<td>Sensors / SDR</td>
+<td><code>ipmi-sensors</code></td>
+<td>Read BMC sensors and the Sensor Data Repository (<code>sdr list</code>/<code>sensor list</code>/<code>sdr type &lt;T&gt;</code>).</td>
+</tr>
+<tr>
+<td><code>CONCEPT:FAN-005</code></td>
+<td>System Event Log</td>
+<td><code>ipmi-sel</code></td>
+<td>Read/clear the BMC System Event Log (<code>sel list/elist/info/clear</code>) — the hardware-event history.</td>
+</tr>
+<tr>
+<td><code>CONCEPT:FAN-006</code></td>
+<td>Serial-over-LAN</td>
+<td><code>ipmi-console</code></td>
+<td>SoL console status/teardown (<code>sol info/deactivate</code>); live <code>sol activate</code> recipe surfaced for interactive use.</td>
+</tr>
+<tr>
+<td><code>CONCEPT:FAN-007</code></td>
+<td>BMC Configuration</td>
+<td><code>ipmi-bmc</code></td>
+<td>BMC LAN (<code>lan print/set</code>), user (<code>user list/set_password/enable/disable</code>), and management-controller (<code>mc info/reset/selftest</code>) ops.</td>
+</tr>
+<tr>
+<td><code>CONCEPT:FAN-008</code></td>
+<td>Raw IPMI</td>
+<td><code>ipmi-raw</code></td>
+<td>Send raw/vendor IPMI command bytes (<code>raw 0x.. ..</code>) for advanced control.</td>
+</tr>
 </tbody>
 </table>
 <h2 id="cross-project-references-from-agent-utilities">Cross-Project References (from agent-utilities)<a class="headerlink" href="#cross-project-references-from-agent-utilities" title="Permanent link">&para;</a></h2>

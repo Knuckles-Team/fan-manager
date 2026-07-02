@@ -123,58 +123,80 @@ context window. Configure filtering via:
 
 ### MCP Configuration Examples
 
-> **Install the slim `[mcp]` extra.** All examples below install
-> `fan-manager[mcp]` — the MCP-server extra that pulls only the FastMCP /
-> FastAPI tooling (`agent-utilities[mcp]`). It deliberately **excludes** the heavy
-> agent runtime (the epistemic-graph engine, `pydantic-ai`, `dspy`, `llama-index`,
-> `tree-sitter`), so `uvx`/container installs are dramatically smaller and faster.
-> Use the full `[agent]` extra only when you need the integrated Pydantic AI agent
-> (see [Installation](#installation)).
+<!-- MCP-CONFIG-EXAMPLES:START -->
 
-#### stdio Transport (Recommended for local IDEs e.g., Cursor, Claude Desktop)
+> **Install the slim `[mcp]` extra.** All examples install `fan-manager[mcp]` — the
+> MCP-server extra that pulls only the FastMCP / FastAPI tooling (`agent-utilities[mcp]`).
+> It deliberately **excludes** the heavy agent runtime (`pydantic-ai`, the epistemic-graph
+> engine, `dspy`, `llama-index`), so `uvx` / container installs are far smaller. Use the
+> full `[agent]` extra only when you need the integrated Pydantic AI agent.
+
+#### stdio Transport (local IDEs — Cursor, Claude Desktop, VS Code)
 
 ```json
 {
   "mcpServers": {
-    "fan-manager": {
+    "fan-manager-mcp": {
       "command": "uvx",
-      "args": ["--from", "fan-manager[mcp]", "fan-manager-mcp"],
+      "args": [
+        "--from",
+        "fan-manager[mcp]",
+        "fan-manager-mcp"
+      ],
       "env": {
         "MCP_TOOL_MODE": "condensed",
-        "TEMPERATURETOOL": "True",
+        "ENABLE_DELEGATION": "False",
         "FAN_CONTROLTOOL": "True",
-        "IPMITOOL": "True"
+        "IPMITOOL": "True",
+        "IPMITOOL_PATH": "ipmitool",
+        "SENSORS_PATH": "sensors",
+        "TEMPERATURETOOL": "True"
       }
     }
   }
 }
 ```
 
-#### Streamable-HTTP Transport (Recommended for production deployments)
+#### Streamable-HTTP Transport (networked / production)
 
 ```json
 {
   "mcpServers": {
-    "fan-manager": {
+    "fan-manager-mcp": {
       "command": "uvx",
-      "args": ["--from", "fan-manager[mcp]", "fan-manager-mcp"],
+      "args": [
+        "--from",
+        "fan-manager[mcp]",
+        "fan-manager-mcp",
+        "--transport",
+        "streamable-http",
+        "--port",
+        "8000"
+      ],
       "env": {
         "TRANSPORT": "streamable-http",
         "HOST": "0.0.0.0",
-        "PORT": "8000"
+        "PORT": "8000",
+        "MCP_TOOL_MODE": "condensed",
+        "ENABLE_DELEGATION": "False",
+        "FAN_CONTROLTOOL": "True",
+        "IPMITOOL": "True",
+        "IPMITOOL_PATH": "ipmitool",
+        "SENSORS_PATH": "sensors",
+        "TEMPERATURETOOL": "True"
       }
     }
   }
 }
 ```
 
-Connect to a pre-deployed remote or local Streamable-HTTP instance:
+Alternatively, connect to a pre-deployed Streamable-HTTP instance by `url`:
 
 ```json
 {
   "mcpServers": {
-    "fan-manager": {
-      "url": "http://localhost:8000/fan-manager/mcp"
+    "fan-manager-mcp": {
+      "url": "http://localhost:8000/fan-manager-mcp/mcp"
     }
   }
 }
@@ -184,24 +206,23 @@ Deploying the Streamable-HTTP server via Docker:
 
 ```bash
 docker run -d \
-  --name fan-manager-mcp \
-  --privileged \
+  --name fan-manager-mcp-mcp \
   -p 8000:8000 \
   -e TRANSPORT=streamable-http \
+  -e HOST=0.0.0.0 \
   -e PORT=8000 \
+  -e MCP_TOOL_MODE=condensed \
+  -e ENABLE_DELEGATION=False \
+  -e FAN_CONTROLTOOL=True \
+  -e IPMITOOL=True \
+  -e IPMITOOL_PATH=ipmitool \
+  -e SENSORS_PATH=sensors \
+  -e TEMPERATURETOOL=True \
   knucklessg1/fan-manager:mcp
 ```
 
-> The `:mcp` tag is the **slim MCP-server image** (built from
-> `docker/Dockerfile --target mcp`, installing `fan-manager[mcp]`). The default
-> `:latest` tag is the **full agent image** (`--target agent`, `fan-manager[agent]`)
-> which also bundles the Pydantic AI agent and the epistemic-graph engine. See
-> [Container images](#container-images-mcp-vs-agent).
-
-> The container needs access to the host's IPMI device (`--privileged` or
-> `--device /dev/ipmi0`) to drive the BMC.
-
----
+_Auto-generated from the code-read env surface (`MCP_TOOL_MODE` + package vars) — do not edit._
+<!-- MCP-CONFIG-EXAMPLES:END -->
 
 <!-- BEGIN GENERATED: additional-deployment-options -->
 ### Additional Deployment Options

@@ -9,10 +9,12 @@
       ],
       "env": {
         "MCP_TOOL_MODE": "condensed",
-        "TRANSPORT": "stdio",
-        "TEMPERATURETOOL": "True",
+        "ENABLE_DELEGATION": "False",
         "FAN_CONTROLTOOL": "True",
-        "IPMITOOL": "True"
+        "IPMITOOL": "True",
+        "IPMITOOL_PATH": "ipmitool",
+        "SENSORS_PATH": "sensors",
+        "TEMPERATURETOOL": "True"
       }
     }
   }

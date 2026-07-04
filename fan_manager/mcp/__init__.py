@@ -6,10 +6,12 @@ attaches an action-routed dynamic tool to the FastMCP server.
 
 from fan_manager.mcp.mcp_fan_control import register_fan_control_tools
 from fan_manager.mcp.mcp_ipmi import register_ipmi_tools
+from fan_manager.mcp.mcp_kg import register_kg_tools
 from fan_manager.mcp.mcp_temperature import register_temperature_tools
 
 __all__ = [
     "register_temperature_tools",
     "register_fan_control_tools",
     "register_ipmi_tools",
+    "register_kg_tools",
 ]

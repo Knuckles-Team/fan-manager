@@ -1,0 +1,175 @@
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix : <http://knuckles.team/kg#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Fan Manager thermal-control ontology — Dell PowerEdge BMC/IPMI fan and temperature
+# management. All classes and properties live in the shared `:` (kg#) namespace; only the
+# owl:Ontology node gets the per-package IRI. Backs the fan-manager MCP tool surface
+# (fan_manager_temperature / fan_manager_fan_control / fan_manager_ipmi) and the native
+# timeseries ingestion (:TemperatureReading / :FanSpeedSetting / :SensorReading samples).
+
+# --- classes (owl:Class) ---
+
+:ManagedHost a owl:Class ;
+    rdfs:label "Managed Host" ;
+    rdfs:comment "A physical server (e.g. a Dell PowerEdge) whose thermals are managed by fan-manager." .
+
+:FanController a owl:Class ;
+    rdfs:label "Fan Controller" ;
+    rdfs:comment "The BMC/iDRAC IPMI controller on a host that drives fan speed and exposes sensors." .
+
+:Fan a owl:Class ;
+    rdfs:label "Fan" ;
+    rdfs:comment "An individual chassis fan (or fan zone) governed by the fan controller." .
+
+:TemperatureReading a owl:Class ;
+    rdfs:label "Temperature Reading" ;
+    rdfs:comment "A single timestamped CPU/core temperature sample (from `sensors -j`), the read side of the thermal loop." .
+
+:FanSpeedSetting a owl:Class ;
+    rdfs:label "Fan Speed Setting" ;
+    rdfs:comment "A timestamped fan-level write event (0-100) applied to the BMC via ipmitool raw commands." .
+
+:SensorReading a owl:Class ;
+    rdfs:label "Sensor Reading" ;
+    rdfs:comment "A generic IPMI SDR sensor sample (temperature, fan RPM, voltage, drive slot) at a point in time." .
+
+:FanControlPolicy a owl:Class ;
+    rdfs:label "Fan Control Policy" ;
+    rdfs:comment "The temperature-to-fan-speed curve configuration (min/max temp, min/max speed, intensity power)." .
+
+:SystemEvent a owl:Class ;
+    rdfs:label "System Event" ;
+    rdfs:comment "An entry in the BMC System Event Log (SEL) recorded for a host." .
+
+# --- links (owl:ObjectProperty) ---
+
+:controlsHost a owl:ObjectProperty ;
+    rdfs:label "controls host" ;
+    rdfs:comment "Links a FanController to the ManagedHost whose fans and sensors it manages." ;
+    rdfs:domain :FanController ;
+    rdfs:range :ManagedHost .
+
+:hasFan a owl:ObjectProperty ;
+    rdfs:label "has fan" ;
+    rdfs:comment "Links a FanController to a Fan it governs." ;
+    rdfs:domain :FanController ;
+    rdfs:range :Fan .
+
+:readingForHost a owl:ObjectProperty ;
+    rdfs:label "reading for host" ;
+    rdfs:comment "Links a TemperatureReading or SensorReading to the ManagedHost it was sampled from." ;
+    rdfs:range :ManagedHost .
+
+:appliedToHost a owl:ObjectProperty ;
+    rdfs:label "applied to host" ;
+    rdfs:comment "Links a FanSpeedSetting to the ManagedHost whose fans it adjusted." ;
+    rdfs:domain :FanSpeedSetting ;
+    rdfs:range :ManagedHost .
+
+:targetsFan a owl:ObjectProperty ;
+    rdfs:label "targets fan" ;
+    rdfs:comment "Links a FanSpeedSetting to the Fan (or fan zone) it adjusted." ;
+    rdfs:domain :FanSpeedSetting ;
+    rdfs:range :Fan .
+
+:triggeredSetting a owl:ObjectProperty ;
+    rdfs:label "triggered setting" ;
+    rdfs:comment "Links a TemperatureReading to the FanSpeedSetting the thermal curve produced from it." ;
+    rdfs:domain :TemperatureReading ;
+    rdfs:range :FanSpeedSetting .
+
+:governedByPolicy a owl:ObjectProperty ;
+    rdfs:label "governed by policy" ;
+    rdfs:comment "Links a FanController or FanSpeedSetting to the FanControlPolicy curve in effect." ;
+    rdfs:range :FanControlPolicy .
+
+:loggedOnHost a owl:ObjectProperty ;
+    rdfs:label "logged on host" ;
+    rdfs:comment "Links a SystemEvent to the ManagedHost whose BMC recorded it." ;
+    rdfs:domain :SystemEvent ;
+    rdfs:range :ManagedHost .
+
+# --- fields (owl:DatatypeProperty) ---
+
+:celsius a owl:DatatypeProperty ;
+    rdfs:label "celsius" ;
+    rdfs:comment "Temperature value in degrees Celsius of a TemperatureReading or SensorReading." ;
+    rdfs:range xsd:decimal .
+
+:fanLevel a owl:DatatypeProperty ;
+    rdfs:label "fan level" ;
+    rdfs:comment "Fan speed level 0-100 applied by a FanSpeedSetting." ;
+    rdfs:range xsd:integer .
+
+:fanRpm a owl:DatatypeProperty ;
+    rdfs:label "fan rpm" ;
+    rdfs:comment "Measured fan speed in RPM of a Fan or SensorReading." ;
+    rdfs:range xsd:integer .
+
+:observedAt a owl:DatatypeProperty ;
+    rdfs:label "observed at" ;
+    rdfs:comment "UTC timestamp at which a reading, setting, or event was sampled (timeseries key)." ;
+    rdfs:range xsd:dateTime .
+
+:sensorName a owl:DatatypeProperty ;
+    rdfs:label "sensor name" ;
+    rdfs:comment "IPMI SDR sensor name (e.g. 'Fan1 RPM', 'Temp', 'Inlet Temp')." ;
+    rdfs:range xsd:string .
+
+:sensorType a owl:DatatypeProperty ;
+    rdfs:label "sensor type" ;
+    rdfs:comment "IPMI sensor category (Temperature, Fan, Voltage, Drive Slot, ...)." ;
+    rdfs:range xsd:string .
+
+:sensorStatus a owl:DatatypeProperty ;
+    rdfs:label "sensor status" ;
+    rdfs:comment "Health status token of a SensorReading (ok, nc, cr, ns)." ;
+    rdfs:range xsd:string .
+
+:command a owl:DatatypeProperty ;
+    rdfs:label "command" ;
+    rdfs:comment "The underlying shell command (sensors/ipmitool) that produced a reading or setting." ;
+    rdfs:range xsd:string .
+
+:bmcHost a owl:DatatypeProperty ;
+    rdfs:label "bmc host" ;
+    rdfs:comment "Hostname or IP of the BMC/iDRAC when driven out-of-band over LAN." ;
+    rdfs:range xsd:string .
+
+:minTemperature a owl:DatatypeProperty ;
+    rdfs:label "min temperature" ;
+    rdfs:comment "Lower temperature bound of a FanControlPolicy curve (below this: minimum fans)." ;
+    rdfs:range xsd:decimal .
+
+:maxTemperature a owl:DatatypeProperty ;
+    rdfs:label "max temperature" ;
+    rdfs:comment "Upper temperature bound of a FanControlPolicy curve (at/above this: maximum fans)." ;
+    rdfs:range xsd:decimal .
+
+:minFanSpeed a owl:DatatypeProperty ;
+    rdfs:label "min fan speed" ;
+    rdfs:comment "Minimum fan speed 0-100 of a FanControlPolicy curve." ;
+    rdfs:range xsd:integer .
+
+:maxFanSpeed a owl:DatatypeProperty ;
+    rdfs:label "max fan speed" ;
+    rdfs:comment "Maximum fan speed 0-100 of a FanControlPolicy curve." ;
+    rdfs:range xsd:integer .
+
+:temperaturePower a owl:DatatypeProperty ;
+    rdfs:label "temperature power" ;
+    rdfs:comment "Logarithmic intensity exponent of a FanControlPolicy temperature-to-speed curve." ;
+    rdfs:range xsd:integer .
+
+<http://knuckles.team/kg/fan> a owl:Ontology ;
+    rdfs:label "Fan Manager Ontology" ;
+    rdfs:comment """Fan Manager thermal-control domain — managed hosts, their BMC/IPMI fan
+    controllers and fans, the temperature-to-fan-speed policy curve, and the timeseries of
+    temperature readings, fan-speed settings, IPMI sensor readings and system-event-log
+    entries — federated into the agent-utilities knowledge-graph hub.""" ;
+    owl:imports <http://knuckles.team/kg> .

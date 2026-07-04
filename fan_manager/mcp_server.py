@@ -26,6 +26,7 @@ from fan_manager.auth import get_client
 from fan_manager.mcp import (
     register_fan_control_tools,
     register_ipmi_tools,
+    register_kg_tools,
     register_temperature_tools,
 )
 
@@ -42,6 +43,7 @@ TOOL_REGISTRY = [
     ("temperature", "TEMPERATURETOOL", register_temperature_tools),
     ("fan-control", "FAN_CONTROLTOOL", register_fan_control_tools),
     ("ipmi", "IPMITOOL", register_ipmi_tools),
+    ("kg", "KGTOOL", register_kg_tools),
 ]
 
 

@@ -3,11 +3,43 @@
 import argparse
 import json
 import logging
+import os
 import shutil
 import subprocess
 import sys
 import time
 from typing import Any, Protocol, runtime_checkable
+
+
+def _kg_record_thermal_sample(temperature: Any, fan_level: int) -> None:
+    """Best-effort native ingestion of one thermal sample into epistemic-graph.
+
+    CONCEPT:AU-KG.ingest.enterprise-source-extractor. Default-on (disable with
+    ``FAN_MANAGER_KG_INGEST=false``); fully guarded so a missing KG stack / unreachable
+    engine is a silent no-op and never disturbs the control loop.
+    """
+    if os.getenv("FAN_MANAGER_KG_INGEST", "true").strip().lower() in {
+        "0",
+        "false",
+        "no",
+    }:
+        return
+    try:
+        from fan_manager.kg_ingest import ingest_temperature_readings
+
+        ingest_temperature_readings(
+            [
+                {
+                    "response": temperature,
+                    "command": "sensors -j",
+                    "status": 200,
+                    "fan_level": fan_level,
+                }
+            ],
+            host=os.getenv("FAN_MANAGER_HOST") or None,
+        )
+    except Exception as e:  # noqa: BLE001 — ingestion is best-effort, never fatal
+        logging.getLogger("FanManager").debug("KG ingest skipped: %s", e)
 
 
 @runtime_checkable
@@ -247,6 +279,8 @@ def auto_set_fan_speed(
     fan_result = set_fan(fan_level, runner=runner)
     if fan_result["status"] != 200:
         logger.error(f"Failed to set fan: {fan_result.get('error', 'Unknown error')}")
+    # Native, best-effort timeseries ingestion of this thermal sample.
+    _kg_record_thermal_sample(cpu_temperature, fan_level)
 
 
 def run_service(

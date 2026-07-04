@@ -48,7 +48,7 @@ TOOL_REGISTRY = [
 def get_mcp_instance():
     """Build the FastMCP server, register enabled tool domains, and return it.
 
-    Registers the temperature (CONCEPT:FAN-001) and fan-control (CONCEPT:FAN-002)
+    Registers the temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through) and fan-control (CONCEPT:FM-OS.governance.service-writes-fan-level)
     tool domains, each gated behind its env toggle.
     """
     args, mcp, middlewares = create_mcp_server(
@@ -77,7 +77,7 @@ def get_mcp_instance():
 def mcp_server() -> None:
     """Console-script entrypoint: start the MCP server on the chosen transport.
 
-    Serves the CONCEPT:FAN-001 (temperature) and CONCEPT:FAN-002 (fan-control)
+    Serves the CONCEPT:FM-OS.governance.service-reads-temperature-through (temperature) and CONCEPT:FM-OS.governance.service-writes-fan-level (fan-control)
     tool domains over the selected transport.
     """
     mcp, args, middlewares, registered_tags = get_mcp_instance()

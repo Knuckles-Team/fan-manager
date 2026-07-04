@@ -57,15 +57,15 @@ class Api:
         )
 
     def get_temp(self) -> dict[str, Any]:
-        """Return the current highest CPU core temperature (CONCEPT:FAN-001)."""
+        """Return the current highest CPU core temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through)."""
         return self._service.read_temperature()
 
     def get_core_temp(self, cpus: list, sensors: dict) -> dict[str, Any]:
-        """Return the highest core temperature from a sensors mapping (CONCEPT:FAN-001)."""
+        """Return the highest core temperature from a sensors mapping (CONCEPT:FM-OS.governance.service-reads-temperature-through)."""
         return get_core_temp(cpus=cpus, sensors=sensors)
 
     def set_fan(self, fan_level: int) -> dict[str, Any]:
-        """Set the fan to a fixed level (0-100) (CONCEPT:FAN-002)."""
+        """Set the fan to a fixed level (0-100) (CONCEPT:FM-OS.governance.service-writes-fan-level)."""
         return self._service.set_fan_level(fan_level)
 
     def auto_set_fan_speed(
@@ -76,7 +76,7 @@ class Api:
         maximum_temperature: float = 80,
         temperature_power: int = 5,
     ) -> Any:
-        """Adjust fan speed automatically from the current temperature (CONCEPT:FAN-002)."""
+        """Adjust fan speed automatically from the current temperature (CONCEPT:FM-OS.governance.service-writes-fan-level)."""
         return self._service.auto_adjust(
             minimum_fan_speed=minimum_fan_speed,
             maximum_fan_speed=maximum_fan_speed,
@@ -86,5 +86,5 @@ class Api:
         )
 
     def run_service(self, **kwargs: Any) -> Any:
-        """Run the continuous fan-management service loop (CONCEPT:FAN-002)."""
+        """Run the continuous fan-management service loop (CONCEPT:FM-OS.governance.service-writes-fan-level)."""
         return run_service(runner=self._service.runner, **kwargs)

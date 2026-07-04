@@ -17,12 +17,12 @@ reason = "Unit tests using mocks — no real BMC/sensors"
 
 @pytest.fixture(autouse=True)
 def mock_hardware():
-    """Prevent any real IPMI/sensor calls during tests (CONCEPT:FAN-001/CONCEPT:FAN-002).
+    """Prevent any real IPMI/sensor calls during tests (CONCEPT:FM-OS.governance.service-reads-temperature-through/CONCEPT:FM-OS.governance.service-writes-fan-level).
 
     ``fan_manager`` resolves the ``sensors``/``ipmitool`` binaries with
     ``shutil.which`` and runs them with ``subprocess.run([...], shell=False)``.
-    We stub both so the temperature (CONCEPT:FAN-001) and fan-control
-    (CONCEPT:FAN-002) routing can be exercised with no hardware present.
+    We stub both so the temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through) and fan-control
+    (CONCEPT:FM-OS.governance.service-writes-fan-level) routing can be exercised with no hardware present.
     """
     fake_sensors = json.dumps(
         {

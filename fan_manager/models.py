@@ -17,21 +17,21 @@ class CommandResult(BaseModel):
 
 
 class TempReading(CommandResult):
-    """Result of a temperature read (CONCEPT:FAN-001)."""
+    """Result of a temperature read (CONCEPT:FM-OS.governance.service-reads-temperature-through)."""
 
 
 class FanSetResult(CommandResult):
-    """Result of a fan-speed change (CONCEPT:FAN-002)."""
+    """Result of a fan-speed change (CONCEPT:FM-OS.governance.service-writes-fan-level)."""
 
 
 class SetFanInput(BaseModel):
-    """Input for setting a fixed fan level (CONCEPT:FAN-002)."""
+    """Input for setting a fixed fan level (CONCEPT:FM-OS.governance.service-writes-fan-level)."""
 
     fan_level: int = Field(ge=0, le=100, description="Fan speed level (0-100).")
 
 
 class AutoFanInput(BaseModel):
-    """Input for automatic temperature-driven fan control (CONCEPT:FAN-002)."""
+    """Input for automatic temperature-driven fan control (CONCEPT:FM-OS.governance.service-writes-fan-level)."""
 
     minimum_fan_speed: float = Field(default=5, ge=0, le=100)
     maximum_fan_speed: float = Field(default=100, ge=0, le=100)

@@ -1,4 +1,4 @@
-"""Tests for the IPMI/BMC wrapper (CONCEPT:FAN-003..FAN-008).
+"""Tests for the IPMI/BMC wrapper (CONCEPT:FM-OS.governance.power-chassis..FAN-008).
 
 DI seam: a fake CommandRunner records the argv and returns canned output, so the
 argv construction, out-of-band lanplus, password redaction, and validation are

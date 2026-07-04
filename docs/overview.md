@@ -14,8 +14,8 @@ temperatures via `lm-sensors` and controls fan speed via `ipmitool`.
 graph TD
     User([User/A2A]) --> Agent[Pydantic AI Agent]
     Agent --> MCP[MCP Server / FastMCP]
-    MCP --> Temp[temperature tool — CONCEPT:FAN-001]
-    MCP --> Fan[fan-control tool — CONCEPT:FAN-002]
+    MCP --> Temp[temperature tool — CONCEPT:FM-OS.governance.service-reads-temperature-through]
+    MCP --> Fan[fan-control tool — CONCEPT:FM-OS.governance.service-writes-fan-level]
     Temp --> Sensors([lm-sensors: sensors -j])
     Fan --> IPMI([BMC: ipmitool raw])
 ```
@@ -50,8 +50,8 @@ tool count small while preserving the full method surface.
 
 | Tool | Tag | Concept | Actions |
 |------|-----|---------|---------|
-| `fan_manager_temperature` | `temperature` | `CONCEPT:FAN-001` | `get`, `get_core` |
-| `fan_manager_fan_control` | `fan-control` | `CONCEPT:FAN-002` | `set`, `auto` |
+| `fan_manager_temperature` | `temperature` | `CONCEPT:FM-OS.governance.service-reads-temperature-through` | `get`, `get_core` |
+| `fan_manager_fan_control` | `fan-control` | `CONCEPT:FM-OS.governance.service-writes-fan-level` | `set`, `auto` |
 
 ## Enterprise Readiness
 
@@ -61,8 +61,8 @@ All agents in the ecosystem inherit enterprise-grade infrastructure from
 | Feature | Status | Source |
 |:--------|:-------|:-------|
 | **OpenTelemetry Instrumentation** | ✅ Built-in | `agent-utilities[logfire]` |
-| **Audit Logging** | ✅ Built-in | Append-only compliance trail (external `OS-5.4`) |
+| **Audit Logging** | ✅ Built-in | Append-only compliance trail (external `AU-OS.governance.wasm-micro-agent-sandbox`) |
 | **Prompt Injection Defense** | ✅ Built-in | Pattern scanner + jailbreak taxonomy (external `OS-5.1`) |
-| **Guardrail Engine** | ✅ Built-in | Input/output interception (external `OS-5.3`) |
+| **Guardrail Engine** | ✅ Built-in | Input/output interception (external `AU-OS.governance.reactive-multi-axis-budget`) |
 
 > 📖 **Full Registry**: See [`agent-utilities/docs/overview.md`](https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/overview.md) for the complete 5-Pillar concept index.

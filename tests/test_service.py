@@ -32,18 +32,18 @@ class _FakeRunner:
         return ""
 
 
-@pytest.mark.concept("FAN-001")
+@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
 def test_service_reads_temperature_via_injected_runner():
-    """CONCEPT:FAN-001 — the service reads temperature through the injected runner."""
+    """CONCEPT:FM-OS.governance.service-reads-temperature-through — the service reads temperature through the injected runner."""
     svc = FanControlService(runner=_FakeRunner(57.0), config={})
     result = svc.read_temperature()
     assert result["status"] == 200
     assert result["response"] == 57.0
 
 
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 def test_service_sets_fan_via_injected_runner():
-    """CONCEPT:FAN-002 — the service writes a fan level through the injected runner."""
+    """CONCEPT:FM-OS.governance.service-writes-fan-level — the service writes a fan level through the injected runner."""
     runner = _FakeRunner()
     svc = FanControlService(runner=runner, config={})
     result = svc.set_fan_level(42)
@@ -51,7 +51,7 @@ def test_service_sets_fan_via_injected_runner():
     assert runner.set_levels[-1] == 42
 
 
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 def test_service_exposes_injected_dependencies():
     """The service surfaces its injected runner/config (DI contract)."""
     runner = _FakeRunner()
@@ -61,10 +61,10 @@ def test_service_exposes_injected_dependencies():
     assert svc.config == config
 
 
-@pytest.mark.concept("FAN-001")
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 def test_api_facade_composes_service_with_di():
-    """CONCEPT:FAN-001/CONCEPT:FAN-002 — the Api facade routes through the DI service."""
+    """CONCEPT:FM-OS.governance.service-reads-temperature-through/CONCEPT:FM-OS.governance.service-writes-fan-level — the Api facade routes through the DI service."""
     runner = _FakeRunner(62.0)
     api = Api(runner=runner, config={})
     assert api.get_temp()["response"] == 62.0

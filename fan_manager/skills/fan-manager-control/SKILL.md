@@ -1,11 +1,11 @@
 ---
 name: fan-manager-control
-description: Use when you need to manually set a fixed Dell PowerEdge fan speed (0-100) via IPMI — for testing cooling performance, capping acoustic noise, or pinning fans to a known level (CONCEPT:FAN-002).
+description: Use when you need to manually set a fixed Dell PowerEdge fan speed (0-100) via IPMI — for testing cooling performance, capping acoustic noise, or pinning fans to a known level (CONCEPT:FM-OS.governance.service-writes-fan-level).
 ---
 
 ## Overview
 
-Set the Dell PowerEdge fan speed manually to a fixed level (CONCEPT:FAN-002).
+Set the Dell PowerEdge fan speed manually to a fixed level (CONCEPT:FM-OS.governance.service-writes-fan-level).
 This enables manual BMC fan control via `ipmitool` raw commands and applies the
 requested level directly, bypassing the automatic temperature curve.
 

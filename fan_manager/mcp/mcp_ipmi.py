@@ -1,4 +1,4 @@
-"""MCP tools for full IPMI/BMC control (CONCEPT:FAN-003..FAN-008).
+"""MCP tools for full IPMI/BMC control (CONCEPT:FM-OS.governance.power-chassis..FAN-008).
 
 Action-routed tools over ``fan_manager.ipmi``. Every tool's ``params_json`` may
 carry an out-of-band target — ``{"host": "10.0.0.113", "user": "root",
@@ -46,7 +46,7 @@ def register_ipmi_tools(mcp: FastMCP):
         ),
         ctx: Context | None = Field(default=None, description="MCP context"),
     ) -> Any:
-        """Chassis power + boot control over IPMI (CONCEPT:FAN-003). DESTRUCTIVE for
+        """Chassis power + boot control over IPMI (CONCEPT:FM-OS.governance.power-chassis). DESTRUCTIVE for
         off/cycle/reset — confirm the target first."""
         kwargs, target, err = _parse(params_json)
         if err:
@@ -67,7 +67,7 @@ def register_ipmi_tools(mcp: FastMCP):
         ),
         ctx: Context | None = Field(default=None, description="MCP context"),
     ) -> Any:
-        """Read BMC sensors / SDR (CONCEPT:FAN-004)."""
+        """Read BMC sensors / SDR (CONCEPT:FM-OS.governance.sensors)."""
         kwargs, target, err = _parse(params_json)
         if err:
             return {"error": err}
@@ -83,7 +83,7 @@ def register_ipmi_tools(mcp: FastMCP):
         ),
         ctx: Context | None = Field(default=None, description="MCP context"),
     ) -> Any:
-        """System Event Log — the BMC's hardware-event history (CONCEPT:FAN-005).
+        """System Event Log — the BMC's hardware-event history (CONCEPT:FM-OS.governance.event-log).
         'clear' is destructive."""
         _, target, err = _parse(params_json)
         if err:
@@ -98,7 +98,7 @@ def register_ipmi_tools(mcp: FastMCP):
         ),
         ctx: Context | None = Field(default=None, description="MCP context"),
     ) -> Any:
-        """Serial-over-LAN console status/teardown (CONCEPT:FAN-006). A live
+        """Serial-over-LAN console status/teardown (CONCEPT:FM-OS.governance.serial-over-lan). A live
         interactive console must use `ipmitool -I lanplus -H <bmc> -U root -P <pw> sol activate`."""
         _, target, err = _parse(params_json)
         if err:
@@ -119,7 +119,7 @@ def register_ipmi_tools(mcp: FastMCP):
         ),
         ctx: Context | None = Field(default=None, description="MCP context"),
     ) -> Any:
-        """BMC configuration: LAN, users, and management-controller ops (CONCEPT:FAN-007)."""
+        """BMC configuration: LAN, users, and management-controller ops (CONCEPT:FM-OS.config.bmc-config-lan-user)."""
         kwargs, target, err = _parse(params_json)
         if err:
             return {"error": err}
@@ -158,7 +158,7 @@ def register_ipmi_tools(mcp: FastMCP):
         ),
         ctx: Context | None = Field(default=None, description="MCP context"),
     ) -> Any:
-        """Send a raw IPMI command (CONCEPT:FAN-008). Advanced/vendor commands."""
+        """Send a raw IPMI command (CONCEPT:FM-OS.governance.raw). Advanced/vendor commands."""
         kwargs, target, err = _parse(params_json)
         if err:
             return {"error": err}

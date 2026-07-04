@@ -86,9 +86,9 @@ _Auto-generated from the live MCP server — do not edit by hand._
 
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
-| `fan_manager_fan_control` | `FAN_CONTROLTOOL` | Control Dell PowerEdge fan speed via IPMI (CONCEPT:FAN-002). |
-| `fan_manager_temperature` | `TEMPERATURETOOL` | Read CPU/sensor temperature (CONCEPT:FAN-001). |
-| `fan_manager_power` / `_sensors` / `_sel` / `_sol` / `_bmc` / `_raw` | `IPMITOOL` | Full IPMI/BMC control — power, chassis, sensors, SEL, Serial-over-LAN, LAN/user config, raw — in-band or out-of-band (`lanplus`) (CONCEPT:FAN-003..008). |
+| `fan_manager_fan_control` | `FAN_CONTROLTOOL` | Control Dell PowerEdge fan speed via IPMI (CONCEPT:FM-OS.governance.service-writes-fan-level). |
+| `fan_manager_temperature` | `TEMPERATURETOOL` | Read CPU/sensor temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through). |
+| `fan_manager_power` / `_sensors` / `_sel` / `_sol` / `_bmc` / `_raw` | `IPMITOOL` | Full IPMI/BMC control — power, chassis, sensors, SEL, Serial-over-LAN, LAN/user config, raw — in-band or out-of-band (`lanplus`) (CONCEPT:FM-OS.governance.power-chassis..008). |
 
 #### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
 
@@ -97,11 +97,11 @@ _Auto-generated from the live MCP server — do not edit by hand._
 
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
-| `fan_manager_auto_set_fan_speed` | `APITOOL` | Adjust fan speed automatically from the current temperature (CONCEPT:FAN-002). |
-| `fan_manager_get_core_temp` | `APITOOL` | Return the highest core temperature from a sensors mapping (CONCEPT:FAN-001). |
-| `fan_manager_get_temp` | `APITOOL` | Return the current highest CPU core temperature (CONCEPT:FAN-001). |
-| `fan_manager_run_service` | `APITOOL` | Run the continuous fan-management service loop (CONCEPT:FAN-002). |
-| `fan_manager_set_fan` | `APITOOL` | Set the fan to a fixed level (0-100) (CONCEPT:FAN-002). |
+| `fan_manager_auto_set_fan_speed` | `APITOOL` | Adjust fan speed automatically from the current temperature (CONCEPT:FM-OS.governance.service-writes-fan-level). |
+| `fan_manager_get_core_temp` | `APITOOL` | Return the highest core temperature from a sensors mapping (CONCEPT:FM-OS.governance.service-reads-temperature-through). |
+| `fan_manager_get_temp` | `APITOOL` | Return the current highest CPU core temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through). |
+| `fan_manager_run_service` | `APITOOL` | Run the continuous fan-management service loop (CONCEPT:FM-OS.governance.service-writes-fan-level). |
+| `fan_manager_set_fan` | `APITOOL` | Set the fan to a fixed level (0-100) (CONCEPT:FM-OS.governance.service-writes-fan-level). |
 
 </details>
 
@@ -272,9 +272,9 @@ Interface alongside the MCP server. See
 | `TRANSPORT` | `stdio` | options: stdio, streamable-http, sse |
 | `AUTH_TYPE` | `none` | auth strategy for the agent-utilities MCP factory |
 | `FASTMCP_LOG_LEVEL` | `INFO` |  |
-| `TEMPERATURETOOL` | `True` | register the temperature tool domain (CONCEPT:FAN-001) |
-| `FAN_CONTROLTOOL` | `True` | register the fan-control tool domain (CONCEPT:FAN-002) |
-| `IPMITOOL` | `True` | register the full IPMI/BMC tool domain (CONCEPT:FAN-003..008) |
+| `TEMPERATURETOOL` | `True` | register the temperature tool domain (CONCEPT:FM-OS.governance.service-reads-temperature-through) |
+| `FAN_CONTROLTOOL` | `True` | register the fan-control tool domain (CONCEPT:FM-OS.governance.service-writes-fan-level) |
+| `IPMITOOL` | `True` | register the full IPMI/BMC tool domain (CONCEPT:FM-OS.governance.power-chassis..008) |
 | `IPMITOOL_PATH` | `ipmitool` | Fan Manager drives the host's BMC and lm-sensors locally. |
 | `SENSORS_PATH` | `sensors` |  |
 | `ENABLE_OTEL` | `True` |  |
@@ -322,9 +322,9 @@ file (auto-loaded), or in the MCP client's `env` block. See
 | `TRANSPORT` | `stdio` | MCP server | Transport: `stdio`, `streamable-http`, or `sse`. |
 | `AUTH_TYPE` | `none` | MCP server | Auth strategy passed to the `agent-utilities` MCP factory (`none` for this local tool). |
 | `FASTMCP_LOG_LEVEL` | `INFO` | MCP server | Log verbosity for the underlying FastMCP server. |
-| `TEMPERATURETOOL` | `True` | Tool toggle | Register the `temperature` tool domain (`CONCEPT:FAN-001`). |
-| `FAN_CONTROLTOOL` | `True` | Tool toggle | Register the `fan-control` tool domain (`CONCEPT:FAN-002`). |
-| `IPMITOOL` | `True` | Tool toggle | Register the full IPMI/BMC tool domain (`CONCEPT:FAN-003..008`). |
+| `TEMPERATURETOOL` | `True` | Tool toggle | Register the `temperature` tool domain (`CONCEPT:FM-OS.governance.service-reads-temperature-through`). |
+| `FAN_CONTROLTOOL` | `True` | Tool toggle | Register the `fan-control` tool domain (`CONCEPT:FM-OS.governance.service-writes-fan-level`). |
+| `IPMITOOL` | `True` | Tool toggle | Register the full IPMI/BMC tool domain (`CONCEPT:FM-OS.governance.power-chassis..008`). |
 | `IPMITOOL_PATH` | `ipmitool` | Local tooling | Path/name of the `ipmitool` binary used to drive the BMC. |
 | `SENSORS_PATH` | `sensors` | Local tooling | Path/name of the `lm-sensors` binary used to read temperatures. |
 | `ENABLE_OTEL` | `True` | Observability | Enable OpenTelemetry/logfire instrumentation for the agent. |

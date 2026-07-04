@@ -1,6 +1,6 @@
 """MCP tools for fan control operations.
 
-CONCEPT:FAN-002 — Fan Control (tag ``fan-control``)
+CONCEPT:FM-OS.governance.service-writes-fan-level — Fan Control (tag ``fan-control``)
 
 Action-routed dynamic tool registration. A single tool per domain accepts an
 ``action`` and a ``params_json`` payload and routes to the real callables in
@@ -33,7 +33,7 @@ def register_fan_control_tools(mcp: FastMCP):
             default=None, description="MCP context for progress reporting"
         ),
     ) -> Any:
-        """Control Dell PowerEdge fan speed via IPMI (CONCEPT:FAN-002).
+        """Control Dell PowerEdge fan speed via IPMI (CONCEPT:FM-OS.governance.service-writes-fan-level).
 
         Action-routed methods:
           - ``set``: set the fan to a fixed level (0-100) using ``ipmitool``.

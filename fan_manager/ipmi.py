@@ -1,4 +1,4 @@
-"""Full IPMI/BMC wrapper over the ``ipmitool`` binary (CONCEPT:FAN-003..FAN-008).
+"""Full IPMI/BMC wrapper over the ``ipmitool`` binary (CONCEPT:FM-OS.governance.power-chassis..FAN-008).
 
 Extends fan-manager beyond fan/temperature into a general Dell-iDRAC / IPMI 2.0
 control surface: power, chassis, sensors, system event log, Serial-over-LAN,
@@ -81,7 +81,7 @@ def _invalid(action: str, valid: set[str]) -> dict[str, Any]:
     }
 
 
-# --- CONCEPT:FAN-003 — power + chassis -------------------------------------
+# --- CONCEPT:FM-OS.governance.power-chassis — power + chassis -------------------------------------
 def power(
     action: str, target: Target = None, runner: CommandRunner | None = None
 ) -> dict[str, Any]:
@@ -120,7 +120,7 @@ def chassis(
     return _exec(runner, target, ["chassis", "status"])
 
 
-# --- CONCEPT:FAN-004 — sensors --------------------------------------------
+# --- CONCEPT:FM-OS.governance.sensors — sensors --------------------------------------------
 def sensors(
     action: str = "list",
     target: Target = None,
@@ -145,7 +145,7 @@ def sensors(
     return _exec(runner, target, ["sdr", "list"])
 
 
-# --- CONCEPT:FAN-005 — system event log -----------------------------------
+# --- CONCEPT:FM-OS.governance.event-log — system event log -----------------------------------
 def sel(
     action: str = "list", target: Target = None, runner: CommandRunner | None = None
 ) -> dict[str, Any]:
@@ -156,7 +156,7 @@ def sel(
     return _exec(runner, target, ["sel", action])
 
 
-# --- CONCEPT:FAN-006 — Serial-over-LAN -------------------------------------
+# --- CONCEPT:FM-OS.governance.serial-over-lan — Serial-over-LAN -------------------------------------
 def sol(
     action: str = "info", target: Target = None, runner: CommandRunner | None = None
 ) -> dict[str, Any]:
@@ -169,7 +169,7 @@ def sol(
     return _exec(runner, target, arg)
 
 
-# --- CONCEPT:FAN-007 — BMC config (LAN / user / mc) ------------------------
+# --- CONCEPT:FM-OS.config.bmc-config-lan-user — BMC config (LAN / user / mc) ------------------------
 def lan(
     action: str = "print",
     target: Target = None,
@@ -248,7 +248,7 @@ def mc(
     return _exec(runner, target, ["mc", "info"])
 
 
-# --- CONCEPT:FAN-008 — raw -------------------------------------------------
+# --- CONCEPT:FM-OS.governance.raw — raw -------------------------------------------------
 def raw(
     data: str, target: Target = None, runner: CommandRunner | None = None
 ) -> dict[str, Any]:

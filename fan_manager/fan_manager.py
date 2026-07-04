@@ -14,8 +14,8 @@ from typing import Any, Protocol, runtime_checkable
 class CommandRunner(Protocol):
     """Seam for resolving and executing the local ``sensors``/``ipmitool`` binaries.
 
-    Fan Manager shells out to hardware tools (CONCEPT:FAN-001 reads temperature
-    via ``sensors``; CONCEPT:FAN-002 drives the BMC via ``ipmitool``). Injecting
+    Fan Manager shells out to hardware tools (CONCEPT:FM-OS.governance.service-reads-temperature-through reads temperature
+    via ``sensors``; CONCEPT:FM-OS.governance.service-writes-fan-level drives the BMC via ``ipmitool``). Injecting
     this runner lets callers and tests substitute the shell-out without globally
     monkeypatching :mod:`subprocess`, keeping the dependency-injection seam
     explicit and the tests hermetic.
@@ -62,8 +62,8 @@ def setup_logging(
     """
     Configure logging for the fan manager application.
 
-    Bootstraps the logging used across the CONCEPT:FAN-001 temperature read path
-    and the CONCEPT:FAN-002 fan-control path.
+    Bootstraps the logging used across the CONCEPT:FM-OS.governance.service-reads-temperature-through temperature read path
+    and the CONCEPT:FM-OS.governance.service-writes-fan-level fan-control path.
     """
     logging.basicConfig(
         level=logging.DEBUG,
@@ -79,7 +79,7 @@ def setup_logging(
 
 def get_core_temp(cpus: list, sensors: dict) -> dict[str, Any]:
     """
-    Get the highest core temperature from the specified CPUs (CONCEPT:FAN-001).
+    Get the highest core temperature from the specified CPUs (CONCEPT:FM-OS.governance.service-reads-temperature-through).
 
     Pure computation over a supplied ``sensors`` mapping (no shell-out).
     Returns a dictionary with response, command, and status.
@@ -115,7 +115,7 @@ def get_core_temp(cpus: list, sensors: dict) -> dict[str, Any]:
 
 def get_temp(runner: CommandRunner | None = None) -> dict[str, Any]:
     """
-    Get the current CPU temperature (CONCEPT:FAN-001).
+    Get the current CPU temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through).
 
     Reads the host's sensors via the injected :class:`CommandRunner` (defaulting
     to a real ``sensors -j`` shell-out) and returns the hottest core temperature.
@@ -148,7 +148,7 @@ def get_temp(runner: CommandRunner | None = None) -> dict[str, Any]:
 
 def set_fan(fan_level: int, runner: CommandRunner | None = None) -> dict[str, Any]:
     """
-    Set the fan speed to the specified level (CONCEPT:FAN-002).
+    Set the fan speed to the specified level (CONCEPT:FM-OS.governance.service-writes-fan-level).
 
     Validates ``fan_level`` (0-100) and drives the BMC through the injected
     :class:`CommandRunner` (defaulting to ``ipmitool`` raw commands).
@@ -205,9 +205,9 @@ def auto_set_fan_speed(
     temperature_power: int = 5,
     runner: CommandRunner | None = None,
 ):
-    """Drive the temperature-to-fan-speed curve once (CONCEPT:FAN-002).
+    """Drive the temperature-to-fan-speed curve once (CONCEPT:FM-OS.governance.service-writes-fan-level).
 
-    Reads the current temperature (CONCEPT:FAN-001) via the injected
+    Reads the current temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through) via the injected
     :class:`CommandRunner` and applies a logarithmic temperature-to-speed curve.
     On a temperature read error, the fans fail safe to ``maximum_fan_speed``.
     """
@@ -258,10 +258,10 @@ def run_service(
     temperature_power: int = 5,
     runner: CommandRunner | None = None,
 ):
-    """Continuously poll temperature and adjust fans (CONCEPT:FAN-002 loop).
+    """Continuously poll temperature and adjust fans (CONCEPT:FM-OS.governance.service-writes-fan-level loop).
 
-    Each tick re-runs :func:`auto_set_fan_speed` (CONCEPT:FAN-001 read +
-    CONCEPT:FAN-002 write) through the injected :class:`CommandRunner`, then
+    Each tick re-runs :func:`auto_set_fan_speed` (CONCEPT:FM-OS.governance.service-reads-temperature-through read +
+    CONCEPT:FM-OS.governance.service-writes-fan-level write) through the injected :class:`CommandRunner`, then
     sleeps for ``temperature_poll_rate`` seconds.
     """
     runner = runner or _DEFAULT_RUNNER
@@ -280,7 +280,7 @@ def run_service(
 
 
 def usage():
-    """Print CLI usage for the fan-control service (CONCEPT:FAN-002)."""
+    """Print CLI usage for the fan-control service (CONCEPT:FM-OS.governance.service-writes-fan-level)."""
     logger = logging.getLogger("FanManager")
     logger.info(
         "Usage: \n"
@@ -299,7 +299,7 @@ def usage():
 def fan_manager():
     """CLI entrypoint: parse args and run the fan-management service loop.
 
-    Wires the temperature read (CONCEPT:FAN-001) and fan-control (CONCEPT:FAN-002)
+    Wires the temperature read (CONCEPT:FM-OS.governance.service-reads-temperature-through) and fan-control (CONCEPT:FM-OS.governance.service-writes-fan-level)
     paths together as a long-running poller.
     """
     setup_logging()

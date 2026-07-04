@@ -32,7 +32,7 @@ api.auto_set_fan_speed(minimum_fan_speed=5, maximum_fan_speed=100)
 
 The MCP server exposes two action-routed tools:
 
-### `fan_manager_temperature` (`CONCEPT:FAN-001`)
+### `fan_manager_temperature` (`CONCEPT:FM-OS.governance.service-reads-temperature-through`)
 
 ```json
 { "action": "get" }
@@ -42,7 +42,7 @@ The MCP server exposes two action-routed tools:
 { "action": "get_core", "params_json": "{\"cpus\": [\"coretemp-isa-0000\"], \"sensors\": {}}" }
 ```
 
-### `fan_manager_fan_control` (`CONCEPT:FAN-002`)
+### `fan_manager_fan_control` (`CONCEPT:FM-OS.governance.service-writes-fan-level`)
 
 ```json
 { "action": "set", "params_json": "{\"fan_level\": 40}" }

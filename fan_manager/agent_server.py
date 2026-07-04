@@ -46,7 +46,7 @@ def agent_server():
     """Console-script entrypoint: build and run the A2A agent server.
 
     Wires the agent identity/system prompt and starts the Pydantic AI agent that
-    fronts the CONCEPT:FAN-001 (temperature) and CONCEPT:FAN-002 (fan-control)
+    fronts the CONCEPT:FM-OS.governance.service-reads-temperature-through (temperature) and CONCEPT:FM-OS.governance.service-writes-fan-level (fan-control)
     MCP tools, with optional logfire/OTEL observability.
     """
     from agent_utilities import (

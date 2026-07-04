@@ -43,22 +43,22 @@ async def _tool_fn(mcp: FastMCP, name: str):
 # --------------------------------------------------------------------------- #
 # Contract / registration tests
 # --------------------------------------------------------------------------- #
-@pytest.mark.concept("FAN-001")
+@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
 async def test_temperature_tool_registers(mcp: FastMCP):
-    """CONCEPT:FAN-001 — the temperature domain registers exactly one tool."""
+    """CONCEPT:FM-OS.governance.service-reads-temperature-through — the temperature domain registers exactly one tool."""
     register_temperature_tools(mcp)
     assert "fan_manager_temperature" in await _tool_names(mcp)
 
 
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 async def test_fan_control_tool_registers(mcp: FastMCP):
-    """CONCEPT:FAN-002 — the fan-control domain registers exactly one tool."""
+    """CONCEPT:FM-OS.governance.service-writes-fan-level — the fan-control domain registers exactly one tool."""
     register_fan_control_tools(mcp)
     assert "fan_manager_fan_control" in await _tool_names(mcp)
 
 
-@pytest.mark.concept("FAN-001")
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 @pytest.mark.parametrize(
     ("register", "tool_name", "valid_action", "params"),
     [
@@ -76,7 +76,7 @@ async def test_action_routing_contract(
 ):
     """Contract: every domain tool routes its documented action to a 200 envelope.
 
-    Exercises both CONCEPT:FAN-001 (temperature) and CONCEPT:FAN-002 (fan-control)
+    Exercises both CONCEPT:FM-OS.governance.service-reads-temperature-through (temperature) and CONCEPT:FM-OS.governance.service-writes-fan-level (fan-control)
     action routing through one parametrized contract.
     """
     register(mcp)
@@ -88,9 +88,9 @@ async def test_action_routing_contract(
 # --------------------------------------------------------------------------- #
 # Happy-path routing tests
 # --------------------------------------------------------------------------- #
-@pytest.mark.concept("FAN-001")
+@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
 async def test_temperature_get_routes(mcp: FastMCP):
-    """CONCEPT:FAN-001 — the 'get' action returns a temperature envelope (mocked)."""
+    """CONCEPT:FM-OS.governance.service-reads-temperature-through — the 'get' action returns a temperature envelope (mocked)."""
     register_temperature_tools(mcp)
     fn = await _tool_fn(mcp, "fan_manager_temperature")
     result = await fn(action="get", params_json="{}", ctx=None)
@@ -98,9 +98,9 @@ async def test_temperature_get_routes(mcp: FastMCP):
     assert result["response"] == 60.0  # hottest mocked core
 
 
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 async def test_fan_control_set_routes(mcp: FastMCP):
-    """CONCEPT:FAN-002 — the 'set' action returns a 200 envelope (ipmitool mocked)."""
+    """CONCEPT:FM-OS.governance.service-writes-fan-level — the 'set' action returns a 200 envelope (ipmitool mocked)."""
     register_fan_control_tools(mcp)
     fn = await _tool_fn(mcp, "fan_manager_fan_control")
     result = await fn(
@@ -112,36 +112,36 @@ async def test_fan_control_set_routes(mcp: FastMCP):
 # --------------------------------------------------------------------------- #
 # Negative / error-path tests
 # --------------------------------------------------------------------------- #
-@pytest.mark.concept("FAN-001")
+@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
 async def test_unknown_temperature_action_raises(mcp: FastMCP):
-    """CONCEPT:FAN-001 — an unknown action is rejected with ValueError."""
+    """CONCEPT:FM-OS.governance.service-reads-temperature-through — an unknown action is rejected with ValueError."""
     register_temperature_tools(mcp)
     fn = await _tool_fn(mcp, "fan_manager_temperature")
     with pytest.raises(ValueError):
         await fn(action="bogus", params_json="{}", ctx=None)
 
 
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 async def test_unknown_fan_action_raises(mcp: FastMCP):
-    """CONCEPT:FAN-002 — an unknown fan-control action is rejected with ValueError."""
+    """CONCEPT:FM-OS.governance.service-writes-fan-level — an unknown fan-control action is rejected with ValueError."""
     register_fan_control_tools(mcp)
     fn = await _tool_fn(mcp, "fan_manager_fan_control")
     with pytest.raises(ValueError):
         await fn(action="bogus", params_json="{}", ctx=None)
 
 
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 async def test_fan_set_requires_fan_level(mcp: FastMCP):
-    """CONCEPT:FAN-002 — 'set' without a fan_level returns a structured error."""
+    """CONCEPT:FM-OS.governance.service-writes-fan-level — 'set' without a fan_level returns a structured error."""
     register_fan_control_tools(mcp)
     fn = await _tool_fn(mcp, "fan_manager_fan_control")
     result = await fn(action="set", params_json="{}", ctx=None)
     assert "error" in result
 
 
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 async def test_fan_set_rejects_non_integer_level(mcp: FastMCP):
-    """CONCEPT:FAN-002 — a non-integer fan_level is rejected, not crashed."""
+    """CONCEPT:FM-OS.governance.service-writes-fan-level — a non-integer fan_level is rejected, not crashed."""
     register_fan_control_tools(mcp)
     fn = await _tool_fn(mcp, "fan_manager_fan_control")
     result = await fn(
@@ -150,9 +150,9 @@ async def test_fan_set_rejects_non_integer_level(mcp: FastMCP):
     assert "error" in result
 
 
-@pytest.mark.concept("FAN-001")
+@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
 async def test_temperature_rejects_malformed_params_json(mcp: FastMCP):
-    """CONCEPT:FAN-001 — malformed params_json yields a structured error envelope."""
+    """CONCEPT:FM-OS.governance.service-reads-temperature-through — malformed params_json yields a structured error envelope."""
     register_temperature_tools(mcp)
     fn = await _tool_fn(mcp, "fan_manager_temperature")
     result = await fn(action="get", params_json="{not json", ctx=None)
@@ -184,7 +184,7 @@ class _FakeRunner:
         return ""
 
 
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 @pytest.mark.parametrize(
     ("temperature", "expected_level"),
     [
@@ -193,7 +193,7 @@ class _FakeRunner:
     ],
 )
 def test_auto_curve_boundaries(temperature: float, expected_level: int):
-    """CONCEPT:FAN-002 — the auto curve clamps to min/max at temp boundaries."""
+    """CONCEPT:FM-OS.governance.service-writes-fan-level — the auto curve clamps to min/max at temp boundaries."""
     runner = _FakeRunner(temperature)
     core.auto_set_fan_speed(
         minimum_fan_speed=5,
@@ -206,19 +206,19 @@ def test_auto_curve_boundaries(temperature: float, expected_level: int):
     assert runner.set_levels[-1] == expected_level
 
 
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 @pytest.mark.parametrize("bad_level", [-1, 101, 250])
 def test_set_fan_rejects_out_of_range(bad_level: int):
-    """CONCEPT:FAN-002 — set_fan rejects out-of-range levels with a 400 envelope."""
+    """CONCEPT:FM-OS.governance.service-writes-fan-level — set_fan rejects out-of-range levels with a 400 envelope."""
     runner = _FakeRunner(60.0)
     result = core.set_fan(bad_level, runner=runner)
     assert result["status"] == 400
 
 
-@pytest.mark.concept("FAN-001")
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 def test_read_curve_write_integration():
-    """Integration: the full CONCEPT:FAN-001 read -> curve -> CONCEPT:FAN-002 write path.
+    """Integration: the full CONCEPT:FM-OS.governance.service-reads-temperature-through read -> curve -> CONCEPT:FM-OS.governance.service-writes-fan-level write path.
 
     Drives ``auto_set_fan_speed`` end-to-end through a single injected runner so a
     real ``sensors``-derived temperature flows into the curve and out to an
@@ -237,9 +237,9 @@ def test_read_curve_write_integration():
     assert 5 <= runner.set_levels[-1] <= 100
 
 
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 def test_auto_failsafe_to_max_on_sensor_error():
-    """CONCEPT:FAN-002 — a temperature read failure fails the fans safe to maximum."""
+    """CONCEPT:FM-OS.governance.service-writes-fan-level — a temperature read failure fails the fans safe to maximum."""
 
     class _BrokenRunner(_FakeRunner):
         def run(self, argv: list[str], *, check: bool = True) -> str:

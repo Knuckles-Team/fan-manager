@@ -1,12 +1,12 @@
 ---
 name: fan-manager-automatic
-description: Use when you need automatic, temperature-driven fan speed control on a Dell PowerEdge server — continuously adjusts fans to a logarithmic curve between configured min/max temperature and fan-speed bounds (CONCEPT:FAN-002).
+description: Use when you need automatic, temperature-driven fan speed control on a Dell PowerEdge server — continuously adjusts fans to a logarithmic curve between configured min/max temperature and fan-speed bounds (CONCEPT:FM-OS.governance.service-writes-fan-level).
 ---
 
 ## Overview
 
 Automatically adjust Dell PowerEdge fan speed based on the current CPU
-temperature (CONCEPT:FAN-001 read → CONCEPT:FAN-002 write). The speed follows a
+temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through read → CONCEPT:FM-OS.governance.service-writes-fan-level write). The speed follows a
 logarithmic curve between the configured minimum/maximum temperature and
 minimum/maximum fan-speed bounds. On a temperature read failure the fans fail
 safe to maximum.

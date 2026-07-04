@@ -1,6 +1,6 @@
 """MCP tools for temperature operations.
 
-CONCEPT:FAN-001 — Temperature (tag ``temperature``)
+CONCEPT:FM-OS.governance.service-reads-temperature-through — Temperature (tag ``temperature``)
 
 Action-routed dynamic tool registration. A single tool per domain accepts an
 ``action`` and a ``params_json`` payload and routes to the real callables in
@@ -32,7 +32,7 @@ def register_temperature_tools(mcp: FastMCP):
             default=None, description="MCP context for progress reporting"
         ),
     ) -> Any:
-        """Read CPU/sensor temperature (CONCEPT:FAN-001).
+        """Read CPU/sensor temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through).
 
         Action-routed methods:
           - ``get``: read the highest current CPU core temperature via ``sensors -j``.

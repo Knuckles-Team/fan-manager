@@ -30,8 +30,8 @@ def _concepts_in_dir(directory: str) -> set[str]:
     return found
 
 
-@pytest.mark.concept("FAN-001")
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 def test_mcp_concepts_are_documented():
     """Each CONCEPT:FAN-* in the MCP tool modules is in docs/concepts.md."""
     tool_concepts = _concepts_in_dir(MCP_DIR)
@@ -45,9 +45,9 @@ def test_mcp_concepts_are_documented():
     )
 
 
-@pytest.mark.concept("FAN-001")
-@pytest.mark.concept("FAN-002")
+@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
+@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
 def test_expected_concepts_present():
     """The two core fan-manager concepts exist in the registry."""
     documented = _concepts_in(CONCEPTS_DOC)
-    assert {"FAN-001", "FAN-002"} <= documented
+    assert {"FM-OS.governance.service-reads-temperature-through", "FM-OS.governance.service-writes-fan-level"} <= documented

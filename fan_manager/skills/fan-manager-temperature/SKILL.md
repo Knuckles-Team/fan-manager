@@ -1,12 +1,12 @@
 ---
 name: fan-manager-temperature
-description: Use when you need to read the current CPU/core temperature of a Dell PowerEdge server via lm-sensors — to check whether the system is running hot or to drive thermal decisions (CONCEPT:FAN-001).
+description: Use when you need to read the current CPU/core temperature of a Dell PowerEdge server via lm-sensors — to check whether the system is running hot or to drive thermal decisions (CONCEPT:FM-OS.governance.service-reads-temperature-through).
 ---
 
 ## Overview
 
 Read the current CPU temperature of a Dell PowerEdge server via `lm-sensors`
-(`sensors -j`) and surface the hottest core (CONCEPT:FAN-001). This is the read
+(`sensors -j`) and surface the hottest core (CONCEPT:FM-OS.governance.service-reads-temperature-through). This is the read
 side of the thermal-management loop; pair it with the control or automatic
 skills to act on the reading.
 

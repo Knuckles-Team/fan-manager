@@ -8,7 +8,7 @@
 - Core Libraries: `agent-utilities`, `fastmcp` (via `agent-utilities[mcp]`), `pydantic-ai`
 - Domain: Dell PowerEdge / IPMI 2.0 control via `ipmitool` + `lm-sensors`. Thermal
   (fan/temperature) runs **local** with no creds; the **IPMI/BMC wrapper**
-  (`CONCEPT:FAN-003..008`: power, sensors, SEL, SoL, BMC LAN/user config, raw) runs
+  (`CONCEPT:FM-OS.governance.power-chassis..008`: power, sensors, SEL, SoL, BMC LAN/user config, raw) runs
   **in-band** (local `/dev/ipmi0`) or **out-of-band** over LAN (`-I lanplus -H -U -P`,
   creds from OpenBao `apps/idrac`).
 - Key principles: Functional patterns, Pydantic for data validation, asynchronous tool execution, action-routed MCP tools.
@@ -25,7 +25,7 @@ two-concept package. The design makes exactly the highest-value seam instead:
   `subprocess` globally.
 - **Service layer (DI):** `fan_manager/services/FanControlService` composes the
   injected `CommandRunner` + runtime config and exposes the temperature
-  (`CONCEPT:FAN-001`) and fan-control (`CONCEPT:FAN-002`) operations. The `Api`
+  (`CONCEPT:FM-OS.governance.service-reads-temperature-through`) and fan-control (`CONCEPT:FM-OS.governance.service-writes-fan-level`) operations. The `Api`
   facade composes this service.
 - **Model layer:** `fan_manager/models.py` holds the Pydantic envelopes.
 
@@ -37,9 +37,9 @@ intentionally *not* added — it would add indirection without value at this siz
 graph TD
     User([User/A2A]) --> Agent[Pydantic AI Agent]
     Agent --> MCP[MCP Server / FastMCP]
-    MCP --> Temp[temperature tool — CONCEPT:FAN-001]
-    MCP --> Fan[fan-control tool — CONCEPT:FAN-002]
-    MCP --> Ipmi[ipmi tools — CONCEPT:FAN-003..008]
+    MCP --> Temp[temperature tool — CONCEPT:FM-OS.governance.service-reads-temperature-through]
+    MCP --> Fan[fan-control tool — CONCEPT:FM-OS.governance.service-writes-fan-level]
+    MCP --> Ipmi[ipmi tools — CONCEPT:FM-OS.governance.power-chassis..008]
     Temp --> Service[FanControlService - DI]
     Fan --> Service
     Service --> Runner[CommandRunner adapter]
@@ -243,7 +243,7 @@ alone).
 Working in parallel with other sessions/worktrees? **Reserve a concept id before you write its `CONCEPT:` marker** so two sessions never collide:
 
 ```bash
-agent-utilities --json concept reserve --ns KG-2   # or a package prefix, e.g. KEY
+agent-utilities --json concept reserve --ns EG-KG.compute.backend   # or a package prefix, e.g. KEY
 ```
 
 Full protocol (ledger, merge=union, reconcile, MCP/REST): <https://knuckles-team.github.io/agent-utilities/concept_coordination/>

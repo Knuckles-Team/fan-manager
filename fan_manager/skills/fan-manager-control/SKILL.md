@@ -1,5 +1,6 @@
 ---
 name: fan-manager-control
+skill_type: skill
 description: Use when you need to manually set a fixed Dell PowerEdge fan speed (0-100) via IPMI — for testing cooling performance, capping acoustic noise, or pinning fans to a known level (CONCEPT:FM-OS.governance.service-writes-fan-level).
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: fan-manager-temperature
+skill_type: skill
 description: Use when you need to read the current CPU/core temperature of a Dell PowerEdge server via lm-sensors — to check whether the system is running hot or to drive thermal decisions (CONCEPT:FM-OS.governance.service-reads-temperature-through).
 ---
 

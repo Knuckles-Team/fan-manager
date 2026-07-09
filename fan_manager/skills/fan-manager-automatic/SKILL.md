@@ -1,5 +1,6 @@
 ---
 name: fan-manager-automatic
+skill_type: skill
 description: Use when you need automatic, temperature-driven fan speed control on a Dell PowerEdge server — continuously adjusts fans to a logarithmic curve between configured min/max temperature and fan-speed bounds (CONCEPT:FM-OS.governance.service-writes-fan-level).
 ---
 

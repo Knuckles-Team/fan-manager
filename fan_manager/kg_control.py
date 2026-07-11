@@ -13,6 +13,17 @@ acts on a policy that a human (or, once ``--apply`` + a conservative envelope is
 the loop itself) has approved. The applied-policy read seam lives in
 :func:`fan_manager.fan_manager.load_fan_policy`.
 
+The pure statistics (``compute_baseline``/``detect_anomaly``/``classify_ambient`` +
+``_percentile``/``_slope``) were the reference implementation for a fleet-wide shared
+primitive, ``agent_utilities.observability.health`` (metric-agnostic: any named signal,
+not just °C — see ``reports/unified-infra-intelligence-plan.md``). This module now
+**consumes** that shared primitive via a guarded import, mapping fan-manager's
+temp/fan-shaped dicts to/from the kernel's generic ``value_key``/``peak_key``/
+``control_key`` shape — dogfooding the extraction. When the installed
+``agent-utilities`` predates the shared module (or is absent), it falls back to the
+original local implementation below, so this package never breaks on an older
+``agent-utilities``.
+
 CONCEPT:FM-OS.control.baseline-learning / .policy-derivation / .anomaly-detection /
 .ambient-correlation.
 """
@@ -27,6 +38,24 @@ import urllib.request
 from typing import Any
 
 logger = logging.getLogger("fan_manager.control")
+
+try:
+    from agent_utilities.observability.health import _percentile as _shared_percentile
+    from agent_utilities.observability.health import _slope as _shared_slope
+    from agent_utilities.observability.health import (
+        compute_baseline as _shared_compute_baseline,
+    )
+    from agent_utilities.observability.health import (
+        correlate as _shared_correlate,
+    )
+    from agent_utilities.observability.health import (
+        detect_anomaly as _shared_detect_anomaly,
+    )
+
+    _HAS_SHARED_HEALTH = True
+except Exception as _e:  # noqa: BLE001 — older/absent agent-utilities falls back to local
+    logger.debug("shared health kernels unavailable, using local fallback: %s", _e)
+    _HAS_SHARED_HEALTH = False
 
 # The curve the DaemonSet ships today (``fan-manager -c 55 -w 80 -s 10 -f 100 -p 24``).
 # Treated as the "currently running" policy when no approved override exists yet.
@@ -47,7 +76,8 @@ SLOW_FLOOR = 5
 
 
 # --------------------------------------------------------------------------- #
-# small numeric helpers (pure, stdlib only)                                    #
+# small numeric helpers (pure, stdlib only) — delegate to the shared kernel     #
+# when available; otherwise the original local implementation.                 #
 # --------------------------------------------------------------------------- #
 def _g(row: dict[str, Any], *keys: str) -> Any:
     """First present, non-None value among ``keys`` — bridges the clean node form
@@ -59,7 +89,7 @@ def _g(row: dict[str, Any], *keys: str) -> Any:
     return None
 
 
-def _percentile(values: list[float], pct: float) -> float | None:
+def _local_percentile(values: list[float], pct: float) -> float | None:
     """Linear-interpolated percentile of ``values`` (``pct`` in 0..100)."""
     if not values:
         return None
@@ -72,7 +102,7 @@ def _percentile(values: list[float], pct: float) -> float | None:
     return float(s[lo] + (s[hi] - s[lo]) * (k - lo))
 
 
-def _slope(xs: list[float], ys: list[float]) -> float | None:
+def _local_slope(xs: list[float], ys: list[float]) -> float | None:
     """Least-squares slope of ``ys`` on ``xs`` (``None`` if degenerate)."""
     n = len(xs)
     if n < 3:
@@ -84,22 +114,27 @@ def _slope(xs: list[float], ys: list[float]) -> float | None:
     return sum((x - mx) * (y - my) for x, y in zip(xs, ys, strict=False)) / denom
 
 
+def _percentile(values: list[float], pct: float) -> float | None:
+    """Linear-interpolated percentile of ``values`` (``pct`` in 0..100)."""
+    if _HAS_SHARED_HEALTH:
+        return _shared_percentile(values, pct)
+    return _local_percentile(values, pct)
+
+
+def _slope(xs: list[float], ys: list[float]) -> float | None:
+    """Least-squares slope of ``ys`` on ``xs`` (``None`` if degenerate)."""
+    if _HAS_SHARED_HEALTH:
+        return _shared_slope(xs, ys)
+    return _local_slope(xs, ys)
+
+
 # --------------------------------------------------------------------------- #
 # Phase 1 — learn baselines                                                    #
 # --------------------------------------------------------------------------- #
-def compute_baseline(
-    trends: list[dict[str, Any]],
-    *,
-    host: str | None = None,
-    min_windows: int = MIN_WINDOWS,
+def _compute_baseline_local(
+    trends: list[dict[str, Any]], *, host: str | None, min_windows: int
 ) -> dict[str, Any] | None:
-    """Distill a host's ``:ThermalTrend`` rows into a :ThermalBaseline (CONCEPT:FM-OS.control.baseline-learning).
-
-    Returns ``None`` when there is too little history to trust. Otherwise a dict with the
-    temperature distribution (``temp_p50`` / ``temp_p95``), the idle↔load envelope, and
-    ``thermal_inertia`` — the |°C per fan-%| slope that says how much thermal margin a fan
-    step actually buys on this box (``None`` when the fan barely moved across the window).
-    """
+    """Original local implementation (fallback when the shared kernel is absent)."""
     avg_t = [
         float(v) for r in trends if (v := _g(r, "avgCelsius", "avg_temp")) is not None
     ]
@@ -133,6 +168,56 @@ def compute_baseline(
         "avg_fan": round(sum(fans) / len(fans), 1) if fans else None,
         "thermal_inertia": inertia,
         "windows": len(avg_t),
+    }
+
+
+def compute_baseline(
+    trends: list[dict[str, Any]],
+    *,
+    host: str | None = None,
+    min_windows: int = MIN_WINDOWS,
+) -> dict[str, Any] | None:
+    """Distill a host's ``:ThermalTrend`` rows into a :ThermalBaseline (CONCEPT:FM-OS.control.baseline-learning).
+
+    Returns ``None`` when there is too little history to trust. Otherwise a dict with the
+    temperature distribution (``temp_p50`` / ``temp_p95``), the idle↔load envelope, and
+    ``thermal_inertia`` — the |°C per fan-%| slope that says how much thermal margin a fan
+    step actually buys on this box (``None`` when the fan barely moved across the window).
+
+    Delegates to the shared ``agent_utilities.observability.health.compute_baseline``
+    kernel (mapping the host's raw ``avg_temp``/``max_temp``/``avg_fan`` trend keys onto
+    the kernel's generic ``value_key``/``peak_key``/``control_key``) when available, and
+    translates the generic result back onto this exact dict shape so every caller
+    (``derive_policy``, ``kg_ingest.ingest_thermal_baseline``, tests) is unaffected.
+    """
+    if not _HAS_SHARED_HEALTH:
+        return _compute_baseline_local(trends, host=host, min_windows=min_windows)
+    normalized = [
+        {
+            "avg_temp": _g(r, "avgCelsius", "avg_temp"),
+            "max_temp": _g(r, "maxCelsius", "max_temp"),
+            "avg_fan": _g(r, "avgFan", "avg_fan"),
+        }
+        for r in trends
+    ]
+    b = _shared_compute_baseline(
+        normalized,
+        value_key="avg_temp",
+        peak_key="max_temp",
+        control_key="avg_fan",
+        min_windows=min_windows,
+    )
+    if b is None:
+        return None
+    return {
+        "host": host,
+        "temp_p50": round(b["p50"], 1),
+        "temp_p95": round(b["p95"], 1),
+        "idle_temp": round(b["min_env"], 1),
+        "load_temp": round(b["max_env"], 1),
+        "avg_fan": round(b["avg_control"], 1) if b["avg_control"] is not None else None,
+        "thermal_inertia": b["inertia"],
+        "windows": b["windows"],
     }
 
 
@@ -206,19 +291,10 @@ def derive_policy(
 # --------------------------------------------------------------------------- #
 # Phase 3 — anomaly detection + cross-host ambient correlation                 #
 # --------------------------------------------------------------------------- #
-def detect_anomaly(
-    recent: list[dict[str, Any]],
-    baseline: dict[str, Any] | None,
-    *,
-    z_thresh: float = 3.0,
+def _detect_anomaly_local(
+    recent: list[dict[str, Any]], baseline: dict[str, Any] | None, *, z_thresh: float
 ) -> dict[str, Any] | None:
-    """Flag a host drifting off its own baseline (CONCEPT:FM-OS.control.anomaly-detection).
-
-    ``above-baseline``: the recent window's avg temp is beyond p95 *and* ``z_thresh`` z-scores
-    above p50 — the early signal of dust / a failing fan / degraded paste. ``cooling-saturated``:
-    fans effectively pinned (≥95%) yet still hotter than the learned load temp. ``None`` when
-    the host is behaving normally.
-    """
+    """Original local implementation (fallback when the shared kernel is absent)."""
     if not baseline or not recent:
         return None
     r_temps = [
@@ -250,6 +326,57 @@ def detect_anomaly(
     }
 
 
+def detect_anomaly(
+    recent: list[dict[str, Any]],
+    baseline: dict[str, Any] | None,
+    *,
+    z_thresh: float = 3.0,
+) -> dict[str, Any] | None:
+    """Flag a host drifting off its own baseline (CONCEPT:FM-OS.control.anomaly-detection).
+
+    ``above-baseline``: the recent window's avg temp is beyond p95 *and* ``z_thresh`` z-scores
+    above p50 — the early signal of dust / a failing fan / degraded paste. ``cooling-saturated``:
+    fans effectively pinned (≥95%) yet still hotter than the learned load temp. ``None`` when
+    the host is behaving normally.
+
+    Delegates to the shared ``agent_utilities.observability.health.detect_anomaly``
+    kernel (its generic ``"saturated"`` kind is remapped to this domain's
+    ``"cooling-saturated"``) when available.
+    """
+    if not baseline:
+        return None
+    if not _HAS_SHARED_HEALTH:
+        return _detect_anomaly_local(recent, baseline, z_thresh=z_thresh)
+    normalized = [
+        {
+            "avg_temp": _g(r, "avgCelsius", "avg_temp"),
+            "avg_fan": _g(r, "avgFan", "avg_fan"),
+        }
+        for r in recent
+    ]
+    shared_baseline = {
+        "p50": baseline["temp_p50"],
+        "p95": baseline["temp_p95"],
+        "max_env": baseline["load_temp"],
+    }
+    a = _shared_detect_anomaly(
+        normalized,
+        shared_baseline,
+        value_key="avg_temp",
+        control_key="avg_fan",
+        z_thresh=z_thresh,
+        saturated_control=95.0,
+    )
+    if a is None:
+        return None
+    return {
+        "kind": "cooling-saturated" if a["kind"] == "saturated" else a["kind"],
+        "zscore": a["zscore"],
+        "observed_c": round(a["observed"], 1),
+        "expected_c": round(a["expected"], 1),
+    }
+
+
 def classify_ambient(
     anomalies_by_host: dict[str, dict[str, Any] | None], total_hosts: int
 ) -> dict[str, dict[str, Any] | None]:
@@ -258,7 +385,18 @@ def classify_ambient(
     If a majority of hosts spike at once it's the room / rack AC, not N independent faults —
     collapse them to one cause so the loop raises one ``ambient`` signal, not a storm. Mutates
     and returns the mapping.
+
+    Delegates to the shared ``agent_utilities.observability.health.correlate`` kernel
+    (this is the ``kind="above-baseline"``, ``systemic_kind="ambient"`` instance of it)
+    when available.
     """
+    if _HAS_SHARED_HEALTH:
+        return _shared_correlate(
+            anomalies_by_host,
+            total_hosts,
+            kind="above-baseline",
+            systemic_kind="ambient",
+        )
     above = [
         h for h, a in anomalies_by_host.items() if a and a["kind"] == "above-baseline"
     ]

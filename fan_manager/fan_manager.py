@@ -11,35 +11,68 @@ import time
 from typing import Any, Protocol, runtime_checkable
 
 
-def _kg_record_thermal_sample(temperature: Any, fan_level: int) -> None:
-    """Best-effort native ingestion of one thermal sample into epistemic-graph.
+# --- per-process (= per-host DaemonSet pod) fan-mode + thermal-trend state ---
+_FAN_MODE = "manual"          # flips to "idrac-auto" if the BMC rejects raw manual control
+_thermal_buf: list = []       # (ts, temp, fan_level) rolling window, distilled periodically
+_thermal_last_flush = [0.0]   # mutable single-cell so the closure can update it
 
-    CONCEPT:AU-KG.ingest.enterprise-source-extractor. Default-on (disable with
-    ``FAN_MANAGER_KG_INGEST=false``); fully guarded so a missing KG stack / unreachable
-    engine is a silent no-op and never disturbs the control loop.
+
+def _kg_record_thermal_sample(temperature: Any, fan_level: int) -> None:
+    """Best-effort thermal telemetry into epistemic-graph — as DECAYING TRENDS, not every ping.
+
+    CONCEPT:AU-KG.ingest.enterprise-source-extractor. Samples accumulate in a small in-memory
+    window and are distilled to ONE :ServerThermalTrend reading per FAN_MANAGER_KG_AGGREGATE_S
+    (default 1h): min/max/avg temp + avg fan + sample count, related to the host. The
+    high-resolution stream stays in Prometheus; the KG keeps lightweight long-term patterns so
+    the DB never bloats. Default-on; disable with ``FAN_MANAGER_KG_INGEST=false``. Fully guarded
+    — a missing/unreachable KG is a silent no-op that never disturbs the control loop.
     """
-    if os.getenv("FAN_MANAGER_KG_INGEST", "true").strip().lower() in {
-        "0",
-        "false",
-        "no",
-    }:
+    if os.getenv("FAN_MANAGER_KG_INGEST", "true").strip().lower() in {"0", "false", "no"}:
         return
+    import time
+
+    try:
+        temp_val = float(temperature) if temperature is not None else None
+    except (TypeError, ValueError):
+        temp_val = None
+    now = time.time()
+    _thermal_buf.append((now, temp_val, fan_level))
+    agg_s = int(os.getenv("FAN_MANAGER_KG_AGGREGATE_S", "3600"))
+    # Accumulate; only distill when the window elapses (or a hard cap guards memory).
+    if now - _thermal_last_flush[0] < agg_s and len(_thermal_buf) < 5000:
+        return
+    temps = [t for _, t, _ in _thermal_buf if t is not None]
+    fans = [f for _, _, f in _thermal_buf]
+    n = len(_thermal_buf)
+    _thermal_buf.clear()
+    _thermal_last_flush[0] = now
+    if not temps:
+        return
+    trend = {
+        "min_temp": min(temps),
+        "max_temp": max(temps),
+        "avg_temp": round(sum(temps) / len(temps), 1),
+        "avg_fan": round(sum(fans) / len(fans), 1) if fans else None,
+        "fan_mode": _FAN_MODE,
+        "samples": n,
+        "window_s": agg_s,
+    }
+    logger = logging.getLogger("FanManager")
     try:
         from fan_manager.kg_ingest import ingest_temperature_readings
 
         ingest_temperature_readings(
-            [
-                {
-                    "response": temperature,
-                    "command": "sensors -j",
-                    "status": 200,
-                    "fan_level": fan_level,
-                }
-            ],
+            [{"response": trend, "command": "thermal-trend", "status": 200,
+              "fan_level": trend["avg_fan"], **trend}],
             host=os.getenv("FAN_MANAGER_HOST") or None,
         )
+        logger.info(
+            "KG thermal trend: avg=%s max=%s min=%s avg_fan=%s mode=%s over %d samples",
+            trend["avg_temp"], trend["max_temp"], trend["min_temp"],
+            trend["avg_fan"], _FAN_MODE, n,
+        )
     except Exception as e:  # noqa: BLE001 — ingestion is best-effort, never fatal
-        logging.getLogger("FanManager").debug("KG ingest skipped: %s", e)
+        logger.debug("KG trend ingest skipped: %s", e)
 
 
 @runtime_checkable
@@ -189,21 +222,24 @@ def set_fan(fan_level: int, runner: CommandRunner | None = None) -> dict[str, An
     runner = runner or _DEFAULT_RUNNER
     logger = logging.getLogger("FanManager")
     cmd2_str = "ipmitool raw"
+    global _FAN_MODE
     try:
         if not (0 <= fan_level <= 100):
             raise ValueError(f"Fan level {fan_level} is out of range (0-100)")
         ipmitool_bin = runner.which("ipmitool")
         if ipmitool_bin is None:
             raise RuntimeError("'ipmitool' executable not found on PATH")
+        # The BMC already told us it won't accept raw manual control here — iDRAC's automatic
+        # fan curve owns cooling. Don't hammer it every cycle; just report the mode.
+        if _FAN_MODE == "idrac-auto":
+            return {"response": None, "command": "idrac-auto (bmc-managed)",
+                    "status": 200, "mode": "idrac-auto"}
         # fan_level is validated to be an int in [0, 100] above; hex() yields a
-        # safe "0x.." token. argv is fixed and shell=False, so no injection is
-        # possible despite the BMC raw command.
-        cmd1 = [ipmitool_bin, "raw", "0x30", "0x30", "0x01", "0x00"]
+        # safe "0x.." token. argv is fixed and shell=False, so no injection is possible.
+        cmd1 = [ipmitool_bin, "raw", "0x30", "0x30", "0x01", "0x00"]  # enable manual control
         cmd2 = [ipmitool_bin, "raw", "0x30", "0x30", "0x02", "0xff", hex(fan_level)]
         cmd2_str = " ".join(cmd2)
-        # Enable manual fan control.
         runner.run(cmd1, check=True)
-        # Apply the requested fan level.
         runner.run(cmd2, check=True)
         logger.info(f"Set fan level to {fan_level}")
         return {
@@ -220,13 +256,28 @@ def set_fan(fan_level: int, runner: CommandRunner | None = None) -> dict[str, An
             "error": str(e),
         }
     except Exception as e:
-        logger.error(f"Failed to set fan level: {str(e)}")
-        return {
-            "response": None,
-            "command": cmd2_str,
-            "status": 500,
-            "error": str(e),
-        }
+        # SMART fallback: some BMC firmware (e.g. the R510's older iDRAC) rejects the raw
+        # manual-control command. Rather than erroring EVERY cycle, enable iDRAC AUTOMATIC
+        # fan management ONCE and stop retrying raw control on this host — safe + quiet.
+        try:
+            auto_bin = runner.which("ipmitool") or "ipmitool"
+            runner.run([auto_bin, "raw", "0x30", "0x30", "0x01", "0x01"], check=True)
+            _FAN_MODE = "idrac-auto"
+            logger.warning(
+                "BMC rejected raw manual fan control (%s) — enabled iDRAC AUTOMATIC fan "
+                "management; not retrying raw control on this host.",
+                e,
+            )
+            return {"response": None, "command": "0x30 0x30 0x01 0x01",
+                    "status": 200, "mode": "idrac-auto"}
+        except Exception as e2:
+            logger.error(f"Failed to set fan level and to enable iDRAC-auto: {e2}")
+            return {
+                "response": None,
+                "command": cmd2_str,
+                "status": 500,
+                "error": str(e2),
+            }
 
 
 def auto_set_fan_speed(

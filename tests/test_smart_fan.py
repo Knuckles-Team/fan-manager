@@ -56,8 +56,8 @@ def test_kg_thermal_trend_aggregates_not_per_sample(monkeypatch):
     import fan_manager.kg_ingest as kgi
 
     captured: list = []
-    monkeypatch.setattr(kgi, "ingest_temperature_readings",
-                        lambda readings, host=None: captured.append(readings))
+    monkeypatch.setattr(kgi, "ingest_thermal_trend",
+                        lambda trend, host=None: captured.append(trend))
     monkeypatch.setenv("FAN_MANAGER_KG_INGEST", "true")
     monkeypatch.setenv("FAN_MANAGER_KG_AGGREGATE_S", "3600")
     monkeypatch.setattr(fm, "_FAN_MODE", "manual")
@@ -72,7 +72,7 @@ def test_kg_thermal_trend_aggregates_not_per_sample(monkeypatch):
     fm._thermal_last_flush[0] = 0.0      # window elapsed -> distill on the next sample
     fm._kg_record_thermal_sample(80.0, 40)
     assert len(captured) == 1            # exactly ONE trend written
-    trend = captured[0][0]["response"]
+    trend = captured[0]
     assert trend["min_temp"] == 50.0 and trend["max_temp"] == 80.0
     assert trend["avg_temp"] == 65.0 and trend["samples"] == 4
     assert fm._thermal_buf == []         # window reset after distill

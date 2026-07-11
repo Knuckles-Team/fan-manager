@@ -216,7 +216,7 @@ def _host_and_controller(
     hid = _host_id(host)
     cid = _controller_id(host)
     label = host or "localhost"
-    entities = [
+    entities: list[dict[str, Any]] = [
         {"id": hid, "type": "ManagedHost", "name": label, "externalToolId": label},
         {
             "id": cid,
@@ -226,7 +226,7 @@ def _host_and_controller(
             "externalToolId": label,
         },
     ]
-    rels = [{"source": cid, "target": hid, "type": "controlsHost"}]
+    rels: list[dict[str, Any]] = [{"source": cid, "target": hid, "type": "controlsHost"}]
     return entities, rels
 
 
@@ -367,6 +367,188 @@ def ingest_sensor_readings(
     if len(entities) <= 2:  # only the host/controller scaffold — no real samples
         return None
     return ingest_entities(entities, relationships, client=client, graph=graph)
+
+
+def _engine() -> Any | None:
+    """Return a live :class:`GraphComputeEngine` (for reads) or ``None`` when unavailable."""
+    try:
+        from agent_utilities.knowledge_graph.core.graph_compute import (
+            GraphComputeEngine,
+        )
+
+        return GraphComputeEngine()
+    except Exception as e:  # noqa: BLE001 — KG stack absent / engine unreachable
+        logger.debug("KG read unavailable: %s", e)
+        return None
+
+
+def _parse_ts(value: Any) -> float | None:
+    """Parse an ``observedAt`` ISO-8601 (``...Z``) timestamp into epoch seconds."""
+    if not value:
+        return None
+    try:
+        return time.mktime(time.strptime(str(value), "%Y-%m-%dT%H:%M:%SZ"))
+    except (TypeError, ValueError):
+        return None
+
+
+def ingest_thermal_trend(
+    trend: dict[str, Any],
+    *,
+    host: str | None = None,
+    client: Any | None = None,
+    graph: str | None = None,
+) -> dict[str, int] | None:
+    """Write ONE distilled hourly window as a clean, numeric ``:ThermalTrend`` node.
+
+    Unlike a raw :TemperatureReading, this keeps min/avg/max °C + avg fan + sample count as
+    first-class numeric fields (plus ``host``/``observedAt``) so the derivation loop
+    (:mod:`fan_manager.kg_control`) can read them straight back via ``get_nodes_by_label``.
+    ``trend`` uses the in-loop keys: ``min_temp``/``max_temp``/``avg_temp``/``avg_fan``/
+    ``fan_mode``/``samples``/``window_s``.
+    """
+    at = trend.get("observed_at") or _now()
+    tid = f"fan:trend:{host or 'localhost'}:{at}"
+    entities, relationships = _host_and_controller(host)
+    entities.append(
+        {
+            "id": tid,
+            "type": "ThermalTrend",
+            "host": host or "localhost",
+            "avgCelsius": trend.get("avg_temp"),
+            "minCelsius": trend.get("min_temp"),
+            "maxCelsius": trend.get("max_temp"),
+            "avgFan": trend.get("avg_fan"),
+            "fanMode": trend.get("fan_mode"),
+            "samples": trend.get("samples"),
+            "windowS": trend.get("window_s"),
+            "observedAt": at,
+        }
+    )
+    relationships.append(
+        {"source": tid, "target": _host_id(host), "type": "readingForHost"}
+    )
+    return ingest_entities(entities, relationships, client=client, graph=graph)
+
+
+def read_thermal_trends(
+    host: str | None,
+    *,
+    days: int = 14,
+    limit: int = 0,
+    engine: Any | None = None,
+) -> list[dict[str, Any]]:
+    """Read a host's recent ``:ThermalTrend`` rows (props dicts), oldest→newest.
+
+    Best-effort: returns ``[]`` with no reachable engine. Filters to ``host`` and the last
+    ``days``; the derivation loop reasons over these purely in Python.
+    """
+    eng = engine or _engine()
+    if eng is None:
+        return []
+    try:
+        rows = eng.get_nodes_by_label("ThermalTrend", limit) or []
+    except Exception as e:  # noqa: BLE001 — read is best-effort
+        logger.debug("KG read: get_nodes_by_label failed: %s", e)
+        return []
+    cutoff = time.time() - days * 86400
+    out: list[dict[str, Any]] = []
+    for _id, props in rows:
+        if not isinstance(props, dict):
+            continue
+        if host and props.get("host") not in (host, None):
+            continue
+        ts = _parse_ts(props.get("observedAt"))
+        if ts is not None and ts < cutoff:
+            continue
+        out.append(props)
+    out.sort(key=lambda p: str(p.get("observedAt") or ""))
+    return out
+
+
+def ingest_thermal_baseline(
+    baseline: dict[str, Any],
+    *,
+    host: str | None = None,
+    client: Any | None = None,
+    graph: str | None = None,
+) -> dict[str, int] | None:
+    """Write a learned :ThermalBaseline node (one per host, overwritten each pass)."""
+    hid = _host_id(host)
+    bid = f"fan:baseline:{host or 'localhost'}"
+    entities = [
+        {
+            "id": bid,
+            "type": "ThermalBaseline",
+            "host": host or "localhost",
+            "tempP50": baseline.get("temp_p50"),
+            "tempP95": baseline.get("temp_p95"),
+            "idleTemp": baseline.get("idle_temp"),
+            "loadTemp": baseline.get("load_temp"),
+            "avgFan": baseline.get("avg_fan"),
+            "thermalInertia": baseline.get("thermal_inertia"),
+            "windows": baseline.get("windows"),
+            "computedAt": _now(),
+        }
+    ]
+    rels = [{"source": bid, "target": hid, "type": "baselineForHost"}]
+    return ingest_entities(entities, rels, client=client, graph=graph)
+
+
+def ingest_fan_policy(
+    policy: dict[str, Any],
+    *,
+    host: str | None = None,
+    client: Any | None = None,
+    graph: str | None = None,
+) -> dict[str, int] | None:
+    """Write a recommended/approved :FanControlPolicy node for a host."""
+    hid = _host_id(host)
+    pid = f"fan:policy:{host or 'localhost'}"
+    entities = [
+        {
+            "id": pid,
+            "type": "FanControlPolicy",
+            "host": host or "localhost",
+            "minTemperature": policy.get("cold"),
+            "maxTemperature": policy.get("warm"),
+            "minFanSpeed": policy.get("slow"),
+            "maxFanSpeed": policy.get("fast"),
+            "pollRate": policy.get("poll"),
+            "approved": bool(policy.get("approved")),
+            "rationale": policy.get("rationale"),
+            "derivedAt": _now(),
+        }
+    ]
+    rels = [{"source": hid, "target": pid, "type": "governedByPolicy"}]
+    return ingest_entities(entities, rels, client=client, graph=graph)
+
+
+def ingest_thermal_anomaly(
+    anomaly: dict[str, Any],
+    *,
+    host: str | None = None,
+    client: Any | None = None,
+    graph: str | None = None,
+) -> dict[str, int] | None:
+    """Write a :ThermalAnomaly node (a host off its baseline) linked to the affected host."""
+    hid = _host_id(host)
+    at = _now()
+    aid = f"fan:anomaly:{host or 'localhost'}:{at}"
+    entities = [
+        {
+            "id": aid,
+            "type": "ThermalAnomaly",
+            "host": host or "localhost",
+            "anomalyKind": anomaly.get("kind"),
+            "zScore": anomaly.get("zscore"),
+            "celsius": anomaly.get("observed_c"),
+            "expectedCelsius": anomaly.get("expected_c"),
+            "observedAt": at,
+        }
+    ]
+    rels = [{"source": aid, "target": hid, "type": "affectsHost"}]
+    return ingest_entities(entities, rels, client=client, graph=graph)
 
 
 def _classify_sensor(name: str, unit: str | None) -> str:

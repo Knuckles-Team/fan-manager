@@ -33,6 +33,7 @@ test = ["pytest-xdist>=3.6.0", "pytest", "pytest-asyncio", "pytest-cov"]
 fan-manager = "fan_manager.fan_manager:fan_manager"
 fan-manager-mcp = "fan_manager.mcp_server:mcp_server"
 fan-manager-agent = "fan_manager.agent_server:agent_server"
+fan-manager-control = "fan_manager.kg_control:main"
 
 [project.entry-points."agent_utilities.skill_providers"]
 fan-manager = "fan_manager.skills"

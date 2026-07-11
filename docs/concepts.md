@@ -18,6 +18,11 @@
 | `CONCEPT:FM-OS.governance.serial-over-lan` | Serial-over-LAN | `ipmi-console` | SoL console status/teardown (`sol info/deactivate`); live `sol activate` recipe surfaced for interactive use. |
 | `CONCEPT:FM-OS.config.bmc-config-lan-user` | BMC Configuration | `ipmi-bmc` | BMC LAN (`lan print/set`), user (`user list/set_password/enable/disable`), and management-controller (`mc info/reset/selftest`) ops. |
 | `CONCEPT:FM-OS.governance.raw` | Raw IPMI | `ipmi-raw` | Send raw/vendor IPMI command bytes (`raw 0x.. ..`) for advanced control. |
+| `CONCEPT:FM-OS.control.baseline-learning` | Baseline Learning | `kg-control` | Distill a host's `:ThermalTrend` history into a `:ThermalBaseline` (temp p50/p95, idle/load envelope, thermal inertia). Pure percentile + least-squares stats, no ML. |
+| `CONCEPT:FM-OS.control.policy-derivation` | Policy Derivation | `kg-control` | Recommend a per-host `:FanControlPolicy` from a baseline — quieter where there's headroom, earlier ramp where there isn't — bounded by the safety ceiling; report-only unless envelope-approved. |
+| `CONCEPT:FM-OS.control.anomaly-detection` | Anomaly Detection | `kg-control` | Flag a host drifting off its baseline (above-baseline / cooling-saturated) via z-score → `:ThermalAnomaly` into the alert/remediation loop. |
+| `CONCEPT:FM-OS.control.ambient-correlation` | Ambient Correlation | `kg-control` | Collapse simultaneous multi-host spikes into one `ambient` cause (rack/room cooling) instead of N independent alerts. |
+| `CONCEPT:FM-OS.control.policy-source-seam` | Policy Source Seam | `kg-control` | The control loop's ONLY write path to fan behaviour: `load_fan_policy` overlays an approved, clamped `:FanControlPolicy` (mounted JSON/ConfigMap) on the CLI curve, hot-reloaded each refresh. |
 
 ## Cross-Project References (from agent-utilities)
 

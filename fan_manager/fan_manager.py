@@ -10,11 +10,10 @@ import sys
 import time
 from typing import Any, Protocol, runtime_checkable
 
-
 # --- per-process (= per-host DaemonSet pod) fan-mode + thermal-trend state ---
-_FAN_MODE = "manual"          # flips to "idrac-auto" if the BMC rejects raw manual control
-_thermal_buf: list = []       # (ts, temp, fan_level) rolling window, distilled periodically
-_thermal_last_flush = [0.0]   # mutable single-cell so the closure can update it
+_FAN_MODE = "manual"  # flips to "idrac-auto" if the BMC rejects raw manual control
+_thermal_buf: list = []  # (ts, temp, fan_level) rolling window, distilled periodically
+_thermal_last_flush = [0.0]  # mutable single-cell so the closure can update it
 
 
 def _kg_record_thermal_sample(temperature: Any, fan_level: int) -> None:
@@ -27,7 +26,11 @@ def _kg_record_thermal_sample(temperature: Any, fan_level: int) -> None:
     the DB never bloats. Default-on; disable with ``FAN_MANAGER_KG_INGEST=false``. Fully guarded
     — a missing/unreachable KG is a silent no-op that never disturbs the control loop.
     """
-    if os.getenv("FAN_MANAGER_KG_INGEST", "true").strip().lower() in {"0", "false", "no"}:
+    if os.getenv("FAN_MANAGER_KG_INGEST", "true").strip().lower() in {
+        "0",
+        "false",
+        "no",
+    }:
         return
     import time
 
@@ -59,17 +62,19 @@ def _kg_record_thermal_sample(temperature: Any, fan_level: int) -> None:
     }
     logger = logging.getLogger("FanManager")
     try:
-        from fan_manager.kg_ingest import ingest_temperature_readings
+        from fan_manager.kg_ingest import ingest_thermal_trend
 
-        ingest_temperature_readings(
-            [{"response": trend, "command": "thermal-trend", "status": 200,
-              "fan_level": trend["avg_fan"], **trend}],
-            host=os.getenv("FAN_MANAGER_HOST") or None,
-        )
+        # Clean, numeric :ThermalTrend node so the derivation loop (fan_manager.kg_control)
+        # can read min/avg/max °C + avg fan straight back for baseline learning.
+        ingest_thermal_trend(trend, host=os.getenv("FAN_MANAGER_HOST") or None)
         logger.info(
             "KG thermal trend: avg=%s max=%s min=%s avg_fan=%s mode=%s over %d samples",
-            trend["avg_temp"], trend["max_temp"], trend["min_temp"],
-            trend["avg_fan"], _FAN_MODE, n,
+            trend["avg_temp"],
+            trend["max_temp"],
+            trend["min_temp"],
+            trend["avg_fan"],
+            _FAN_MODE,
+            n,
         )
     except Exception as e:  # noqa: BLE001 — ingestion is best-effort, never fatal
         logger.debug("KG trend ingest skipped: %s", e)
@@ -232,11 +237,22 @@ def set_fan(fan_level: int, runner: CommandRunner | None = None) -> dict[str, An
         # The BMC already told us it won't accept raw manual control here — iDRAC's automatic
         # fan curve owns cooling. Don't hammer it every cycle; just report the mode.
         if _FAN_MODE == "idrac-auto":
-            return {"response": None, "command": "idrac-auto (bmc-managed)",
-                    "status": 200, "mode": "idrac-auto"}
+            return {
+                "response": None,
+                "command": "idrac-auto (bmc-managed)",
+                "status": 200,
+                "mode": "idrac-auto",
+            }
         # fan_level is validated to be an int in [0, 100] above; hex() yields a
         # safe "0x.." token. argv is fixed and shell=False, so no injection is possible.
-        cmd1 = [ipmitool_bin, "raw", "0x30", "0x30", "0x01", "0x00"]  # enable manual control
+        cmd1 = [
+            ipmitool_bin,
+            "raw",
+            "0x30",
+            "0x30",
+            "0x01",
+            "0x00",
+        ]  # enable manual control
         cmd2 = [ipmitool_bin, "raw", "0x30", "0x30", "0x02", "0xff", hex(fan_level)]
         cmd2_str = " ".join(cmd2)
         runner.run(cmd1, check=True)
@@ -268,8 +284,12 @@ def set_fan(fan_level: int, runner: CommandRunner | None = None) -> dict[str, An
                 "management; not retrying raw control on this host.",
                 e,
             )
-            return {"response": None, "command": "0x30 0x30 0x01 0x01",
-                    "status": 200, "mode": "idrac-auto"}
+            return {
+                "response": None,
+                "command": "0x30 0x30 0x01 0x01",
+                "status": 200,
+                "mode": "idrac-auto",
+            }
         except Exception as e2:
             logger.error(f"Failed to set fan level and to enable iDRAC-auto: {e2}")
             return {
@@ -334,6 +354,67 @@ def auto_set_fan_speed(
     _kg_record_thermal_sample(cpu_temperature, fan_level)
 
 
+def _clamp(value: Any, lo: int, hi: int, fallback: int) -> int:
+    """Coerce ``value`` to an int within ``[lo, hi]``; ``fallback`` if it isn't a number."""
+    try:
+        return max(lo, min(hi, int(round(float(value)))))
+    except (TypeError, ValueError):
+        return fallback
+
+
+def load_fan_policy(
+    defaults: dict[str, Any], host: str | None = None
+) -> dict[str, Any]:
+    """Phase 2 control seam: overlay an *approved* per-host FanPolicy on the CLI ``defaults``.
+
+    Reads ``FAN_MANAGER_POLICY_FILE`` — a JSON map ``{"<host>": {cold,warm,slow,fast,poll,
+    approved}, "*": {...}}`` (e.g. a mounted ConfigMap the epistemic-graph derivation loop
+    writes). Only an ``approved`` entry is applied; every value is clamped and an invalid
+    curve (``cold>=warm`` / ``slow>=fast``) falls back to ``defaults``. Missing file / bad
+    JSON / no host match ⇒ ``defaults`` unchanged — the fail-safe curve always wins. This is
+    the ONLY place a KG-derived policy can change fan behaviour, and it can only ever tune
+    within these bounds.
+    """
+    path = os.getenv("FAN_MANAGER_POLICY_FILE")
+    if not path or not os.path.exists(path):
+        return defaults
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception:  # noqa: BLE001 — unreadable/invalid policy file → safe fallback
+        return defaults
+    host = host or os.getenv("FAN_MANAGER_HOST") or os.uname().nodename
+    pol = data.get(host) or data.get("*") or {}
+    if not isinstance(pol, dict) or not pol.get("approved"):
+        return defaults
+    cold = _clamp(pol.get("cold"), 40, 90, int(defaults["minimum_temperature"]))
+    warm = _clamp(pol.get("warm"), 40, 90, int(defaults["maximum_temperature"]))
+    slow = _clamp(pol.get("slow"), 0, 100, int(defaults["minimum_fan_speed"]))
+    fast = _clamp(pol.get("fast"), 0, 100, int(defaults["maximum_fan_speed"]))
+    if cold >= warm or slow >= fast:  # incoherent curve — never apply it
+        return defaults
+    out = dict(defaults)
+    out.update(
+        minimum_temperature=cold,
+        maximum_temperature=warm,
+        minimum_fan_speed=slow,
+        maximum_fan_speed=fast,
+    )
+    if pol.get("poll") is not None:
+        out["temperature_poll_rate"] = _clamp(
+            pol.get("poll"), 1, 300, int(defaults["temperature_poll_rate"])
+        )
+    logging.getLogger("FanManager").info(
+        "Applied KG-approved fan policy for %s: cold=%s warm=%s slow=%s fast=%s",
+        host,
+        cold,
+        warm,
+        slow,
+        fast,
+    )
+    return out
+
+
 def run_service(
     temperature_poll_rate: int = 24,
     minimum_fan_speed: int | float = 5,
@@ -347,21 +428,37 @@ def run_service(
 
     Each tick re-runs :func:`auto_set_fan_speed` (CONCEPT:FM-OS.governance.service-reads-temperature-through read +
     CONCEPT:FM-OS.governance.service-writes-fan-level write) through the injected :class:`CommandRunner`, then
-    sleeps for ``temperature_poll_rate`` seconds.
+    sleeps for the active poll rate. Every ``FAN_MANAGER_POLICY_REFRESH`` ticks (default 20)
+    the curve is re-read via :func:`load_fan_policy`, so an epistemic-graph-approved policy
+    hot-reloads without restarting the pod (CONCEPT:FM-OS.control.policy-source-seam).
     """
     runner = runner or _DEFAULT_RUNNER
     logger = logging.getLogger("FanManager")
     logger.info("Starting fan manager service")
+    base = {
+        "temperature_poll_rate": temperature_poll_rate,
+        "minimum_fan_speed": minimum_fan_speed,
+        "maximum_fan_speed": maximum_fan_speed,
+        "minimum_temperature": minimum_temperature,
+        "maximum_temperature": maximum_temperature,
+        "temperature_power": temperature_power,
+    }
+    refresh = _clamp(os.getenv("FAN_MANAGER_POLICY_REFRESH", "20"), 0, 100000, 20)
+    curve = load_fan_policy(base)
+    tick = 0
     while True:
+        if refresh and tick % refresh == 0:
+            curve = load_fan_policy(base)
         auto_set_fan_speed(
-            minimum_fan_speed=minimum_fan_speed,
-            maximum_fan_speed=maximum_fan_speed,
-            minimum_temperature=minimum_temperature,
-            maximum_temperature=maximum_temperature,
-            temperature_power=temperature_power,
+            minimum_fan_speed=curve["minimum_fan_speed"],
+            maximum_fan_speed=curve["maximum_fan_speed"],
+            minimum_temperature=curve["minimum_temperature"],
+            maximum_temperature=curve["maximum_temperature"],
+            temperature_power=curve["temperature_power"],
             runner=runner,
         )
-        time.sleep(temperature_poll_rate)
+        time.sleep(curve["temperature_poll_rate"])
+        tick += 1
 
 
 def usage():

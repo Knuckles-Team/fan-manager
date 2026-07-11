@@ -19,7 +19,7 @@
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/fan-manager)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/fan-manager)
 
-*Version: 1.5.0*
+*Version: 1.6.1*
 
 > **Documentation** — Installation, deployment, and usage across the CLI and MCP
 > interfaces, plus the integrated A2A agent server, are maintained in the
@@ -147,8 +147,17 @@ context window. Configure filtering via:
         "MCP_TOOL_MODE": "condensed",
         "ENABLE_DELEGATION": "False",
         "FAN_CONTROLTOOL": "True",
+        "FAN_MANAGER_CURVE": "",
+        "FAN_MANAGER_HOST": "",
+        "FAN_MANAGER_HOSTS": "r510,r710,r820,rw710",
+        "FAN_MANAGER_KG_AGGREGATE_S": "3600",
+        "FAN_MANAGER_KG_INGEST": "true",
+        "FAN_MANAGER_NOTIFY_URL": "",
+        "FAN_MANAGER_POLICY_FILE": "/policy/fan-policy.json",
+        "FAN_MANAGER_POLICY_REFRESH": "20",
         "IPMITOOL": "True",
         "IPMITOOL_PATH": "ipmitool",
+        "KGTOOL": "True",
         "SENSORS_PATH": "sensors",
         "TEMPERATURETOOL": "True"
       }
@@ -180,8 +189,17 @@ context window. Configure filtering via:
         "MCP_TOOL_MODE": "condensed",
         "ENABLE_DELEGATION": "False",
         "FAN_CONTROLTOOL": "True",
+        "FAN_MANAGER_CURVE": "",
+        "FAN_MANAGER_HOST": "",
+        "FAN_MANAGER_HOSTS": "r510,r710,r820,rw710",
+        "FAN_MANAGER_KG_AGGREGATE_S": "3600",
+        "FAN_MANAGER_KG_INGEST": "true",
+        "FAN_MANAGER_NOTIFY_URL": "",
+        "FAN_MANAGER_POLICY_FILE": "/policy/fan-policy.json",
+        "FAN_MANAGER_POLICY_REFRESH": "20",
         "IPMITOOL": "True",
         "IPMITOOL_PATH": "ipmitool",
+        "KGTOOL": "True",
         "SENSORS_PATH": "sensors",
         "TEMPERATURETOOL": "True"
       }
@@ -214,8 +232,17 @@ docker run -d \
   -e MCP_TOOL_MODE=condensed \
   -e ENABLE_DELEGATION=False \
   -e FAN_CONTROLTOOL=True \
+  -e FAN_MANAGER_CURVE="" \
+  -e FAN_MANAGER_HOST="" \
+  -e FAN_MANAGER_HOSTS=r510,r710,r820,rw710 \
+  -e FAN_MANAGER_KG_AGGREGATE_S=3600 \
+  -e FAN_MANAGER_KG_INGEST=true \
+  -e FAN_MANAGER_NOTIFY_URL="" \
+  -e FAN_MANAGER_POLICY_FILE=/policy/fan-policy.json \
+  -e FAN_MANAGER_POLICY_REFRESH=20 \
   -e IPMITOOL=True \
   -e IPMITOOL_PATH=ipmitool \
+  -e KGTOOL=True \
   -e SENSORS_PATH=sensors \
   -e TEMPERATURETOOL=True \
   knucklessg1/fan-manager:mcp
@@ -272,9 +299,18 @@ Interface alongside the MCP server. See
 | `TRANSPORT` | `stdio` | options: stdio, streamable-http, sse |
 | `AUTH_TYPE` | `none` | auth strategy for the agent-utilities MCP factory |
 | `FASTMCP_LOG_LEVEL` | `INFO` |  |
-| `TEMPERATURETOOL` | `True` | register the temperature tool domain (CONCEPT:FM-OS.governance.service-reads-temperature-through) |
-| `FAN_CONTROLTOOL` | `True` | register the fan-control tool domain (CONCEPT:FM-OS.governance.service-writes-fan-level) |
-| `IPMITOOL` | `True` | register the full IPMI/BMC tool domain (CONCEPT:FM-OS.governance.power-chassis..008) |
+| `TEMPERATURETOOL` | `True` | register the temperature tool domain |
+| `FAN_CONTROLTOOL` | `True` | register the fan-control tool domain |
+| `IPMITOOL` | `True` | register the full IPMI/BMC tool domain |
+| `KGTOOL` | `True` | register the native KG ingestion tool (fan_ingest_telemetry) |
+| `FAN_MANAGER_KG_INGEST` | `true` | default-on best-effort thermal-sample ingestion in the control loop |
+| `FAN_MANAGER_KG_AGGREGATE_S` | `3600` | window (s) over which samples distill to ONE :ThermalTrend node |
+| `FAN_MANAGER_HOST` | — | optional host/BMC label stamped on ingested :ManagedHost provenance |
+| `FAN_MANAGER_HOSTS` | `r510,r710,r820,rw710` | hosts the derivation pass learns/recommends over |
+| `FAN_MANAGER_CURVE` | — | JSON override of the "current" curve, e.g. {"cold":55,"warm":80,"slow":10,"fast":100,"poll":24} |
+| `FAN_MANAGER_NOTIFY_URL` | — | best-effort webhook for thermal-anomaly notifications (e.g. the alert-bridge) |
+| `FAN_MANAGER_POLICY_FILE` | `/policy/fan-policy.json` | mounted JSON of approved per-host policies the control loop applies |
+| `FAN_MANAGER_POLICY_REFRESH` | `20` | re-read the approved policy every N control-loop ticks (0 = never) |
 | `IPMITOOL_PATH` | `ipmitool` | Fan Manager drives the host's BMC and lm-sensors locally. |
 | `SENSORS_PATH` | `sensors` |  |
 | `ENABLE_OTEL` | `True` |  |
@@ -296,9 +332,11 @@ Interface alongside the MCP server. See
 | `MCP_DISABLED_TOOLS` | — | Comma-separated tool deny-list |
 | `MCP_ENABLED_TAGS` | — | Comma-separated tag allow-list |
 | `MCP_DISABLED_TAGS` | — | Comma-separated tag deny-list |
-| `MCP_CLIENT_AUTH` | — | Outbound MCP auth (`oidc-client-credentials` for fleet calls) |
+| `MCP_CLIENT_AUTH` | — | Outbound MCP child auth: `oidc-client-credentials` | `basic` | `none` |
 | `OIDC_CLIENT_ID` | — | OIDC client id (service-account auth) |
 | `OIDC_CLIENT_SECRET` | — | OIDC client secret (service-account auth) |
+| `MCP_BASIC_AUTH_USERNAME` | — | HTTP Basic username (`MCP_CLIENT_AUTH=basic`) |
+| `MCP_BASIC_AUTH_PASSWORD` | — | HTTP Basic password (`MCP_CLIENT_AUTH=basic`) |
 | `DEBUG` | `False` | Verbose logging |
 | `PYTHONUNBUFFERED` | `1` | Unbuffered stdout (recommended in containers) |
 | `MCP_URL` | `http://localhost:8000/mcp` | URL of the MCP server the agent connects to |
@@ -306,7 +344,7 @@ Interface alongside the MCP server. See
 | `MODEL_ID` | `gpt-4o` | Model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
-_18 package + 14 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
+_28 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
 
 

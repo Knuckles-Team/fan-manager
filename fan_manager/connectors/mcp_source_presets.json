@@ -2,13 +2,12 @@
   "_comment": "Tier-1 mcp_tool source presets for fan-manager (AU-KG.ingest.mcp-tool-connector). Fan Manager's primary native ingestion is the direct-push MCP tool 'fan_ingest_telemetry' (kg_ingest.py), which writes :TemperatureReading/:SensorReading timeseries nodes straight into the engine. This declarative preset is the secondary source-sync leg: it lists the live IPMI SDR sensor rows via the fan-manager MCP server and mirrors them as sensor-telemetry documents. Contributed presets win over the central MCP_TOOL_PRESETS.",
   "fan-sensors": {
     "server": "fan-manager",
-    "tool": "fan_manager_ipmi",
-    "action": "sensors",
-    "records_path": "response",
+    "tool": "fan_manager_sensors",
+    "action": "records",
+    "records_path": "records",
     "id_field": "name",
     "title_field": "name",
     "text_field": "value",
-    "updated_field": "observed_at",
     "doc_type": "sensor-telemetry"
   }
 }

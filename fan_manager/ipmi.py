@@ -68,7 +68,7 @@ def _exec(
             "response": None,
             "command": " ".join(args),
             "status": 500,
-            "error": str(e),
+            "error": "Operation failed",
         }
 
 

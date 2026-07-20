@@ -19,7 +19,7 @@
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/fan-manager)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/fan-manager)
 
-*Version: 1.5.0*
+*Version: 1.7.0*
 
 > **Documentation** — Installation, deployment, and usage across the CLI and MCP
 > interfaces, plus the integrated A2A agent server, are maintained in the
@@ -125,11 +125,10 @@ context window. Configure filtering via:
 
 <!-- MCP-CONFIG-EXAMPLES:START -->
 
-> **Install the slim `[mcp]` extra.** All examples install `fan-manager[mcp]` — the
-> MCP-server extra that pulls only the FastMCP / FastAPI tooling (`agent-utilities[mcp]`).
-> It deliberately **excludes** the heavy agent runtime (`pydantic-ai`, the epistemic-graph
-> engine, `dspy`, `llama-index`), so `uvx` / container installs are far smaller. Use the
-> full `[agent]` extra only when you need the integrated Pydantic AI agent.
+> **Install the connector-focused `[mcp]` extra.** Examples use `fan-manager[mcp]` to add
+> FastMCP / FastAPI through `agent-utilities[mcp]`; the required Agent Utilities core
+> still carries `epistemic-graph[full]`. The `[agent-runtime]` extra additionally
+> enables model orchestration.
 
 #### stdio Transport (local IDEs — Cursor, Claude Desktop, VS Code)
 
@@ -144,11 +143,17 @@ context window. Configure filtering via:
         "fan-manager-mcp"
       ],
       "env": {
-        "MCP_TOOL_MODE": "condensed",
+        "MCP_TOOL_MODE": "intent",
         "ENABLE_DELEGATION": "False",
         "FAN_CONTROLTOOL": "True",
+        "FAN_MANAGER_HOSTS": "r510,r710,r820,rw710",
+        "FAN_MANAGER_KG_AGGREGATE_S": "3600",
+        "FAN_MANAGER_KG_INGEST": "true",
+        "FAN_MANAGER_POLICY_FILE": "/policy/fan-policy.json",
+        "FAN_MANAGER_POLICY_REFRESH": "20",
         "IPMITOOL": "True",
         "IPMITOOL_PATH": "ipmitool",
+        "KGTOOL": "True",
         "SENSORS_PATH": "sensors",
         "TEMPERATURETOOL": "True"
       }
@@ -156,6 +161,10 @@ context window. Configure filtering via:
   }
 }
 ```
+
+Runtime references require an alias-aware launcher such as GraphOS. Other
+launchers must omit those entries and inject the resolved values through their
+own runtime secret boundary.
 
 #### Streamable-HTTP Transport (networked / production)
 
@@ -175,13 +184,19 @@ context window. Configure filtering via:
       ],
       "env": {
         "TRANSPORT": "streamable-http",
-        "HOST": "0.0.0.0",
+        "HOST": "127.0.0.1",
         "PORT": "8000",
-        "MCP_TOOL_MODE": "condensed",
+        "MCP_TOOL_MODE": "intent",
         "ENABLE_DELEGATION": "False",
         "FAN_CONTROLTOOL": "True",
+        "FAN_MANAGER_HOSTS": "r510,r710,r820,rw710",
+        "FAN_MANAGER_KG_AGGREGATE_S": "3600",
+        "FAN_MANAGER_KG_INGEST": "true",
+        "FAN_MANAGER_POLICY_FILE": "/policy/fan-policy.json",
+        "FAN_MANAGER_POLICY_REFRESH": "20",
         "IPMITOOL": "True",
         "IPMITOOL_PATH": "ipmitool",
+        "KGTOOL": "True",
         "SENSORS_PATH": "sensors",
         "TEMPERATURETOOL": "True"
       }
@@ -202,24 +217,37 @@ Alternatively, connect to a pre-deployed Streamable-HTTP instance by `url`:
 }
 ```
 
-Deploying the Streamable-HTTP server via Docker:
+Run a reviewed container image as a least-privilege stdio child (no
+listener or published port):
 
 ```bash
-docker run -d \
-  --name fan-manager-mcp-mcp \
-  -p 8000:8000 \
-  -e TRANSPORT=streamable-http \
-  -e HOST=0.0.0.0 \
-  -e PORT=8000 \
-  -e MCP_TOOL_MODE=condensed \
+docker run -i --rm \
+  --read-only \
+  --cap-drop=ALL \
+  --security-opt=no-new-privileges \
+  --pids-limit=256 \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=64m \
+  -e TRANSPORT=stdio \
+  -e MCP_TOOL_MODE=intent \
   -e ENABLE_DELEGATION=False \
   -e FAN_CONTROLTOOL=True \
+  -e FAN_MANAGER_HOSTS=r510,r710,r820,rw710 \
+  -e FAN_MANAGER_KG_AGGREGATE_S=3600 \
+  -e FAN_MANAGER_KG_INGEST=true \
+  -e FAN_MANAGER_POLICY_FILE=/policy/fan-policy.json \
+  -e FAN_MANAGER_POLICY_REFRESH=20 \
   -e IPMITOOL=True \
   -e IPMITOOL_PATH=ipmitool \
+  -e KGTOOL=True \
   -e SENSORS_PATH=sensors \
   -e TEMPERATURETOOL=True \
-  knucklessg1/fan-manager:mcp
+  registry.example.invalid/fan-manager@sha256:<digest> fan-manager-mcp
 ```
+
+For containerized network HTTP, supply an authenticated TLS ingress (or
+direct server TLS), exact `MCP_ALLOWED_HOSTS`, and an exact trusted-proxy
+CIDR policy through the operator-owned deployment profile. The generator
+does not emit an unauthenticated non-loopback listener.
 
 _Auto-generated from the code-read env surface (`MCP_TOOL_MODE` + package vars) — do not edit._
 <!-- MCP-CONFIG-EXAMPLES:END -->
@@ -227,16 +255,16 @@ _Auto-generated from the code-read env surface (`MCP_TOOL_MODE` + package vars) 
 <!-- BEGIN GENERATED: additional-deployment-options -->
 ### Additional Deployment Options
 
-`fan-manager` can also run as a **local container** (Docker / Podman / `uv`) or be
-consumed from a **remote deployment**. The
-[Deployment guide](https://knuckles-team.github.io/fan-manager/deployment/) has full, copy-paste
-`mcp_config.json` for all four transports — **stdio**, **streamable-http**,
-**local container / uv**, and **remote URL**:
+`fan-manager` can run as a local stdio process or container, or behind a remote
+network boundary. The
+[Deployment guide](https://knuckles-team.github.io/fan-manager/deployment/) carries
+the detailed transport contract.
 
-- **Local container / uv** — launch the server from `mcp_config.json` via `uvx`,
-  `docker run`, or `podman run`, or point at a local streamable-http container by `url`.
-- **Remote URL** — connect to a server deployed behind Caddy at
-  `http://fan-manager-mcp.arpa/mcp` using the `"url"` key.
+- **Local container** — launch a reviewed immutable image as a least-privilege
+  stdio child with no listener or published port.
+- **Remote URL** — connect through an operator-supplied authenticated HTTPS
+  ingress. Keep its URL, outbound identity references, trust profile, and exact
+  `MCP_ALLOWED_HOSTS` in `AgentConfig`.
 <!-- END GENERATED: additional-deployment-options -->
 
 ## Agent
@@ -272,9 +300,18 @@ Interface alongside the MCP server. See
 | `TRANSPORT` | `stdio` | options: stdio, streamable-http, sse |
 | `AUTH_TYPE` | `none` | auth strategy for the agent-utilities MCP factory |
 | `FASTMCP_LOG_LEVEL` | `INFO` |  |
-| `TEMPERATURETOOL` | `True` | register the temperature tool domain (CONCEPT:FM-OS.governance.service-reads-temperature-through) |
-| `FAN_CONTROLTOOL` | `True` | register the fan-control tool domain (CONCEPT:FM-OS.governance.service-writes-fan-level) |
-| `IPMITOOL` | `True` | register the full IPMI/BMC tool domain (CONCEPT:FM-OS.governance.power-chassis..008) |
+| `TEMPERATURETOOL` | `True` | register the temperature tool domain |
+| `FAN_CONTROLTOOL` | `True` | register the fan-control tool domain |
+| `IPMITOOL` | `True` | register the full IPMI/BMC tool domain |
+| `KGTOOL` | `True` | register the native KG ingestion tool (fan_ingest_telemetry) |
+| `FAN_MANAGER_KG_INGEST` | `true` | default-on authoritative thermal-sample ingestion in the control loop |
+| `FAN_MANAGER_KG_AGGREGATE_S` | `3600` | window (s) over which samples distill to ONE :ThermalTrend node |
+| `FAN_MANAGER_HOST` | — | optional host/BMC label stamped on ingested :ManagedHost provenance |
+| `FAN_MANAGER_HOSTS` | `r510,r710,r820,rw710` | hosts the derivation pass learns/recommends over |
+| `FAN_MANAGER_CURVE` | — | JSON override of the "current" curve, e.g. {"cold":55,"warm":80,"slow":10,"fast":100,"poll":24} |
+| `FAN_MANAGER_NOTIFY_URL` | — | best-effort webhook for thermal-anomaly notifications (e.g. the alert-bridge) |
+| `FAN_MANAGER_POLICY_FILE` | `/policy/fan-policy.json` | mounted JSON of approved per-host policies the control loop applies |
+| `FAN_MANAGER_POLICY_REFRESH` | `20` | re-read the approved policy every N control-loop ticks (0 = never) |
 | `IPMITOOL_PATH` | `ipmitool` | Fan Manager drives the host's BMC and lm-sensors locally. |
 | `SENSORS_PATH` | `sensors` |  |
 | `ENABLE_OTEL` | `True` |  |
@@ -296,9 +333,11 @@ Interface alongside the MCP server. See
 | `MCP_DISABLED_TOOLS` | — | Comma-separated tool deny-list |
 | `MCP_ENABLED_TAGS` | — | Comma-separated tag allow-list |
 | `MCP_DISABLED_TAGS` | — | Comma-separated tag deny-list |
-| `MCP_CLIENT_AUTH` | — | Outbound MCP auth (`oidc-client-credentials` for fleet calls) |
+| `MCP_CLIENT_AUTH` | — | Outbound MCP child auth: `oidc-client-credentials` | `basic` | `none` |
 | `OIDC_CLIENT_ID` | — | OIDC client id (service-account auth) |
 | `OIDC_CLIENT_SECRET` | — | OIDC client secret (service-account auth) |
+| `MCP_BASIC_AUTH_USERNAME` | — | HTTP Basic username (`MCP_CLIENT_AUTH=basic`) |
+| `MCP_BASIC_AUTH_PASSWORD` | — | HTTP Basic password (`MCP_CLIENT_AUTH=basic`) |
 | `DEBUG` | `False` | Verbose logging |
 | `PYTHONUNBUFFERED` | `1` | Unbuffered stdout (recommended in containers) |
 | `MCP_URL` | `http://localhost:8000/mcp` | URL of the MCP server the agent connects to |
@@ -306,7 +345,7 @@ Interface alongside the MCP server. See
 | `MODEL_ID` | `gpt-4o` | Model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
-_18 package + 14 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
+_28 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
 
 
@@ -363,15 +402,15 @@ Pick the extra that matches what you want to run:
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
-| `fan-manager[mcp]` | Slim MCP server only (`agent-utilities[mcp]` — FastMCP/FastAPI) | You only run the **MCP server** (smallest install / image) |
-| `fan-manager[agent]` | Full agent runtime (`agent-utilities[agent,logfire]` — Pydantic AI + the epistemic-graph engine) | You run the **integrated agent** |
+| `fan-manager[mcp]` | Connector-focused MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | You only run the **MCP server** (smallest install / image) |
+| `fan-manager[agent]` | Agent runtime (`agent-utilities[agent-runtime,logfire]` — model orchestration + `epistemic-graph[full]`) | You run the **integrated agent** |
 | `fan-manager[all]` | Everything (`mcp` + `agent` + `logfire`) | Development / both surfaces |
 
 ```bash
-# MCP server only (recommended for tool hosting — slim deps)
+# Connector-focused MCP server (includes the shared graph engine)
 uv pip install "fan-manager[mcp]"
 
-# Full agent runtime (Pydantic AI + epistemic-graph engine)
+# Agent runtime (adds model orchestration to the shared graph engine)
 uv pip install "fan-manager[agent]"
 
 # Everything (development)
@@ -384,26 +423,27 @@ One multi-stage `docker/Dockerfile` builds two right-sized images, selected by `
 
 | Image tag | Build target | Contents | Entrypoint |
 |-----------|--------------|----------|------------|
-| `knucklessg1/fan-manager:mcp` | `--target mcp` | `fan-manager[mcp]` — **slim**, no engine/`pydantic-ai`/`dspy`/`llama-index`/`tree-sitter` | `fan-manager-mcp` |
-| `knucklessg1/fan-manager:latest` | `--target agent` (default) | `fan-manager[agent]` — **full** agent runtime + epistemic-graph engine | `fan-manager-agent` |
+| `example/fan-manager:mcp` | `--target mcp` | `fan-manager[mcp]` — **connector-focused**, includes `epistemic-graph[full]`; no model-orchestration stack | `fan-manager-mcp` |
+| `example/fan-manager@sha256:<digest>` | `--target agent` (default) | `fan-manager[agent]` — **agent runtime**, model orchestration + `epistemic-graph[full]` | `fan-manager-agent` |
 
 ```bash
-docker build --target mcp   -t knucklessg1/fan-manager:mcp    docker/   # slim MCP server
-docker build --target agent -t knucklessg1/fan-manager:latest docker/   # full agent
+docker build --target mcp   -t example/fan-manager:mcp    docker/   # connector-focused MCP server
+docker build --target agent -t example/fan-manager:agent-local docker/   # agent runtime
 ```
 
-`docker/mcp.compose.yml` runs the slim `:mcp` server; `docker/agent.compose.yml` runs the
-agent (`:latest`) with a co-located `:mcp` sidecar.
+`docker/mcp.compose.yml` runs the connector-focused `:mcp` server; `docker/agent.compose.yml` runs the
+agent (`immutable agent digest`) with a co-located `:mcp` sidecar.
 
 ### Knowledge-graph database (`epistemic-graph`)
 
-The **full agent** (`[agent]` / `:latest`) embeds the **epistemic-graph** engine (pulled in
-transitively via `agent-utilities[agent]`). For production — or to share one knowledge graph
-across multiple agents — run **epistemic-graph as its own database container** and point the
-agent at it instead of embedding it. Deployment recipes (single-node + Raft HA), connection
-config, and the full database architecture (with diagrams) are documented in the
+Both `[mcp]` and `[agent]` carry the **epistemic-graph** engine through the required
+Agent Utilities core dependency (`epistemic-graph[full]`). The `[mcp]` extra keeps
+the server connector-focused; `[agent]` additionally enables model orchestration. Local
+deployments can use the bundled engine. For production or shared state, run
+**epistemic-graph as a dedicated database service** and configure the runtime to use it.
+Deployment recipes (single-node + Raft HA), connection configuration, and architecture
+diagrams are documented in the
 [epistemic-graph deployment guide](https://knuckles-team.github.io/epistemic-graph/deployment/).
-The slim `[mcp]` server does **not** require the database.
 
 ---
 
@@ -432,23 +472,40 @@ before submitting pull requests:
 - Execute test suites using `pytest`
 
 
-<!-- BEGIN agent-os-genesis-deploy (generated; do not edit between markers) -->
+<!-- BEGIN agent-utilities-deployment (generated; do not edit between markers) -->
 
-## Deploy with `agent-os-genesis`
+## Deploy with `agent-utilities-deployment`
 
-This package can be provisioned for you — skill-guided — by the **`agent-os-genesis`**
-universal skill (its *single-package deploy mode*): it picks your install method, seeds
-secrets to OpenBao/Vault (or `.env`), trusts your enterprise CA, registers the MCP
-server, and verifies it — the same machinery that stands up the whole Agent OS, narrowed
-to just this package. Ask your agent to **"deploy `fan-manager` with agent-os-genesis"**.
+Provision this package with the consolidated **`agent-utilities-deployment`**
+workflow. It selects an installed-package, editable-source, or immutable-container
+path; records only runtime secret and TLS-profile references in `AgentConfig`; and
+runs doctor, registration, policy, observability, and rollback gates. Ask your agent
+to **"deploy `fan-manager` with agent-utilities-deployment"**.
 
 | Install mode | Command |
 |------|---------|
-| Bare-metal, prod (PyPI) | `uvx fan-manager-mcp` · or `uv tool install fan-manager` |
-| Bare-metal, dev (editable) | `uv pip install -e ".[all]"` · or `pip install -e ".[all]"` |
-| Container, prod | deploy `knucklessg1/fan-manager:latest` via docker-compose / swarm / podman / podman-compose / kubernetes |
-| Container, dev (editable) | deploy `docker/compose.dev.yml` (source-mounted at `/src`; edits live on restart) |
+| Installed package | `uv tool install "fan-manager[mcp]"`, then run `fan-manager-mcp` |
+| Editable source | `uv pip install -e ".[agent]"`, then run `fan-manager-mcp` |
+| Immutable container | deploy `registry.example.invalid/fan-manager@sha256:<digest>` through the operator-selected orchestrator |
 
-Secrets are read-existing + seeded via `vault_sync` — you are only prompted for what's missing.
+The repository embeds no deployment profile, credential value, certificate path, or
+environment-specific endpoint. Supply those at runtime through `AgentConfig` and the
+configured secret provider.
 
-<!-- END agent-os-genesis-deploy -->
+<!-- END agent-utilities-deployment -->
+
+<!-- GOVERNED-CAPABILITY:START -->
+## Governed capability contract
+
+This package ships a compact canonical skill surface with specialist procedures
+kept as referenced workflows. The current MCP tools, skill metadata,
+`connector_manifest.yml`, ontology, mappings, shapes, fixtures, migrations,
+tool-schema fingerprints, and certification metadata form one versioned
+capability contract. Validate them together; do not rely on stale tool names or
+historical per-task skill wrappers.
+
+Runtime endpoints, credentials, certificate trust, tenant identity, retention,
+and observability policy are deployment inputs and are never packaged values.
+See [Configuration, trust, and privacy](docs/configuration.md) before enabling a
+network transport, connector ingestion, GraphOS delegation, or trace export.
+<!-- GOVERNED-CAPABILITY:END -->

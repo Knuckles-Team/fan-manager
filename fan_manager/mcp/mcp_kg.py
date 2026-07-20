@@ -54,7 +54,7 @@ def register_kg_tools(mcp: FastMCP):
         try:
             opts = json.loads(params_json) if params_json else {}
         except Exception as e:  # noqa: BLE001
-            return {"error": f"Invalid params_json: {e}"}
+            return {"error": "Operation failed"}
 
         host = opts.get("host")
 

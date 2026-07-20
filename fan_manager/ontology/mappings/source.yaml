@@ -1,0 +1,20 @@
+schema_version: '1'
+connector: fan-manager
+ontology_source: fan
+sync:
+- preset: fan-sensors
+  server: fan-manager
+  tool: fan_manager_sensors
+  action: records
+  records_path: records
+  id_field: name
+  title_field: name
+  text_field: value
+  updated_field: null
+  doc_type: sensor-telemetry
+  tool_schema_sha256: c34bcd5fd7d52ebb8e8b10e298c894f2666c49447cb4d75eb6b4f655c0b4f719
+governance:
+  default_acl: quarantine
+  identity: opaque-reference
+  tenant: required-at-materialization
+  provenance: required-at-materialization

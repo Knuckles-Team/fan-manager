@@ -1,9 +1,8 @@
 """MCP tools for full IPMI/BMC control (CONCEPT:FM-OS.governance.power-chassis..FAN-008).
 
 Action-routed tools over ``fan_manager.ipmi``. Every tool's ``params_json`` may
-carry an out-of-band target — ``{"host": "10.0.0.113", "user": "root",
-"password": "..."}`` — to drive a remote iDRAC over ``lanplus``; omit it to run
-in-band against the local ``/dev/ipmi0``. (Creds live in OpenBao ``apps/idrac``.)
+carry an environment-configured out-of-band target. Credentials are resolved by
+the runtime and are never persisted in connector records.
 """
 
 import json
@@ -13,6 +12,7 @@ from fastmcp import Context, FastMCP
 from pydantic import Field
 
 from fan_manager import ipmi
+from fan_manager.kg_ingest import parse_sensor_list
 
 
 def _parse(
@@ -21,7 +21,7 @@ def _parse(
     try:
         kwargs = json.loads(params_json or "{}")
     except Exception as e:  # noqa: BLE001
-        return {}, None, f"Invalid params_json: {e}"
+        return {}, None, f"Invalid params_json: {type(e).__name__}"
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
     target = None
     if kwargs.get("host"):
@@ -59,7 +59,9 @@ def register_ipmi_tools(mcp: FastMCP):
 
     @mcp.tool(tags={"ipmi-sensors"})
     async def fan_manager_sensors(
-        action: str = Field(default="list", description="list | full | type"),
+        action: str = Field(
+            default="list", description="list | full | type | records"
+        ),
         params_json: str = Field(
             default="{}",
             description="Optional target; for 'type' add "
@@ -71,6 +73,13 @@ def register_ipmi_tools(mcp: FastMCP):
         kwargs, target, err = _parse(params_json)
         if err:
             return {"error": err}
+        if action == "records":
+            response = ipmi.sensors("full", target=target)
+            if not isinstance(response, dict) or response.get("status") != 200:
+                return {"records": [], "status": "source-unavailable"}
+            return {
+                "records": parse_sensor_list(str(response.get("response") or ""))
+            }
         return ipmi.sensors(
             action, target=target, sensor_type=kwargs.get("sensor_type")
         )
@@ -114,7 +123,7 @@ def register_ipmi_tools(mcp: FastMCP):
         params_json: str = Field(
             default="{}",
             description="Optional target; lan_set needs "
-            "{'param','value'} (e.g. param=ipaddr value=10.0.0.110); user_* "
+            "{'param','value'} (e.g. param=ipaddr value=192.0.2.110); user_* "
             "need {'user_id'} and set_password needs {'password'}.",
         ),
         ctx: Context | None = Field(default=None, description="MCP context"),

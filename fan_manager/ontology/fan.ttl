@@ -46,6 +46,18 @@
     rdfs:label "System Event" ;
     rdfs:comment "An entry in the BMC System Event Log (SEL) recorded for a host." .
 
+:ThermalTrend a owl:Class ;
+    rdfs:label "Thermal Trend" ;
+    rdfs:comment "One distilled hourly window of a host's thermals (min/avg/max °C, avg fan, sample count) — the lightweight long-term pattern kept in the KG instead of every ping." .
+
+:ThermalBaseline a owl:Class ;
+    rdfs:label "Thermal Baseline" ;
+    rdfs:comment "A host's learned thermal fingerprint (temp p50/p95, idle/load envelope, thermal inertia) computed from its ThermalTrend history; the reference for policy derivation and anomaly detection." .
+
+:ThermalAnomaly a owl:Class ;
+    rdfs:label "Thermal Anomaly" ;
+    rdfs:comment "A host observed drifting off its ThermalBaseline (above-baseline / cooling-saturated / ambient) — the early signal of dust, a failing fan, or a room-level cooling issue." .
+
 # --- links (owl:ObjectProperty) ---
 
 :controlsHost a owl:ObjectProperty ;
@@ -92,6 +104,17 @@
     rdfs:label "logged on host" ;
     rdfs:comment "Links a SystemEvent to the ManagedHost whose BMC recorded it." ;
     rdfs:domain :SystemEvent ;
+    rdfs:range :ManagedHost .
+
+:baselineForHost a owl:ObjectProperty ;
+    rdfs:label "baseline for host" ;
+    rdfs:comment "Links a ThermalBaseline (and its ThermalTrend inputs) to the ManagedHost it characterizes." ;
+    rdfs:range :ManagedHost .
+
+:affectsHost a owl:ObjectProperty ;
+    rdfs:label "affects host" ;
+    rdfs:comment "Links a ThermalAnomaly to the ManagedHost drifting off its baseline." ;
+    rdfs:domain :ThermalAnomaly ;
     rdfs:range :ManagedHost .
 
 # --- fields (owl:DatatypeProperty) ---
@@ -165,6 +188,61 @@
     rdfs:label "temperature power" ;
     rdfs:comment "Logarithmic intensity exponent of a FanControlPolicy temperature-to-speed curve." ;
     rdfs:range xsd:integer .
+
+:avgCelsius a owl:DatatypeProperty ;
+    rdfs:label "avg celsius" ;
+    rdfs:comment "Mean CPU temperature over a ThermalTrend window." ;
+    rdfs:range xsd:decimal .
+
+:minCelsius a owl:DatatypeProperty ;
+    rdfs:label "min celsius" ;
+    rdfs:comment "Minimum CPU temperature over a ThermalTrend window." ;
+    rdfs:range xsd:decimal .
+
+:maxCelsius a owl:DatatypeProperty ;
+    rdfs:label "max celsius" ;
+    rdfs:comment "Maximum CPU temperature over a ThermalTrend window." ;
+    rdfs:range xsd:decimal .
+
+:avgFan a owl:DatatypeProperty ;
+    rdfs:label "avg fan" ;
+    rdfs:comment "Mean fan level (0-100) over a ThermalTrend window or ThermalBaseline." ;
+    rdfs:range xsd:decimal .
+
+:tempP50 a owl:DatatypeProperty ;
+    rdfs:label "temp p50" ;
+    rdfs:comment "Median CPU temperature of a ThermalBaseline." ;
+    rdfs:range xsd:decimal .
+
+:tempP95 a owl:DatatypeProperty ;
+    rdfs:label "temp p95" ;
+    rdfs:comment "95th-percentile CPU temperature of a ThermalBaseline (the realistic hot ceiling)." ;
+    rdfs:range xsd:decimal .
+
+:thermalInertia a owl:DatatypeProperty ;
+    rdfs:label "thermal inertia" ;
+    rdfs:comment "|°C per fan-%| slope — how much thermal margin a fan-speed step buys on this host." ;
+    rdfs:range xsd:decimal .
+
+:approved a owl:DatatypeProperty ;
+    rdfs:label "approved" ;
+    rdfs:comment "Whether a derived FanControlPolicy is cleared to actually drive fans (else report-only)." ;
+    rdfs:range xsd:boolean .
+
+:rationale a owl:DatatypeProperty ;
+    rdfs:label "rationale" ;
+    rdfs:comment "Human-readable explanation of why a FanControlPolicy was recommended." ;
+    rdfs:range xsd:string .
+
+:anomalyKind a owl:DatatypeProperty ;
+    rdfs:label "anomaly kind" ;
+    rdfs:comment "ThermalAnomaly category: above-baseline, cooling-saturated, or ambient." ;
+    rdfs:range xsd:string .
+
+:zScore a owl:DatatypeProperty ;
+    rdfs:label "z score" ;
+    rdfs:comment "How many baseline standard-spreads a ThermalAnomaly's observed temperature sits above p50." ;
+    rdfs:range xsd:decimal .
 
 <http://knuckles.team/kg/fan> a owl:Ontology ;
     rdfs:label "Fan Manager Ontology" ;

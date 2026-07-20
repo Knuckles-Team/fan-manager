@@ -1,0 +1,6 @@
+{
+  "connector": "fan-manager",
+  "current_ontology_source": "fan",
+  "migrations": [],
+  "schema_version": "1"
+}

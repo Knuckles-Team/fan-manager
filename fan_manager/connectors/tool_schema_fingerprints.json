@@ -1,0 +1,8 @@
+{
+  "algorithm": "agent-utilities:mcp-tool-schema-compat:v1",
+  "connector": "fan-manager",
+  "schema_version": "1",
+  "tools": {
+    "fan_manager_sensors": "c34bcd5fd7d52ebb8e8b10e298c894f2666c49447cb4d75eb6b4f655c0b4f719"
+  }
+}

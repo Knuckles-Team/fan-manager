@@ -1,0 +1,19 @@
+{
+  "connector": "fan-manager",
+  "fixtures": [
+    {
+      "expected": {
+        "acl_state": "quarantine",
+        "id": "fixture-record",
+        "title": "Synthetic certification record"
+      },
+      "preset": "fan-sensors",
+      "record": {
+        "acl_public": false,
+        "name": "Synthetic certification record",
+        "value": "Synthetic content used only for contract validation."
+      }
+    }
+  ],
+  "schema_version": "1"
+}

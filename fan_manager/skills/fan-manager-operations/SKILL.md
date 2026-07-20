@@ -1,5 +1,6 @@
 ---
 name: fan-manager-operations
+skill_type: skill
 description: >-
   Operate fan-manager through its governed MCP and GraphOS capabilities, including fan manager automatic, fan manager control, fan manager temperature. Use when a request requires this provider's read, change, automation, ingestion, troubleshooting, or evidence workflows.
 ---

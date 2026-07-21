@@ -16,7 +16,7 @@ class _FakeRunner:
     def __init__(self, out: str = "ok", have_bin: bool = True):
         self.out = out
         self.have_bin = have_bin
-        self.last_argv: list[str] | None = None
+        self.last_argv: list[str] = []
 
     def which(self, name: str):
         return f"/usr/bin/{name}" if self.have_bin else None
@@ -60,7 +60,10 @@ def test_out_of_band_lanplus_and_password_redaction():
 
 def test_bin_missing_500():
     res = ipmi.power("status", runner=_FakeRunner(have_bin=False))
-    assert res["status"] == 500 and "ipmitool" in res["error"]
+    # Error detail is sanitized (never leaks raw exception text to the caller) —
+    # only the typed status/response contract is asserted here.
+    assert res["status"] == 500 and res["error"] == "Operation failed"
+    assert res["response"] is None
 
 
 def test_sensors_type_requires_sensor_type():

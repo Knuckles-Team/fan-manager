@@ -1,17 +1,20 @@
-"""Concept parity: every CONCEPT:FAN-* used in MCP tool docstrings must be
-registered in docs/concepts.md.
+"""Concept parity: every OKF-CIS CONCEPT:<SLUG>-<PILLAR>.<domain>.<concept> id used
+in MCP tool docstrings must be registered in docs/concepts.md.
 """
 
 import os
-import re
 
 import pytest
+from agent_utilities.governance.concept_hierarchy import OKF_MARKER_RE
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MCP_DIR = os.path.join(ROOT_DIR, "fan_manager", "mcp")
 CONCEPTS_DOC = os.path.join(ROOT_DIR, "docs", "concepts.md")
 
-CONCEPT_RE = re.compile(r"CONCEPT:(FAN-\d+)")
+# Reuse the one canonical marker grammar (agent-utilities' OKF-CIS standard) rather
+# than a locally-maintained copy, so this test can't drift from the ecosystem-wide
+# concept-ID format.
+CONCEPT_RE = OKF_MARKER_RE
 
 
 def _concepts_in(path: str) -> set[str]:
@@ -30,18 +33,35 @@ def _concepts_in_dir(directory: str) -> set[str]:
     return found
 
 
-@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
-@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
-def test_mcp_concepts_are_documented():
-    """Each CONCEPT:FAN-* in the MCP tool modules is in docs/concepts.md."""
-    tool_concepts = _concepts_in_dir(MCP_DIR)
-    assert tool_concepts, "Expected at least one CONCEPT:FAN-* in fan_manager/mcp/"
+# This package's own OKF-CIS slug — concepts under this slug are locally owned and
+# must be registered in the "Project-Specific Concepts" table (CONCEPT:-prefixed).
+# A different slug (e.g. AU-*) is a cross-project concept owned by that repo's own
+# registry; docs/concepts.md bridges it as a *bare* id (no CONCEPT: prefix, by
+# design — see the "Cross-Project References" section) so it deliberately isn't
+# picked up by CONCEPT_RE, and only needs to appear in the doc at all.
+LOCAL_SLUG = "FM-"
 
-    documented = _concepts_in(CONCEPTS_DOC)
-    missing = tool_concepts - documented
+
+def test_mcp_concepts_are_documented():
+    """Each CONCEPT:<id> in the MCP tool modules is documented in docs/concepts.md —
+    locally registered (CONCEPT:-prefixed) if FM-owned, bridged (bare id) if not."""
+    tool_concepts = _concepts_in_dir(MCP_DIR)
+    assert tool_concepts, "Expected at least one CONCEPT:<id> in fan_manager/mcp/"
+
+    with open(CONCEPTS_DOC, encoding="utf-8") as f:
+        doc_text = f.read()
+    locally_documented = _concepts_in(CONCEPTS_DOC)
+
+    missing = set()
+    for concept in tool_concepts:
+        if concept.startswith(LOCAL_SLUG):
+            if concept not in locally_documented:
+                missing.add(concept)
+        elif concept not in doc_text:  # external — bridged as a bare id
+            missing.add(concept)
     assert not missing, (
-        f"These CONCEPT:FAN-* ids are used in MCP tool docstrings but are NOT "
-        f"registered in docs/concepts.md: {sorted(missing)}"
+        f"These CONCEPT:<id> ids are used in MCP tool docstrings but are NOT "
+        f"documented in docs/concepts.md: {sorted(missing)}"
     )
 
 

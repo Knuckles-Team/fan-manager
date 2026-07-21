@@ -24,7 +24,8 @@ def _kg_record_thermal_sample(temperature: Any, fan_level: int) -> None:
     (default 1h): min/max/avg temp + avg fan + sample count, related to the host. The
     high-resolution stream stays in Prometheus; the KG keeps lightweight long-term patterns so
     the DB never bloats. Default-on; disable with ``FAN_MANAGER_KG_INGEST=false``. Fully guarded
-    — a missing/unreachable KG is a silent no-op that never disturbs the control loop.
+    — a missing/unreachable KG is a silent no-op that never disturbs the control loop (the
+    control loop is safety-critical and must never be taken down by telemetry).
     """
     if os.getenv("FAN_MANAGER_KG_INGEST", "true").strip().lower() in {
         "0",
@@ -77,7 +78,7 @@ def _kg_record_thermal_sample(temperature: Any, fan_level: int) -> None:
             n,
         )
     except Exception as e:  # noqa: BLE001 — ingestion is best-effort, never fatal
-        logger.debug("KG trend ingest skipped: %s", e)
+        logger.debug("KG trend ingest skipped: error_type=%s", type(e).__name__)
 
 
 @runtime_checkable
@@ -179,8 +180,13 @@ def get_core_temp(cpus: list, sensors: dict) -> dict[str, Any]:
         )
         return {"response": highest_temp, "command": command, "status": 200}
     except Exception as e:
-        logger.error(f"Failed to get core temperature: {str(e)}")
-        return {"response": None, "command": command, "status": 500, "error": str(e)}
+        logger.error("Failed to get core temperature: error_type=%s", type(e).__name__)
+        return {
+            "response": None,
+            "command": command,
+            "status": 500,
+            "error": "Operation failed",
+        }
 
 
 def get_temp(runner: CommandRunner | None = None) -> dict[str, Any]:
@@ -212,8 +218,13 @@ def get_temp(runner: CommandRunner | None = None) -> dict[str, Any]:
         logger.info(f"Current Temperature: {temp_cpu}")
         return {"response": temp_cpu, "command": command, "status": 200}
     except Exception as e:
-        logger.error(f"Failed to get temperature: {str(e)}")
-        return {"response": None, "command": command, "status": 500, "error": str(e)}
+        logger.error("Failed to get temperature: error_type=%s", type(e).__name__)
+        return {
+            "response": None,
+            "command": command,
+            "status": 500,
+            "error": "Operation failed",
+        }
 
 
 def set_fan(fan_level: int, runner: CommandRunner | None = None) -> dict[str, Any]:
@@ -264,12 +275,12 @@ def set_fan(fan_level: int, runner: CommandRunner | None = None) -> dict[str, An
             "status": 200,
         }
     except ValueError as e:
-        logger.error(f"Invalid fan level: {str(e)}")
+        logger.error("Operation failed: error_type=%s", type(e).__name__)
         return {
             "response": None,
             "command": cmd2_str,
             "status": 400,
-            "error": str(e),
+            "error": "Operation failed",
         }
     except Exception as e:
         # SMART fallback: some BMC firmware (e.g. the R510's older iDRAC) rejects the raw
@@ -291,7 +302,10 @@ def set_fan(fan_level: int, runner: CommandRunner | None = None) -> dict[str, An
                 "mode": "idrac-auto",
             }
         except Exception as e2:
-            logger.error(f"Failed to set fan level and to enable iDRAC-auto: {e2}")
+            logger.error(
+                "Failed to set fan level and enable automatic control: error_type=%s",
+                type(e2).__name__,
+            )
             return {
                 "response": None,
                 "command": cmd2_str,
@@ -349,7 +363,7 @@ def auto_set_fan_speed(
     )
     fan_result = set_fan(fan_level, runner=runner)
     if fan_result["status"] != 200:
-        logger.error(f"Failed to set fan: {fan_result.get('error', 'Unknown error')}")
+        logger.error("Failed to set fan")
     # Native, best-effort timeseries ingestion of this thermal sample.
     _kg_record_thermal_sample(cpu_temperature, fan_level)
 

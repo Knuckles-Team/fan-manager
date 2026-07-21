@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fan Manager Operations"
+  short_description: "Help with Fan Manager Operations tasks"
+  default_prompt: "Use $fan-manager-operations to complete a governed provider workflow."

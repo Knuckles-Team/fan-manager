@@ -8,15 +8,12 @@
         "fan-manager-mcp"
       ],
       "env": {
-        "MCP_TOOL_MODE": "condensed",
+        "MCP_TOOL_MODE": "intent",
         "ENABLE_DELEGATION": "False",
         "FAN_CONTROLTOOL": "True",
-        "FAN_MANAGER_CURVE": "",
-        "FAN_MANAGER_HOST": "",
         "FAN_MANAGER_HOSTS": "r510,r710,r820,rw710",
         "FAN_MANAGER_KG_AGGREGATE_S": "3600",
         "FAN_MANAGER_KG_INGEST": "true",
-        "FAN_MANAGER_NOTIFY_URL": "",
         "FAN_MANAGER_POLICY_FILE": "/policy/fan-policy.json",
         "FAN_MANAGER_POLICY_REFRESH": "20",
         "IPMITOOL": "True",

@@ -29,7 +29,7 @@ python -m pip install "fan-manager[all]"
 | Extra | Installs | Use |
 |-------|----------|-----|
 | `mcp` | `agent-utilities[mcp]` | MCP server (`fan-manager-mcp`) |
-| `agent` | `agent-utilities[agent,logfire]` | A2A agent (`fan-manager-agent`) |
+| `agent` | `agent-utilities[agent-runtime,logfire]` | A2A agent (`fan-manager-agent`) |
 | `all` | `fan-manager[mcp,agent]` | Everything |
 | `test` | pytest stack | Running the test suite |
 
@@ -43,7 +43,7 @@ pip install -e ".[all]"
 ## Docker
 
 ```bash
-docker pull knucklessg1/fan-manager:latest
+docker pull example/fan-manager@sha256:<digest>
 ```
 
 The container needs access to the host IPMI device — run with `--privileged` or

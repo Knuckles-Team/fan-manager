@@ -1,6 +1,6 @@
 # Concept Registry — fan-manager
 
-> **Prefix**: `CONCEPT:FAN-*`
+> **Prefix**: `CONCEPT:FM-OS.*` (OKF-CIS: `<SLUG>-<PILLAR>.<domain>.<concept>`)
 > **Version**: 1.1.0
 > **Bridge**: [`ECO-4.0`](https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/concepts.md) (Unified Toolkit Ingestion)
 
@@ -27,7 +27,7 @@
 ## Cross-Project References (from agent-utilities)
 
 > These are **external** concepts owned by the [`agent-utilities`](https://github.com/Knuckles-Team/agent-utilities)
-> project, not project-specific `CONCEPT:FAN-*` concepts. They are listed here as
+> project, not project-specific `CONCEPT:FM-OS.*` concepts. They are listed here as
 > bare IDs (without the `CONCEPT:` marker prefix) so traceability tooling treats
 > them as external bridges rather than orphaned local concepts.
 
@@ -39,6 +39,7 @@
 | `OS-5.2` | Cognitive Scheduler | agent-utilities |
 | `AU-OS.governance.reactive-multi-axis-budget` | Guardrail Engine | agent-utilities |
 | `AU-OS.governance.wasm-micro-agent-sandbox` | Audit Logging | agent-utilities |
+| `AU-KG.ingest.enterprise-source-extractor` | Enterprise Source Extractor (native KG ingestion) | agent-utilities |
 | `KG-2.0` | Knowledge Graph Core | agent-utilities |
 
 ## Synergy with agent-utilities
@@ -46,4 +47,4 @@
 This project integrates with `agent-utilities` via the `ECO-4.0` (Unified
 Toolkit Ingestion) bridge. The `fan_manager` MCP server registers its tools with
 the agent-utilities FastMCP middleware, enabling automatic discovery, telemetry,
-and Knowledge Graph ingestion of all `CONCEPT:FAN-*` concepts.
+and Knowledge Graph ingestion of all `CONCEPT:FM-OS.*` concepts.

@@ -34,7 +34,6 @@ import json
 import logging
 import math
 import os
-import urllib.request
 from typing import Any
 
 logger = logging.getLogger("fan_manager.control")
@@ -422,25 +421,33 @@ def _current_curve() -> dict[str, int]:
         try:
             return {**DEFAULT_CURVE, **json.loads(raw)}
         except Exception as e:  # noqa: BLE001 — bad override falls back to the shipped curve
-            logger.debug("ignoring invalid FAN_MANAGER_CURVE override: %s", e)
+            logger.debug("Operation failed: error_type=%s", type(e).__name__)
     return dict(DEFAULT_CURVE)
 
 
 def _notify(message: str) -> None:
     """Best-effort push to the intelligent alert router (``FAN_MANAGER_NOTIFY_URL``)."""
-    url = os.getenv("FAN_MANAGER_NOTIFY_URL")
     logger.info(message)
-    if not url:
-        return
     try:
-        req = urllib.request.Request(
-            url,
-            data=json.dumps({"source": "fan-control", "message": message}).encode(),
-            headers={"Content-Type": "application/json"},
+        from agent_utilities.core.config import config, setting
+        from agent_utilities.protocols.source_connectors.http_safety import (
+            safe_post_json,
         )
-        urllib.request.urlopen(req, timeout=5)  # noqa: S310  # nosec B310 — operator-configured URL
-    except Exception as e:  # noqa: BLE001 — notification is best-effort
-        logger.debug("notify skipped: %s", e)
+
+        url = str(setting("FAN_MANAGER_NOTIFY_URL", "") or "").strip()
+        if not url:
+            return
+        safe_post_json(
+            url,
+            {"source": "fan-control", "message": message},
+            timeout=5,
+            max_bytes=64 * 1024,
+            max_request_bytes=64 * 1024,
+            allowed_private_hosts=config.source_http_allowed_private_hosts,
+            tls_service="fan-manager-notify",
+        )
+    except Exception as exc:  # noqa: BLE001 — notification is best-effort
+        logger.debug("Operation failed: error_type=%s", type(exc).__name__)
 
 
 def run_derivation(

@@ -136,6 +136,34 @@ def test_classify_ambient_leaves_a_lone_spike_alone():
     assert a is not None and a["kind"] == "above-baseline"      # 1 of 4 → not ambient
 
 
+def test_notify_uses_bounded_shared_http_boundary(monkeypatch):
+    import agent_utilities.core.config as config_module
+    import agent_utilities.protocols.source_connectors.http_safety as http_safety
+
+    def _fake_setting(key, default=None, **_kwargs):
+        return (
+            "https://notify.example.invalid/events"
+            if key == "FAN_MANAGER_NOTIFY_URL"
+            else default
+        )
+
+    monkeypatch.setattr(config_module, "setting", _fake_setting)
+
+    calls = []
+
+    def _fake_safe_post_json(url, payload, **kwargs):
+        calls.append((url, payload, kwargs))
+        return {}
+
+    monkeypatch.setattr(http_safety, "safe_post_json", _fake_safe_post_json)
+
+    kc._notify("bounded message")
+
+    assert calls[0][1] == {"source": "fan-control", "message": "bounded message"}
+    assert calls[0][2]["max_request_bytes"] == 64 * 1024
+    assert calls[0][2]["tls_service"] == "fan-manager-notify"
+
+
 # --- Phase 2: the approved-policy control seam ----------------------------- #
 _DEFAULTS = {
     "temperature_poll_rate": 24, "minimum_fan_speed": 10, "maximum_fan_speed": 100,

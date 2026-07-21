@@ -1,12 +1,25 @@
 """Native epistemic-graph typed-node ingestion — Wire-First coverage.
 
-Exercises the real ``fan_manager.kg_ingest`` mappers with a fake engine client (no engine
-required), asserting the txn add_node/commit + edge calls and the fan-manager telemetry →
-:TemperatureReading / :FanSpeedSetting / :SensorReading mapping.
+Exercises the real ``fan_manager.kg_ingest`` mappers with a fake ChangeEnvelope-capable
+engine client (no engine required), asserting the applied node/edge writes + the
+fan-manager telemetry → :TemperatureReading / :FanSpeedSetting / :SensorReading mapping.
+The fake client and governed-session fixture mirror agent-utilities' own
+``tests/knowledge_graph/test_native_ingest.py`` reference fake — the shape
+``_change_envelope_authority`` actually requires (``changes``/``nodes``/``rdf``/
+``supports``; the retired raw ``txn``-only fake is rejected).
 CONCEPT:AU-KG.ingest.enterprise-source-extractor.
 """
 
 from __future__ import annotations
+
+from typing import Any
+
+import msgpack
+import pytest
+from agent_utilities.knowledge_graph.core.session import GraphSession, use_session
+from agent_utilities.knowledge_graph.memory.native_ingest import NativeIngestError
+from agent_utilities.models.company_brain import ActorType
+from agent_utilities.security.brain_context import ActorContext, use_actor
 
 from fan_manager.kg_ingest import (
     ingest_entities,
@@ -17,55 +30,113 @@ from fan_manager.kg_ingest import (
 )
 
 
-class _FakeTxn:
-    def __init__(self):
-        self.nodes = {}
-        self.committed = False
+@pytest.fixture(autouse=True)
+def _governed_session():
+    """Ambient actor + GraphSession required by native_ingest's injected-client path."""
+    actor = ActorContext(
+        actor_id="subject:opaque:synthetic",
+        actor_type=ActorType.AUTOMATED_SERVICE,
+        roles=(),
+        tenant_id="tenant:opaque:synthetic",
+        authenticated=True,
+    )
+    session = GraphSession(
+        actor=actor,
+        tenant=actor.tenant_id,
+        scopes=frozenset({"kg:write"}),
+        graph="__commons__",
+        policy_version="policy:opaque:synthetic",
+        audience="epistemic-graph",
+    )
+    with use_actor(actor), use_session(session):
+        yield
 
-    def begin(self, graph=None):
-        self.graph = graph
-        return "txn-1"
 
-    def add_node(self, txn, node_id, props):
-        self.nodes[node_id] = props
+class _FakeNodes:
+    def __init__(self) -> None:
+        self.values: dict[str, dict[str, Any]] = {}
 
-    def commit(self, txn):
-        self.committed = True
-        return True
+    def properties(self, node_id: str) -> dict[str, Any] | None:
+        return self.values.get(node_id)
+
+    def list(self) -> list[tuple[str, dict[str, Any]]]:
+        return list(self.values.items())
 
 
-class _FakeEdges:
-    def __init__(self):
-        self.edges = []
+class _FakeChanges:
+    def __init__(self, nodes: _FakeNodes) -> None:
+        self.nodes = nodes
+        self.edges: list[tuple[str, str, dict[str, Any]]] = []
+        self.applied: list[dict[str, Any]] = []
+        self.records: dict[str, dict[str, Any]] = {}
+        self.versions: dict[str, dict[str, Any]] = {}
 
-    def add(self, src, dst, props):
-        self.edges.append((src, dst, props))
+    def get(self, envelope_id: str) -> dict[str, Any] | None:
+        return self.records.get(envelope_id)
+
+    def content_version(self, object_id: str) -> dict[str, Any] | None:
+        return self.versions.get(object_id)
+
+    def cursor(self, _source: str, _partition: str = "") -> None:
+        return None
+
+    def apply(self, envelope: dict[str, Any]) -> dict[str, Any]:
+        self.applied.append(envelope)
+        mutation = envelope["mutation"]
+        for operation in mutation["operations"]:
+            method = operation["method"]
+            params = method["params"]
+            properties = msgpack.unpackb(params["properties_msgpack"], raw=False)
+            if method["method"] == "AddNode":
+                self.nodes.values[params["node_id"]] = properties
+            elif method["method"] == "AddEdge":
+                self.edges.append(
+                    (params["source_id"], params["target_id"], properties)
+                )
+        version = envelope["content_version"]
+        self.versions[version["object_id"]] = version
+        self.records[envelope["envelope_id"]] = envelope
+        return {
+            "batch_id": mutation["batch_id"],
+            "replayed": False,
+            "projection_pending": False,
+        }
+
+
+class _FakeRdf:
+    def validate_shacl(self, _shapes: str, _data_graph: str) -> dict[str, Any]:
+        return {"conforms": True, "results": []}
 
 
 class _FakeClient:
-    def __init__(self):
-        self.txn = _FakeTxn()
-        self.edges = _FakeEdges()
+    def __init__(self) -> None:
+        self.nodes = _FakeNodes()
+        self.changes = _FakeChanges(self.nodes)
+        self.rdf = _FakeRdf()
+
+    @staticmethod
+    def supports(operation: str) -> bool:
+        return operation == "ApplyChangeEnvelope"
 
 
 def test_ingest_entities_writes_nodes_and_edges():
     c = _FakeClient()
     res = ingest_entities(
         [
-            {"id": "a", "type": "ManagedHost", "name": "h"},
-            {"id": "b", "type": "FanController"},
+            {"id": "a", "node_type": "ManagedHost", "name": "h"},
+            {"id": "b", "node_type": "FanController"},
         ],
-        [{"source": "b", "target": "a", "type": "controlsHost"}],
+        [{"source": "b", "target": "a", "relationship": "controlsHost"}],
         client=c,
         graph="__commons__",
     )
     assert res == {"nodes": 2, "edges": 1}
-    assert c.txn.committed is True
-    assert set(c.txn.nodes) == {"a", "b"}
+    assert len(c.changes.applied) == 1
+    assert set(c.nodes.values) == {"a", "b"}
     # provenance is stamped
-    assert c.txn.nodes["a"]["source"] == "fan-manager"
-    assert c.txn.nodes["a"]["domain"] == "fan"
-    assert c.edges.edges == [("b", "a", {"type": "controlsHost"})]
+    assert c.nodes.values["a"]["source"] == "fan-manager"
+    assert c.nodes.values["a"]["domain"] == "fan"
+    assert c.changes.edges == [("b", "a", {"relationship": "controlsHost"})]
 
 
 def test_ingest_temperature_readings_maps_reading_host_and_setting():
@@ -88,15 +159,15 @@ def test_ingest_temperature_readings_maps_reading_host_and_setting():
     assert res == {"nodes": 4, "edges": 4}
     rid = "fan:tempreading:r820:2026-07-04T00:00:00Z"
     sid = "fan:setting:r820:2026-07-04T00:00:00Z"
-    assert c.txn.nodes[rid]["type"] == "TemperatureReading"
-    assert c.txn.nodes[rid]["celsius"] == 63.0
-    assert c.txn.nodes[rid]["observedAt"] == "2026-07-04T00:00:00Z"
-    assert c.txn.nodes[sid]["type"] == "FanSpeedSetting"
-    assert c.txn.nodes[sid]["fanLevel"] == 42
-    assert c.txn.nodes["fan:host:r820"]["type"] == "ManagedHost"
-    assert c.txn.nodes["fan:controller:r820"]["type"] == "FanController"
+    assert c.nodes.values[rid]["node_type"] == "TemperatureReading"
+    assert c.nodes.values[rid]["celsius"] == 63.0
+    assert c.nodes.values[rid]["observedAt"] == "2026-07-04T00:00:00Z"
+    assert c.nodes.values[sid]["node_type"] == "FanSpeedSetting"
+    assert c.nodes.values[sid]["fanLevel"] == 42
+    assert c.nodes.values["fan:host:r820"]["node_type"] == "ManagedHost"
+    assert c.nodes.values["fan:controller:r820"]["node_type"] == "FanController"
     # links: controlsHost, readingForHost, appliedToHost, triggeredSetting
-    kinds = {e[2]["type"] for e in c.edges.edges}
+    kinds = {e[2]["relationship"] for e in c.changes.edges}
     assert kinds == {
         "controlsHost",
         "readingForHost",
@@ -115,7 +186,9 @@ def test_ingest_temperature_reading_without_fan_level_omits_setting():
     )
     # host + controller + reading = 3 nodes, no setting
     assert res == {"nodes": 3, "edges": 2}
-    assert not any(n.get("type") == "FanSpeedSetting" for n in c.txn.nodes.values())
+    assert not any(
+        n.get("node_type") == "FanSpeedSetting" for n in c.nodes.values.values()
+    )
 
 
 def test_ingest_fan_settings_maps_setting():
@@ -135,8 +208,8 @@ def test_ingest_fan_settings_maps_setting():
     # host + controller + setting = 3 nodes
     assert res == {"nodes": 3, "edges": 2}
     sid = "fan:setting:r710:2026-07-04T02:00:00Z"
-    assert c.txn.nodes[sid]["type"] == "FanSpeedSetting"
-    assert c.txn.nodes[sid]["fanLevel"] == 80
+    assert c.nodes.values[sid]["node_type"] == "FanSpeedSetting"
+    assert c.nodes.values[sid]["fanLevel"] == 80
 
 
 def test_ingest_sensor_readings_classifies_fan_and_temp():
@@ -150,9 +223,9 @@ def test_ingest_sensor_readings_classifies_fan_and_temp():
     res = ingest_sensor_readings(sensors, host="r820", client=c, graph="__commons__")
     # host + controller + 2 sensors = 4 nodes; controlsHost + 2 readingForHost = 3 edges
     assert res == {"nodes": 4, "edges": 3}
-    fan_nodes = [n for n in c.txn.nodes.values() if n.get("sensorType") == "Fan"]
+    fan_nodes = [n for n in c.nodes.values.values() if n.get("sensorType") == "Fan"]
     temp_nodes = [
-        n for n in c.txn.nodes.values() if n.get("sensorType") == "Temperature"
+        n for n in c.nodes.values.values() if n.get("sensorType") == "Temperature"
     ]
     assert fan_nodes and fan_nodes[0]["fanRpm"] == 5000.0
     assert temp_nodes and temp_nodes[0]["celsius"] == 24.0
@@ -165,12 +238,18 @@ def test_parse_sensor_list_handles_na_values():
     ]
 
 
-def test_ingest_noops_without_engine():
-    # No injected client + no reachable engine -> clean no-op.
-    assert ingest_entities([{"id": "a", "type": "ManagedHost"}]) is None
+def test_ingest_rejects_legacy_structural_fields():
+    with pytest.raises(NativeIngestError, match="canonical node_type"):
+        ingest_entities([{"id": "legacy", "type": "Legacy"}], client=_FakeClient())
 
 
-def test_ingest_empty_is_noop():
-    assert ingest_temperature_readings([], client=_FakeClient()) is None
-    assert ingest_sensor_readings([], client=_FakeClient()) is None
-    assert ingest_fan_settings([], client=_FakeClient()) is None
+def test_ingest_empty_is_rejected():
+    with pytest.raises(NativeIngestError, match="at least one entity"):
+        ingest_entities([], client=_FakeClient())
+    for ingestor in (
+        ingest_temperature_readings,
+        ingest_fan_settings,
+        ingest_sensor_readings,
+    ):
+        with pytest.raises(NativeIngestError, match="at least one entity"):
+            ingestor([], client=_FakeClient())

@@ -13,7 +13,7 @@ skills to act on the reading.
 
 ## Tools
 
-- `get_temperature`: Returns the current highest CPU core temperature as a
+- `get_temp`: Returns the current highest CPU core temperature as a
   structured envelope (`response`, `command`, `status`).
 
 ## Usage

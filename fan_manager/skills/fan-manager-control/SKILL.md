@@ -12,7 +12,7 @@ requested level directly, bypassing the automatic temperature curve.
 
 ## Tools
 
-- `set_fan_speed`: Set the fan speed to a specific level (0-100). Levels outside
+- `set_fan`: Set the fan speed to a specific level (0-100). Levels outside
   that range are rejected with a structured error envelope.
 
 ## Usage

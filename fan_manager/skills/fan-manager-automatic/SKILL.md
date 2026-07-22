@@ -14,7 +14,7 @@ safe to maximum.
 
 ## Tools
 
-- `automatic_fan_speed`: Adjusts fan speed based on the current temperature and
+- `auto_set_fan_speed`: Adjusts fan speed based on the current temperature and
   configured thresholds (`minimum_temperature`, `maximum_temperature`,
   `minimum_fan_speed`, `maximum_fan_speed`, `temperature_power`).
 

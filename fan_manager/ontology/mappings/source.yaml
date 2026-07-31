@@ -3,7 +3,7 @@ connector: fan-manager
 ontology_source: fan
 sync:
 - preset: fan-sensors
-  server: fan-manager
+  server: fan-manager-mcp
   tool: fan_manager_sensors
   action: records
   records_path: records

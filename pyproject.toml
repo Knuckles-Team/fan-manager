@@ -57,6 +57,14 @@ fan_manager = ["mcp_config.json", "skills/**", "prompts/**", "ontology/**", "con
 where = ["."]
 include = ["fan_manager*"]
 
+[tool.uv]
+override-dependencies = [
+    "fastmcp-slim[client,server]>=4.0.0b1",
+]
+
+[tool.uv.sources]
+agent-utilities = { path = ".uv-workspace-siblings/agent-utilities", editable = true }
+
 [tool.ruff]
 line-length = 88
 target-version = "py310"

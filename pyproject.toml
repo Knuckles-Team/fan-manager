@@ -47,6 +47,9 @@ fan-manager = "fan_manager.connectors"
 [project.entry-points."agent_utilities.prompt_providers"]
 fan-manager = "fan_manager.prompts"
 
+[tool.uv.workspace]
+members = ["."]
+
 [tool.setuptools]
 include-package-data = true
 

@@ -1,7 +1,7 @@
 {
   "api_version": "graphos.io/v1",
   "artifacts": {
-    "connector_manifest.yml": "6eb075cd31b4533ca824f5b6f60166fa825723cb6cf06b7b788777ee98fc90b0",
+    "connector_manifest.yml": "e58e827cab300a51c2dcc8edcab5649e2f29b7dc52950d443c5fff86bf625063",
     "fan_manager/connectors/mcp_source_presets.json": "28312663c53de5e36c350e132ebc9703eb0b88a2bc1971e0bc2bb63c59b213d1",
     "fan_manager/connectors/tool_schema_fingerprints.json": "4e35eab0fc225fd0e3c2c3fe0ccf1579160ccd36370026fb8a2ac39f44414483",
     "fan_manager/ontology/fan.ttl": "321cdb0380bd1c0251fec2809f8e15d54897ce4b209353f6e1ddc556f201358a",
@@ -18,9 +18,9 @@
     "synthetic_fixture_contract": "passed"
   },
   "compatibility": {
-    "agent_utilities": ">=2.4.0,<3",
+    "agent_utilities": ">=2.5.0,<3",
     "bundle_schema": "2",
-    "epistemic_graph": ">=2.26.0,<3"
+    "epistemic_graph": ">=2.27.0,<3"
   },
   "connector": "fan-manager",
   "kind": "ConnectorSourceAttestation",
@@ -32,5 +32,5 @@
   "signer": "UNSIGNED-PREVIEW",
   "signing_public_key": "",
   "status": "source-validated",
-  "validated_at": "2026-08-21T04:30:39Z"
+  "validated_at": "2026-08-26T13:42:55Z"
 }

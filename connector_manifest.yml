@@ -417,7 +417,7 @@ sync:
   updated_field: null
   pagination: null
   doc_type: sensor-telemetry
-  tool_schema_sha256: c34bcd5fd7d52ebb8e8b10e298c894f2666c49447cb4d75eb6b4f655c0b4f719
+  tool_schema_sha256: 2b81ce2fafebd180526926135e04152d14eb4a7079672cb3509754225be12ea0
   raw:
     server: fan-manager-mcp
     tool: fan_manager_sensors

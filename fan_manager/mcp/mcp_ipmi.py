@@ -6,7 +6,7 @@ the runtime and are never persisted in connector records.
 """
 
 import json
-from typing import Any
+from typing import Any, Literal
 
 from fastmcp import Context, FastMCP
 from pydantic import Field
@@ -59,7 +59,9 @@ def register_ipmi_tools(mcp: FastMCP):
 
     @mcp.tool(tags={"ipmi-sensors"})
     async def fan_manager_sensors(
-        action: str = Field(default="list", description="list | full | type | records"),
+        action: Literal["records"] = Field(
+            default="list", description="list | full | type | records"
+        ),
         params_json: str = Field(
             default="{}",
             description="Optional target; for 'type' add "

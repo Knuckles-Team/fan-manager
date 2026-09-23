@@ -57,7 +57,18 @@ def register_ipmi_tools(mcp: FastMCP):
             return ipmi.chassis(action, target=target, bootdev=kwargs.get("bootdev"))
         return {"error": f"Unknown action: {action}"}
 
-    @mcp.tool(tags={"ipmi-sensors"})
+    @mcp.tool(
+        tags={"ipmi-sensors"},
+        annotations={
+            "readOnlyHint": True,
+            "destructiveHint": False,
+            "idempotentHint": True,
+            "openWorldHint": False,
+        },
+        meta={
+            "eg.annotations": {"modalities_in": ["text"], "modalities_out": ["text"]}
+        },
+    )
     async def fan_manager_sensors(
         action: Literal["records"] = Field(
             default="list", description="list | full | type | records"

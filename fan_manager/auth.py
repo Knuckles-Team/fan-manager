@@ -12,8 +12,8 @@ the MCP server and downstream tooling can depend on it uniformly. The returned
 
 from typing import Any
 
-from agent_utilities.base_utilities import get_logger
-from agent_utilities.core.config import setting
+from agent_connector_sdk.config import setting
+from agent_connector_sdk.utilities import get_logger
 
 from fan_manager.api_client import Api
 

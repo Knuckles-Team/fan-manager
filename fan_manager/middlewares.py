@@ -9,7 +9,7 @@ not registered automatically.
 import os
 import threading
 
-from agent_utilities.base_utilities import get_logger, to_boolean
+from agent_connector_sdk.utilities import get_logger, to_boolean
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 
 logger = get_logger(__name__)

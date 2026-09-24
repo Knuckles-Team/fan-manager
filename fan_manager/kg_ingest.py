@@ -3,10 +3,19 @@
 CONCEPT:AU-KG.ingest.enterprise-source-extractor. Fan Manager natively pushes its
 thermal timeseries into the ONE epistemic-graph knowledge graph as **typed OWL nodes**
 — ``:TemperatureReading`` / ``:FanSpeedSetting`` / ``:SensorReading`` samples, each linked
-to the ``:ManagedHost`` and its ``:FanController`` — through the required
-``agent_utilities.knowledge_graph.memory.native_ingest`` authority. Node ids follow
-``fan:<class>:<extId>`` and each entity's ``node_type`` matches a class the
-``fan_manager.ontology`` ``fan.ttl`` federates.
+to the ``:ManagedHost`` and its ``:FanController``. Node ids follow ``fan:<class>:<extId>``
+and each entity's ``node_type`` matches a class the ``fan_manager.ontology`` ``fan.ttl``
+federates.
+
+SDK GAP (EH-481/SDK-GAPS.md): this used to commit through the required
+``agent_utilities.knowledge_graph.memory.native_ingest`` authority (dependency-injected via
+a ``client`` exposing ``.changes``/``.nodes``/``.rdf``/``.supports()``). The SDK's only
+epistemic-graph write path, ``agent_connector_sdk.sinks.epistemic_graph.EpistemicGraphSink``,
+requires a verified client plus a ``PackImportAuthorityResolver`` wired at the composition
+root — not a same-shaped drop-in. Until the gap is filled, the structural validation that
+``native_ingest`` used to do (reject records missing ``node_type``/using the retired ``type``
+alias, reject empty input) is vendored locally below so callers keep the same contract; the
+actual commit is a stub that reports zero nodes/edges written.
 """
 
 from __future__ import annotations
@@ -15,24 +24,81 @@ import logging
 import time
 from typing import Any
 
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    ingest_documents as _native_ingest_documents,
-)
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    ingest_entities as _native_ingest_entities,
-)
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    media_store as _native_media_store,
-)
-
 logger = logging.getLogger("fan_manager.kg")
 
 _SOURCE = "fan-manager"
 _DOMAIN = "fan"
 
 
+class NativeIngestError(Exception):
+    """A record failed the native-ingest structural contract, or was empty."""
+
+
 def _now() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def _validate_nodes(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    identified = [n for n in nodes if n.get("id")]
+    if not identified:
+        raise NativeIngestError("native ingest requires at least one identified node")
+    for node in identified:
+        if "type" in node or not node.get("node_type"):
+            raise NativeIngestError("native ingest nodes require canonical node_type")
+    return identified
+
+
+def _validate_edges(relationships: list[dict[str, Any]] | None) -> None:
+    for rel in relationships or []:
+        if (
+            "type" in rel
+            or not rel.get("relationship")
+            or not rel.get("source")
+            or not rel.get("target")
+        ):
+            raise NativeIngestError(
+                "native ingest edges require source, target, and canonical relationship"
+            )
+
+
+def _native_ingest_entities(
+    entities: list[dict[str, Any]],
+    relationships: list[dict[str, Any]] | None = None,
+    *,
+    source: str,
+    domain: str,
+    client: Any | None = None,
+    graph: str | None = None,
+) -> dict[str, int]:
+    """Validate, then no-op the commit; see the SDK-GAPS note above."""
+    if not entities:
+        raise NativeIngestError("native ingest requires at least one entity")
+    nodes = _validate_nodes(entities)
+    _validate_edges(relationships)
+    logger.debug(
+        "KG ingest: no ingest primitive wired yet (%d nodes, %d edges dropped)",
+        len(nodes),
+        len(relationships or []),
+    )
+    return {"nodes": 0, "edges": 0}
+
+
+def _native_ingest_documents(
+    documents: list[dict[str, Any]],
+    *,
+    source: str,
+    domain: str,
+    client: Any | None = None,
+    graph: str | None = None,
+) -> dict[str, int]:
+    """Validate, then no-op the commit; see the SDK-GAPS note above."""
+    if not documents:
+        raise NativeIngestError("native ingest requires at least one document")
+    logger.debug(
+        "KG ingest: no ingest primitive wired yet (%d documents dropped)",
+        len(documents),
+    )
+    return {"nodes": 0, "edges": 0}
 
 
 def ingest_entities(
@@ -66,7 +132,7 @@ def ingest_documents(
     """Write text records as ``:Document`` nodes (semantic-search fodder).
 
     Each doc: ``{"id":..., "text":..., "title"?:..., "source_uri"?:..., ...props}``.
-    Validation and engine failures are surfaced as ``NativeIngestError``.
+    Validation failures are surfaced as ``NativeIngestError``.
     """
     return _native_ingest_documents(
         documents, source=source, domain=domain, client=client, graph=graph
@@ -74,8 +140,8 @@ def ingest_documents(
 
 
 def media_store() -> Any:
-    """Return the required native ``MediaStore`` authority."""
-    return _native_media_store()
+    """No native ``MediaStore`` authority is wired yet; see the SDK-GAPS note above."""
+    return None
 
 
 # --------------------------------------------------------------------------- #

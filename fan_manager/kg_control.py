@@ -429,7 +429,8 @@ def _notify(message: str) -> None:
     """Best-effort push to the intelligent alert router (``FAN_MANAGER_NOTIFY_URL``)."""
     logger.info(message)
     try:
-        from agent_utilities.core.config import config, setting
+        from agent_connector_sdk.config import setting
+        from agent_utilities.core.config import config
         from agent_utilities.protocols.source_connectors.http_safety import (
             safe_post_json,
         )

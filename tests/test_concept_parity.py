@@ -5,13 +5,24 @@ in MCP tool docstrings must be registered in docs/concepts.md.
 import os
 
 import pytest
-from agent_utilities.governance.concept_hierarchy import OKF_MARKER_RE
+
+# The OKF-CIS marker grammar moved off agent-utilities onto repository-manager's
+# governance module (lane au-decon-G13, unlanded at the time of this migration).
+# repository-manager is not yet a resolvable dependency here (its own worktree lacks
+# the .uv-workspace-siblings scaffolding this lane must not create in a worktree it
+# doesn't own -- see NEW-LANE-BRIEF's HARD RULE); skip gracefully until it lands.
+repository_manager_governance = pytest.importorskip(
+    "repository_manager.governance.concept_hierarchy",
+    reason="repository-manager (OKF_MARKER_RE's new home, lane au-decon-G13) not installed yet",
+)
+OKF_MARKER_RE = repository_manager_governance.OKF_MARKER_RE
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MCP_DIR = os.path.join(ROOT_DIR, "fan_manager", "mcp")
 CONCEPTS_DOC = os.path.join(ROOT_DIR, "docs", "concepts.md")
 
-# Reuse the one canonical marker grammar (agent-utilities' OKF-CIS standard) rather
+# Reuse the one canonical marker grammar (the OKF-CIS standard, owned by
+# repository-manager's governance module since it moved off agent-utilities) rather
 # than a locally-maintained copy, so this test can't drift from the ecosystem-wide
 # concept-ID format.
 CONCEPT_RE = OKF_MARKER_RE

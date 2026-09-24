@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fan-manager"
 version = "2.1.0"
-description = "Dell PowerEdge Fan Manager + MCP Server + A2A Agent"
+description = "Dell PowerEdge Fan Manager + MCP Server"
 readme = "README.md"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -25,14 +25,12 @@ text = "MIT"
 
 [project.optional-dependencies]
 mcp = ["agent-connector-sdk>=0.1.0,<1.0.0"]
-agent = ["agent-utilities[agent-runtime,logfire]>=2.0.0,<3.0.0", "logfire>=4.38.0"]
-all = ["fan-manager[mcp,agent]>=1.5.0"]
+all = ["fan-manager[mcp]>=1.5.0"]
 test = ["pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0", "pytest-cov>=7.1.0"]
 
 [project.scripts]
 fan-manager = "fan_manager.fan_manager:fan_manager"
 fan-manager-mcp = "fan_manager.mcp_server:mcp_server"
-fan-manager-agent = "fan_manager.agent_server:agent_server"
 fan-manager-control = "fan_manager.kg_control:main"
 
 [project.entry-points."agent_utilities.skill_providers"]

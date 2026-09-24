@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """fan-manager — manage your Dell PowerEdge fan speed.
 
-Local CLI tool + MCP Server + A2A Agent for the agent-utilities ecosystem.
+Local CLI tool + MCP Server for the agent-utilities ecosystem.
 """
 
 import importlib
@@ -20,7 +20,6 @@ CORE_MODULES: list[str] = [
 ]
 
 OPTIONAL_MODULES = {
-    "fan_manager.agent_server": "agent",
     "fan_manager.mcp_server": "mcp",
 }
 
@@ -65,8 +64,6 @@ def __getattr__(name: str) -> Any:
     """Lazily expose optional MCP/agent members and availability flags."""
     if name == "_MCP_AVAILABLE":
         return _import_module_safely("fan_manager.mcp_server") is not None
-    if name == "_AGENT_AVAILABLE":
-        return _import_module_safely("fan_manager.agent_server") is not None
 
     for module_name in OPTIONAL_MODULES:
         if module_name not in _loaded_optional_modules:

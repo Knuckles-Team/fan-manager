@@ -53,7 +53,7 @@ def test_core_callables_exposed():
 
 @pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
 @pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
-@pytest.mark.parametrize("attr", ["_MCP_AVAILABLE", "_AGENT_AVAILABLE"])
+@pytest.mark.parametrize("attr", ["_MCP_AVAILABLE"])
 def test_availability_flags(attr):
     """Optional-dependency flags gating the CONCEPT:FAN-* tool surface are booleans."""
     mod = importlib.import_module(PKG)

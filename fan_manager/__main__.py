@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from fan_manager.agent_server import agent_server
+from fan_manager.mcp_server import mcp_server
 
 if __name__ == "__main__":
-    agent_server()
+    mcp_server()

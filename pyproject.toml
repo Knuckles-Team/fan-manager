@@ -86,3 +86,6 @@ ignore_names = ["request", "config", "ctx"]
 
 [dependency-groups]
 dev = ["pytest-timeout>=2.4.0"]
+
+[tool.pipelines_hooks.ste]
+exempt = ["specs/*", "specs/**/*"]

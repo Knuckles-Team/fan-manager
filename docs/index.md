@@ -32,7 +32,7 @@ Fan Manager is a **local** tool: there are no remote credentials. It requires
 
 <div class="grid cards" markdown>
 
-- :material-rocket-launch: **[Installation](installation.md)** — pip, source, extras, and the prebuilt Docker image.
+- :material-rocket-start: **[Installation](installation.md)** — pip, source, extras, and the prebuilt Docker image.
 - :material-server-network: **[Deployment](deployment.md)** — run the MCP and agent servers, Docker Compose, env config.
 - :material-console: **[Usage](usage.md)** — the MCP tools, the `Api` facade, and the CLI.
 - :material-sitemap: **[Overview](overview.md)** — the action-routed tool surface and architecture.

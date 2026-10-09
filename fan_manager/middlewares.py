@@ -6,13 +6,14 @@ delegation is explicitly enabled. They are provided for interface parity and are
 not registered automatically.
 """
 
+import logging
 import os
 import threading
 
-from agent_utilities.base_utilities import get_logger, to_boolean
+from agent_connector_sdk.utilities import to_boolean
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 local = threading.local()
 
 

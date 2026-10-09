@@ -1,25 +1,19 @@
-"""Native epistemic-graph typed-node ingestion — Wire-First coverage.
+"""Epistemic-graph typed-node ingestion via agent_connector_sdk — Wire-First coverage.
 
-Exercises the real ``fan_manager.kg_ingest`` mappers with a fake ChangeEnvelope-capable
-engine client (no engine required), asserting the applied node/edge writes + the
-fan-manager telemetry → :TemperatureReading / :FanSpeedSetting / :SensorReading mapping.
-The fake client and governed-session fixture mirror agent-utilities' own
-``tests/knowledge_graph/test_native_ingest.py`` reference fake — the shape
-``_change_envelope_authority`` actually requires (``changes``/``nodes``/``rdf``/
-``supports``; the retired raw ``txn``-only fake is rejected).
+Exercises the real ``fan_manager.kg_ingest`` mappers against a fake transport one level
+below the SDK's own ``KnowledgeIngest`` facade, so these tests still run the SDK's real
+request-building/validation contract. Asserts the fan-manager telemetry →
+:TemperatureReading / :FanSpeedSetting / :SensorReading mapping and node/edge counts.
 CONCEPT:AU-KG.ingest.enterprise-source-extractor.
 """
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import Any
 
-import msgpack
 import pytest
-from agent_utilities.knowledge_graph.core.session import GraphSession, use_session
-from agent_utilities.knowledge_graph.memory.native_ingest import NativeIngestError
-from agent_utilities.security.actor_identity import ActorType
-from agent_utilities.security.brain_context import ActorContext, use_actor
+from agent_connector_sdk.ingest import IngestError, KnowledgeIngest
 
 from fan_manager.kg_ingest import (
     ingest_entities,
@@ -30,118 +24,68 @@ from fan_manager.kg_ingest import (
 )
 
 
-@pytest.fixture(autouse=True)
-def _governed_session():
-    """Ambient actor + GraphSession required by native_ingest's injected-client path."""
-    actor = ActorContext(
-        actor_id="subject:opaque:synthetic",
-        actor_type=ActorType.AUTOMATED_SERVICE,
-        roles=(),
-        tenant_id="tenant:opaque:synthetic",
-        authenticated=True,
-    )
-    session = GraphSession(
-        actor=actor,
-        tenant=actor.tenant_id,
-        scopes=frozenset({"kg:write"}),
-        graph="__commons__",
-        policy_version="policy:opaque:synthetic",
-        audience="epistemic-graph",
-    )
-    with use_actor(actor), use_session(session):
-        yield
-
-
-class _FakeNodes:
+class _FakeTransport:
     def __init__(self) -> None:
-        self.values: dict[str, dict[str, Any]] = {}
+        self.requests: list[Any] = []
 
-    def properties(self, node_id: str) -> dict[str, Any] | None:
-        return self.values.get(node_id)
+    async def source_status(self, connector, stream):
+        return SimpleNamespace(accepted_checkpoint=None)
 
-    def list(self) -> list[tuple[str, dict[str, Any]]]:
-        return list(self.values.items())
+    async def submit(self, request):
+        self.requests.append(request)
+        return SimpleNamespace(
+            affected_count=len(request.records),
+            relationship_count=len(request.relationships),
+        )
 
-
-class _FakeChanges:
-    def __init__(self, nodes: _FakeNodes) -> None:
-        self.nodes = nodes
-        self.edges: list[tuple[str, str, dict[str, Any]]] = []
-        self.applied: list[dict[str, Any]] = []
-        self.records: dict[str, dict[str, Any]] = {}
-        self.versions: dict[str, dict[str, Any]] = {}
-
-    def get(self, envelope_id: str) -> dict[str, Any] | None:
-        return self.records.get(envelope_id)
-
-    def content_version(self, object_id: str) -> dict[str, Any] | None:
-        return self.versions.get(object_id)
-
-    def cursor(self, _source: str, _partition: str = "") -> None:
-        return None
-
-    def apply(self, envelope: dict[str, Any]) -> dict[str, Any]:
-        self.applied.append(envelope)
-        mutation = envelope["mutation"]
-        for operation in mutation["operations"]:
-            method = operation["method"]
-            params = method["params"]
-            properties = msgpack.unpackb(params["properties_msgpack"], raw=False)
-            if method["method"] == "AddNode":
-                self.nodes.values[params["node_id"]] = properties
-            elif method["method"] == "AddEdge":
-                self.edges.append(
-                    (params["source_id"], params["target_id"], properties)
-                )
-        version = envelope["content_version"]
-        self.versions[version["object_id"]] = version
-        self.records[envelope["envelope_id"]] = envelope
-        return {
-            "batch_id": mutation["batch_id"],
-            "replayed": False,
-            "projection_pending": False,
-        }
+    async def store_blob(self, data):
+        raise AssertionError("fan-manager ingestion carries no media")
 
 
-class _FakeRdf:
-    def validate_shacl(self, _shapes: str, _data_graph: str) -> dict[str, Any]:
-        return {"conforms": True, "results": []}
+@pytest.fixture
+def ingest():
+    transport = _FakeTransport()
+    return KnowledgeIngest(transport, loop=None), transport
 
 
-class _FakeClient:
-    def __init__(self) -> None:
-        self.nodes = _FakeNodes()
-        self.changes = _FakeChanges(self.nodes)
-        self.rdf = _FakeRdf()
-
-    @staticmethod
-    def supports(operation: str) -> bool:
-        return operation == "ApplyChangeEnvelope"
+def _node_type(record: Any) -> str:
+    """The real generated ``SourceRecord`` carries no bare ``node_type`` field — it's
+    encoded as the last segment of ``mapping_reference``
+    (``manifest:<connector>#schema_mappings/<NodeType>``)."""
+    return record.mapping_reference.rsplit("/", 1)[-1]
 
 
-def test_ingest_entities_writes_nodes_and_edges():
-    c = _FakeClient()
-    res = ingest_entities(
+def _rel_name(relationship: Any) -> str:
+    """Likewise, a ``SourceRelationship``'s kind is the last segment of
+    ``relation_reference`` (``manifest:<connector>#resources/<NodeType>/relations/<kind>``)."""
+    return relationship.relation_reference.rsplit("/", 1)[-1]
+
+
+async def test_ingest_entities_writes_nodes_and_edges(ingest):
+    service, transport = ingest
+    res = await ingest_entities(
         [
             {"id": "a", "node_type": "ManagedHost", "name": "h"},
             {"id": "b", "node_type": "FanController"},
         ],
         [{"source": "b", "target": "a", "relationship": "controlsHost"}],
-        client=c,
-        graph="__commons__",
+        ingest=service,
     )
     assert res == {"nodes": 2, "edges": 1}
-    assert len(c.changes.applied) == 1
-    assert set(c.nodes.values) == {"a", "b"}
-    # provenance is stamped
-    assert c.nodes.values["a"]["source"] == "fan-manager"
-    assert c.nodes.values["a"]["domain"] == "fan"
-    assert c.changes.edges == [("b", "a", {"relationship": "controlsHost"})]
+    assert len(transport.requests) == 1
+    record_ids = {r.record_id for r in transport.requests[0].records}
+    assert record_ids == {"a", "b"}
+    rel = transport.requests[0].relationships[0]
+    assert (rel.source.record_id, rel.target.record_id, _rel_name(rel)) == (
+        "b",
+        "a",
+        "controlsHost",
+    )
 
 
-def test_ingest_temperature_readings_maps_reading_host_and_setting():
-    c = _FakeClient()
-    res = ingest_temperature_readings(
+async def test_ingest_temperature_readings_maps_reading_host_and_setting(ingest):
+    service, transport = ingest
+    res = await ingest_temperature_readings(
         [
             {
                 "response": 63.0,
@@ -152,22 +96,21 @@ def test_ingest_temperature_readings_maps_reading_host_and_setting():
             }
         ],
         host="r820",
-        client=c,
-        graph="__commons__",
+        ingest=service,
     )
     # host + controller + reading + setting = 4 nodes
     assert res == {"nodes": 4, "edges": 4}
+    records = {r.record_id: r for r in transport.requests[0].records}
     rid = "fan:tempreading:r820:2026-07-04T00:00:00Z"
     sid = "fan:setting:r820:2026-07-04T00:00:00Z"
-    assert c.nodes.values[rid]["node_type"] == "TemperatureReading"
-    assert c.nodes.values[rid]["celsius"] == 63.0
-    assert c.nodes.values[rid]["observedAt"] == "2026-07-04T00:00:00Z"
-    assert c.nodes.values[sid]["node_type"] == "FanSpeedSetting"
-    assert c.nodes.values[sid]["fanLevel"] == 42
-    assert c.nodes.values["fan:host:r820"]["node_type"] == "ManagedHost"
-    assert c.nodes.values["fan:controller:r820"]["node_type"] == "FanController"
-    # links: controlsHost, readingForHost, appliedToHost, triggeredSetting
-    kinds = {e[2]["relationship"] for e in c.changes.edges}
+    assert _node_type(records[rid]) == "TemperatureReading"
+    assert records[rid].payload["celsius"] == 63.0
+    assert records[rid].payload["observedAt"] == "2026-07-04T00:00:00Z"
+    assert _node_type(records[sid]) == "FanSpeedSetting"
+    assert records[sid].payload["fanLevel"] == 42
+    assert _node_type(records["fan:host:r820"]) == "ManagedHost"
+    assert _node_type(records["fan:controller:r820"]) == "FanController"
+    kinds = {_rel_name(r) for r in transport.requests[0].relationships}
     assert kinds == {
         "controlsHost",
         "readingForHost",
@@ -176,24 +119,23 @@ def test_ingest_temperature_readings_maps_reading_host_and_setting():
     }
 
 
-def test_ingest_temperature_reading_without_fan_level_omits_setting():
-    c = _FakeClient()
-    res = ingest_temperature_readings(
+async def test_ingest_temperature_reading_without_fan_level_omits_setting(ingest):
+    service, transport = ingest
+    res = await ingest_temperature_readings(
         [{"response": 50.0, "status": 200, "observed_at": "2026-07-04T01:00:00Z"}],
         host="localhost",
-        client=c,
-        graph="__commons__",
+        ingest=service,
     )
     # host + controller + reading = 3 nodes, no setting
     assert res == {"nodes": 3, "edges": 2}
     assert not any(
-        n.get("node_type") == "FanSpeedSetting" for n in c.nodes.values.values()
+        _node_type(r) == "FanSpeedSetting" for r in transport.requests[0].records
     )
 
 
-def test_ingest_fan_settings_maps_setting():
-    c = _FakeClient()
-    res = ingest_fan_settings(
+async def test_ingest_fan_settings_maps_setting(ingest):
+    service, transport = ingest
+    res = await ingest_fan_settings(
         [
             {
                 "fan_level": 80,
@@ -202,33 +144,37 @@ def test_ingest_fan_settings_maps_setting():
             }
         ],
         host="r710",
-        client=c,
-        graph="__commons__",
+        ingest=service,
     )
     # host + controller + setting = 3 nodes
     assert res == {"nodes": 3, "edges": 2}
+    records = {r.record_id: r for r in transport.requests[0].records}
     sid = "fan:setting:r710:2026-07-04T02:00:00Z"
-    assert c.nodes.values[sid]["node_type"] == "FanSpeedSetting"
-    assert c.nodes.values[sid]["fanLevel"] == 80
+    assert _node_type(records[sid]) == "FanSpeedSetting"
+    assert records[sid].payload["fanLevel"] == 80
 
 
-def test_ingest_sensor_readings_classifies_fan_and_temp():
-    c = _FakeClient()
+async def test_ingest_sensor_readings_classifies_fan_and_temp(ingest):
+    service, transport = ingest
     sensors = parse_sensor_list(
         "Fan1 RPM | 5000.000 | RPM | ok |\n"
         "Inlet Temp | 24.000 | degrees C | ok |\n"
         "bad line without pipes\n"
     )
     assert len(sensors) == 2
-    res = ingest_sensor_readings(sensors, host="r820", client=c, graph="__commons__")
+    res = await ingest_sensor_readings(sensors, host="r820", ingest=service)
     # host + controller + 2 sensors = 4 nodes; controlsHost + 2 readingForHost = 3 edges
     assert res == {"nodes": 4, "edges": 3}
-    fan_nodes = [n for n in c.nodes.values.values() if n.get("sensorType") == "Fan"]
-    temp_nodes = [
-        n for n in c.nodes.values.values() if n.get("sensorType") == "Temperature"
+    fan_nodes = [
+        r for r in transport.requests[0].records
+        if r.payload.get("sensorType") == "Fan"
     ]
-    assert fan_nodes and fan_nodes[0]["fanRpm"] == 5000.0
-    assert temp_nodes and temp_nodes[0]["celsius"] == 24.0
+    temp_nodes = [
+        r for r in transport.requests[0].records
+        if r.payload.get("sensorType") == "Temperature"
+    ]
+    assert fan_nodes and fan_nodes[0].payload["fanRpm"] == 5000.0
+    assert temp_nodes and temp_nodes[0].payload["celsius"] == 24.0
 
 
 def test_parse_sensor_list_handles_na_values():
@@ -238,18 +184,20 @@ def test_parse_sensor_list_handles_na_values():
     ]
 
 
-def test_ingest_rejects_legacy_structural_fields():
-    with pytest.raises(NativeIngestError, match="canonical node_type"):
-        ingest_entities([{"id": "legacy", "type": "Legacy"}], client=_FakeClient())
+async def test_ingest_rejects_legacy_structural_fields(ingest):
+    service, _transport = ingest
+    with pytest.raises(IngestError):
+        await ingest_entities([{"id": "legacy", "type": "Legacy"}], ingest=service)
 
 
-def test_ingest_empty_is_rejected():
-    with pytest.raises(NativeIngestError, match="at least one entity"):
-        ingest_entities([], client=_FakeClient())
+async def test_ingest_empty_is_rejected(ingest):
+    service, _transport = ingest
+    with pytest.raises(IngestError, match="at least one entity"):
+        await ingest_entities([], ingest=service)
     for ingestor in (
         ingest_temperature_readings,
         ingest_fan_settings,
         ingest_sensor_readings,
     ):
-        with pytest.raises(NativeIngestError, match="at least one entity"):
-            ingestor([], client=_FakeClient())
+        # these mappers no-op on an empty batch (scaffold-only input), not raise
+        assert await ingestor([], ingest=service) == {"nodes": 0, "edges": 0}

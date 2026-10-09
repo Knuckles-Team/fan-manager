@@ -63,11 +63,17 @@ def _kg_record_thermal_sample(temperature: Any, fan_level: int) -> None:
     }
     logger = logging.getLogger("FanManager")
     try:
+        import asyncio
+
         from fan_manager.kg_ingest import ingest_thermal_trend
 
         # Clean, numeric :ThermalTrend node so the derivation loop (fan_manager.kg_control)
-        # can read min/avg/max °C + avg fan straight back for baseline learning.
-        ingest_thermal_trend(trend, host=os.getenv("FAN_MANAGER_HOST") or None)
+        # can read min/avg/max °C + avg fan straight back for baseline learning. This is a
+        # plain synchronous call site (no running event loop here); the ingest facade is
+        # async, so run it to completion on a fresh loop.
+        asyncio.run(
+            ingest_thermal_trend(trend, host=os.getenv("FAN_MANAGER_HOST") or None)
+        )
         logger.info(
             "KG thermal trend: avg=%s max=%s min=%s avg_fan=%s mode=%s over %d samples",
             trend["avg_temp"],

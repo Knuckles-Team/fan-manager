@@ -10,14 +10,14 @@ the MCP server and downstream tooling can depend on it uniformly. The returned
 "client" is simply the local-command facade (:class:`fan_manager.api_client.Api`).
 """
 
+import logging
 from typing import Any
 
-from agent_utilities.base_utilities import get_logger
-from agent_utilities.core.config import setting
+from agent_connector_sdk.config import setting
 
 from fan_manager.api_client import Api
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_client(config: dict | None = None) -> Api:

@@ -56,8 +56,11 @@ def test_kg_thermal_trend_aggregates_not_per_sample(monkeypatch):
     import fan_manager.kg_ingest as kgi
 
     captured: list = []
-    monkeypatch.setattr(kgi, "ingest_thermal_trend",
-                        lambda trend, host=None: captured.append(trend))
+
+    async def _fake_ingest_thermal_trend(trend, host=None, **_kw):
+        captured.append(trend)
+
+    monkeypatch.setattr(kgi, "ingest_thermal_trend", _fake_ingest_thermal_trend)
     monkeypatch.setenv("FAN_MANAGER_KG_INGEST", "true")
     monkeypatch.setenv("FAN_MANAGER_KG_AGGREGATE_S", "3600")
     monkeypatch.setattr(fm, "_FAN_MODE", "manual")

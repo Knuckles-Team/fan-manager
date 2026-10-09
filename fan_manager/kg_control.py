@@ -466,6 +466,8 @@ def run_derivation(
     collapsed to a single ``ambient`` cause. Notifies a summary. Returns the per-host result.
     All KG I/O is best-effort: with no reachable engine every host degrades to "no data".
     """
+    import asyncio
+
     from fan_manager import kg_ingest
 
     hosts = hosts or _hosts_from_env() or [os.getenv("FAN_MANAGER_HOST") or "localhost"]
@@ -489,11 +491,11 @@ def run_derivation(
     for host, res in results.items():
         baseline, policy = res["baseline"], res["policy"]
         if baseline:
-            kg_ingest.ingest_thermal_baseline(baseline, host=host)
-        kg_ingest.ingest_fan_policy(policy, host=host)
+            asyncio.run(kg_ingest.ingest_thermal_baseline(baseline, host=host))
+        asyncio.run(kg_ingest.ingest_fan_policy(policy, host=host))
         anomaly = anomalies.get(host)
         if anomaly:
-            kg_ingest.ingest_thermal_anomaly(anomaly, host=host)
+            asyncio.run(kg_ingest.ingest_thermal_anomaly(anomaly, host=host))
             _notify(
                 f"[fan-control] {host}: {anomaly['kind']} — {anomaly['observed_c']}°C "
                 f"vs expected {anomaly['expected_c']}°C (z={anomaly['zscore']})"

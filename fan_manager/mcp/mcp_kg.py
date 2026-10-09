@@ -62,7 +62,7 @@ def register_kg_tools(mcp: FastMCP):
             reading = get_temp()
             if reading.get("status") != 200:
                 return {"read": reading, "ingested": None}
-            result = ingest_temperature_readings([reading], host=host)
+            result = await ingest_temperature_readings([reading], host=host)
             return {"read": 1, "ingested": result}
 
         if action == "sensors":
@@ -70,7 +70,7 @@ def register_kg_tools(mcp: FastMCP):
             if sensor_result.get("status") != 200:
                 return {"read": sensor_result, "ingested": None}
             records = parse_sensor_list(sensor_result.get("response") or "")
-            result = ingest_sensor_readings(records, host=host)
+            result = await ingest_sensor_readings(records, host=host)
             return {"read": len(records), "ingested": result}
 
         raise ValueError(f"Unknown action: {action}")

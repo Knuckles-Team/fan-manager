@@ -1,12 +1,12 @@
 """Native epistemic-graph ingestion for Fan Manager thermal telemetry (typed nodes).
 
-CONCEPT:AU-KG.ingest.enterprise-source-extractor. Fan Manager natively pushes its
-thermal timeseries into the ONE epistemic-graph knowledge graph as **typed OWL nodes**
+CONCEPT:AU-KG.ingest.enterprise-source-extractor. Fan Manager pushes its thermal
+timeseries into the ONE epistemic-graph knowledge graph as **typed OWL nodes**
 — ``:TemperatureReading`` / ``:FanSpeedSetting`` / ``:SensorReading`` samples, each linked
-to the ``:ManagedHost`` and its ``:FanController`` — through the required
-``agent_utilities.knowledge_graph.memory.native_ingest`` authority. Node ids follow
-``fan:<class>:<extId>`` and each entity's ``node_type`` matches a class the
-``fan_manager.ontology`` ``fan.ttl`` federates.
+to the ``:ManagedHost`` and its ``:FanController`` — through
+``agent_connector_sdk.ingest`` -- the generated ``SourceIngest`` client, not a local
+ingestion helper. Node ids follow ``fan:<class>:<extId>`` and each entity's
+``node_type`` matches a class the ``fan_manager.ontology`` ``fan.ttl`` federates.
 """
 
 from __future__ import annotations
@@ -15,67 +15,100 @@ import logging
 import time
 from typing import Any
 
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    ingest_documents as _native_ingest_documents,
-)
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    ingest_entities as _native_ingest_entities,
-)
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    media_store as _native_media_store,
+from agent_connector_sdk.ingest import (
+    ChangeSet,
+    Document,
+    Entity,
+    IngestBinding,
+    IngestError,
+    KnowledgeIngest,
+    Relationship,
+    current_ingest,
 )
 
 logger = logging.getLogger("fan_manager.kg")
 
-_SOURCE = "fan-manager"
-_DOMAIN = "fan"
+_BINDING = IngestBinding(connector="fan-manager", stream="fan")
+
+_ENTITY_RESERVED_KEYS = frozenset({"id", "node_type"})
+_RELATIONSHIP_RESERVED_KEYS = frozenset({"source", "target", "relationship"})
 
 
 def _now() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
-def ingest_entities(
-    entities: list[dict[str, Any]],
-    relationships: list[dict[str, Any]] | None = None,
-    *,
-    source: str = _SOURCE,
-    domain: str = _DOMAIN,
-    client: Any | None = None,
-    graph: str | None = None,
-) -> dict[str, int]:
-    """Write canonical typed nodes and relationships through native ingestion."""
-    return _native_ingest_entities(
-        entities,
-        relationships,
-        source=source,
-        domain=domain,
-        client=client,
-        graph=graph,
+def _to_entity(record: dict[str, Any]) -> Entity:
+    return Entity(
+        id=record.get("id"),
+        node_type=record.get("node_type"),
+        properties={
+            key: value
+            for key, value in record.items()
+            if key not in _ENTITY_RESERVED_KEYS
+        },
     )
 
 
-def ingest_documents(
+def _to_relationship(record: dict[str, Any]) -> Relationship:
+    properties = {
+        key: value
+        for key, value in record.items()
+        if key not in _RELATIONSHIP_RESERVED_KEYS
+    }
+    return Relationship(
+        source=record["source"],
+        target=record["target"],
+        relationship=record["relationship"],
+        properties=properties or None,
+    )
+
+
+async def ingest_entities(
+    entities: list[dict[str, Any]],
+    relationships: list[dict[str, Any]] | None = None,
+    *,
+    ingest: KnowledgeIngest | None = None,
+) -> dict[str, int]:
+    """Write canonical typed nodes and relationships through the SDK ingest facade."""
+    if not entities:
+        raise IngestError("ingest_entities needs at least one entity")
+    change_set = ChangeSet(
+        entities=tuple(_to_entity(entity) for entity in entities),
+        relationships=tuple(
+            _to_relationship(relationship) for relationship in relationships or ()
+        ),
+    )
+    service = ingest or current_ingest()
+    receipt = await service.submit(_BINDING, change_set)
+    return {"nodes": receipt.affected_count, "edges": receipt.relationship_count}
+
+
+async def ingest_documents(
     documents: list[dict[str, Any]],
     *,
-    source: str = _SOURCE,
-    domain: str = _DOMAIN,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """Write text records as ``:Document`` nodes (semantic-search fodder).
 
     Each doc: ``{"id":..., "text":..., "title"?:..., "source_uri"?:..., ...props}``.
-    Validation and engine failures are surfaced as ``NativeIngestError``.
     """
-    return _native_ingest_documents(
-        documents, source=source, domain=domain, client=client, graph=graph
+    if not documents:
+        raise IngestError("ingest_documents needs at least one document")
+    change_set = ChangeSet(
+        documents=tuple(
+            Document(
+                id=doc["id"],
+                text=doc["text"],
+                title=doc.get("title"),
+                source_uri=doc.get("source_uri"),
+            )
+            for doc in documents
+        ),
     )
-
-
-def media_store() -> Any:
-    """Return the required native ``MediaStore`` authority."""
-    return _native_media_store()
+    service = ingest or current_ingest()
+    receipt = await service.submit(_BINDING, change_set)
+    return {"nodes": receipt.affected_count, "edges": receipt.relationship_count}
 
 
 # --------------------------------------------------------------------------- #
@@ -119,12 +152,11 @@ def _host_and_controller(
     return entities, rels
 
 
-def ingest_temperature_readings(
+async def ingest_temperature_readings(
     readings: list[dict[str, Any]],
     *,
     host: str | None = None,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """Map temperature-read envelopes → ``:TemperatureReading`` timeseries nodes.
 
@@ -135,7 +167,7 @@ def ingest_temperature_readings(
     ``:FanSpeedSetting`` and the ``:triggeredSetting`` link.
     """
     if not readings:
-        return ingest_entities([], client=client, graph=graph)
+        return {"nodes": 0, "edges": 0}
     entities, relationships = _host_and_controller(host)
     hid = _host_id(host)
     for reading in readings or []:
@@ -175,23 +207,22 @@ def ingest_temperature_readings(
                 {"source": rid, "target": sid, "relationship": "triggeredSetting"}
             )
     if len(entities) <= 2:  # only the host/controller scaffold — no real samples
-        return ingest_entities([], client=client, graph=graph)
-    return ingest_entities(entities, relationships, client=client, graph=graph)
+        return {"nodes": 0, "edges": 0}
+    return await ingest_entities(entities, relationships, ingest=ingest)
 
 
-def ingest_fan_settings(
+async def ingest_fan_settings(
     settings: list[dict[str, Any]],
     *,
     host: str | None = None,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """Map fan-level write results → ``:FanSpeedSetting`` timeseries nodes.
 
     Each setting: ``{"fan_level": 42, "command": "ipmitool raw ...", "observed_at"?: ...}``.
     """
     if not settings:
-        return ingest_entities([], client=client, graph=graph)
+        return {"nodes": 0, "edges": 0}
     entities, relationships = _host_and_controller(host)
     hid = _host_id(host)
     for setting in settings or []:
@@ -213,16 +244,15 @@ def ingest_fan_settings(
             {"source": sid, "target": hid, "relationship": "appliedToHost"}
         )
     if len(entities) <= 2:  # only the host/controller scaffold — no real samples
-        return ingest_entities([], client=client, graph=graph)
-    return ingest_entities(entities, relationships, client=client, graph=graph)
+        return {"nodes": 0, "edges": 0}
+    return await ingest_entities(entities, relationships, ingest=ingest)
 
 
-def ingest_sensor_readings(
+async def ingest_sensor_readings(
     sensors: list[dict[str, Any]],
     *,
     host: str | None = None,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """Map parsed IPMI SDR sensor rows → ``:SensorReading`` nodes.
 
@@ -231,7 +261,7 @@ def ingest_sensor_readings(
     ``fanRpm``; temperature-type sensors get ``celsius``.
     """
     if not sensors:
-        return ingest_entities([], client=client, graph=graph)
+        return {"nodes": 0, "edges": 0}
     entities, relationships = _host_and_controller(host)
     hid = _host_id(host)
     at = _now()
@@ -261,12 +291,17 @@ def ingest_sensor_readings(
             {"source": sid, "target": hid, "relationship": "readingForHost"}
         )
     if len(entities) <= 2:  # only the host/controller scaffold — no real samples
-        return ingest_entities([], client=client, graph=graph)
-    return ingest_entities(entities, relationships, client=client, graph=graph)
+        return {"nodes": 0, "edges": 0}
+    return await ingest_entities(entities, relationships, ingest=ingest)
 
 
 def _engine() -> Any | None:
-    """Return a live :class:`GraphComputeEngine` (for reads) or ``None`` when unavailable."""
+    """Return a live :class:`GraphComputeEngine` (for reads) or ``None`` when unavailable.
+
+    Out of scope for this migration: reads still go through the required
+    ``agent-utilities`` knowledge-graph engine; ``agent_connector_sdk`` has no read-side
+    equivalent (it owns the write/ingest path only).
+    """
     try:
         from agent_utilities.knowledge_graph.core.graph_compute import (
             GraphComputeEngine,
@@ -288,12 +323,11 @@ def _parse_ts(value: Any) -> float | None:
         return None
 
 
-def ingest_thermal_trend(
+async def ingest_thermal_trend(
     trend: dict[str, Any],
     *,
     host: str | None = None,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """Write ONE distilled hourly window as a clean, numeric ``:ThermalTrend`` node.
 
@@ -328,7 +362,7 @@ def ingest_thermal_trend(
             "relationship": "readingForHost",
         }
     )
-    return ingest_entities(entities, relationships, client=client, graph=graph)
+    return await ingest_entities(entities, relationships, ingest=ingest)
 
 
 def read_thermal_trends(
@@ -366,12 +400,11 @@ def read_thermal_trends(
     return out
 
 
-def ingest_thermal_baseline(
+async def ingest_thermal_baseline(
     baseline: dict[str, Any],
     *,
     host: str | None = None,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """Write a learned :ThermalBaseline node (one per host, overwritten each pass)."""
     hid = _host_id(host)
@@ -392,15 +425,14 @@ def ingest_thermal_baseline(
         }
     ]
     rels = [{"source": bid, "target": hid, "relationship": "baselineForHost"}]
-    return ingest_entities(entities, rels, client=client, graph=graph)
+    return await ingest_entities(entities, rels, ingest=ingest)
 
 
-def ingest_fan_policy(
+async def ingest_fan_policy(
     policy: dict[str, Any],
     *,
     host: str | None = None,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """Write a recommended/approved :FanControlPolicy node for a host."""
     hid = _host_id(host)
@@ -421,15 +453,14 @@ def ingest_fan_policy(
         }
     ]
     rels = [{"source": hid, "target": pid, "relationship": "governedByPolicy"}]
-    return ingest_entities(entities, rels, client=client, graph=graph)
+    return await ingest_entities(entities, rels, ingest=ingest)
 
 
-def ingest_thermal_anomaly(
+async def ingest_thermal_anomaly(
     anomaly: dict[str, Any],
     *,
     host: str | None = None,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """Write a :ThermalAnomaly node (a host off its baseline) linked to the affected host."""
     hid = _host_id(host)
@@ -448,7 +479,7 @@ def ingest_thermal_anomaly(
         }
     ]
     rels = [{"source": aid, "target": hid, "relationship": "affectsHost"}]
-    return ingest_entities(entities, rels, client=client, graph=graph)
+    return await ingest_entities(entities, rels, ingest=ingest)
 
 
 def _classify_sensor(name: str, unit: str | None) -> str:

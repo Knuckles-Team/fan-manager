@@ -230,12 +230,18 @@ def test_run_derivation_end_to_end(monkeypatch):
     cap: dict[str, list] = {"baseline": [], "policy": [], "anomaly": []}
     monkeypatch.setattr(kgi, "read_thermal_trends",
                         lambda host, days=14: synth if host == "h1" else [])
-    monkeypatch.setattr(kgi, "ingest_thermal_baseline",
-                        lambda b, host=None: cap["baseline"].append((host, b)))
-    monkeypatch.setattr(kgi, "ingest_fan_policy",
-                        lambda p, host=None: cap["policy"].append((host, p)))
-    monkeypatch.setattr(kgi, "ingest_thermal_anomaly",
-                        lambda a, host=None: cap["anomaly"].append((host, a)))
+    async def _fake_ingest_thermal_baseline(b, host=None, **_kw):
+        cap["baseline"].append((host, b))
+
+    async def _fake_ingest_fan_policy(p, host=None, **_kw):
+        cap["policy"].append((host, p))
+
+    async def _fake_ingest_thermal_anomaly(a, host=None, **_kw):
+        cap["anomaly"].append((host, a))
+
+    monkeypatch.setattr(kgi, "ingest_thermal_baseline", _fake_ingest_thermal_baseline)
+    monkeypatch.setattr(kgi, "ingest_fan_policy", _fake_ingest_fan_policy)
+    monkeypatch.setattr(kgi, "ingest_thermal_anomaly", _fake_ingest_thermal_anomaly)
 
     out = kc.run_derivation(["h1", "empty"], days=14)
     assert out["hosts"] == 2

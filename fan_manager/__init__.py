@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """fan-manager — manage your Dell PowerEdge fan speed.
 
-Local CLI tool + MCP Server + A2A Agent for the Graph OS ecosystem.
+Local CLI tool + MCP Server + A2A Agent for the Arbora ecosystem.
 """
 
 import importlib

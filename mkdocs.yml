@@ -1,5 +1,5 @@
 site_name: "fan-manager"
-site_description: "Fan Manager + MCP Server + A2A Agent — a typed, action-routed Fan connector for the Graph OS ecosystem."
+site_description: "Fan Manager + MCP Server + A2A Agent — a typed, action-routed Fan connector for the Arbora ecosystem."
 site_url: "https://knuckles-team.github.io/fan-manager/"
 repo_name: "Knuckles-Team/fan-manager"
 repo_url: "https://github.com/Knuckles-Team/fan-manager"

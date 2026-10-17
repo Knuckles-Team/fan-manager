@@ -296,7 +296,7 @@ async def ingest_sensor_readings(
 
 
 def _engine() -> Any | None:
-    """Read-side graph engine hook; reads are unavailable without a graph-os-served engine.
+    """Read-side graph engine hook; reads are unavailable without an arbora-served engine.
 
     ``agent_connector_sdk`` owns the write/ingest path only, so this returns ``None`` and
     :func:`read_thermal_trends` degrades to ``[]`` (callers already treat that as no history).

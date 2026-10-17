@@ -16,7 +16,7 @@
 
 - **FR-001**: Detected 3 agent skill(s) — will grade in CE-026
 - **FR-002**: Minor update: pytest-asyncio 1.3.0 (installed) -> 1.4.0
-- **FR-003**: Minor update: agent-utilities 0.2.40 (installed) -> 0.47.0
+- **FR-003**: Minor update: agent-connector-sdk 0.2.40 (installed) -> 0.47.0
 - **FR-004**: Test suite lacks intent diversity (only one type)
 - **FR-005**: 15 potential doc-test drift items
 - **FR-006**: README.md missing sections: usage|quick start
@@ -36,7 +36,7 @@
 - **FR-020**: Partial env var documentation: 38% coverage
 - **FR-021**: Undocumented env vars: AUTH_TYPE, ENABLE_DELEGATION, ENABLE_OTEL, EUNOMIA_POLICY_FILE, EUNOMIA_TYPE, IPMITOOL_PATH, SENSORS_PATH, UV_COMPILE_BYTECODE
 - **FR-022**: 3 Python env vars not in .env.example: ENABLE_DELEGATION, IPMITOOL_PATH, SENSORS_PATH
-- **FR-023**: Check skipped: required agent-utilities/networkx dependencies not found.
+- **FR-023**: Check skipped: required agent-connector-sdk/networkx dependencies not found.
 
 ## Success Criteria
 

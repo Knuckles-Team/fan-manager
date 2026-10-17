@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=80.9.0", "wheel"]
+requires = ["setuptools>=84.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -15,7 +15,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 requires-python = ">=3.12, <3.15"
-dependencies = ["agent-connector-sdk>=0.1.0,<1.0.0", "agent-utilities>=2.0.0,<3.0.0", "python-dotenv>=1.2.2"]
+dependencies = ["agent-connector-sdk>=0.2.0,<1.0.0", "python-dotenv>=1.2.4"]
 [[project.authors]]
 name = "Audel Rouhi"
 email = "knucklessg1@gmail.com"
@@ -24,27 +24,25 @@ email = "knucklessg1@gmail.com"
 text = "MIT"
 
 [project.optional-dependencies]
-mcp = ["agent-utilities[mcp]>=2.0.0,<3.0.0"]
-agent = ["agent-utilities[agent-runtime,logfire]>=2.0.0,<3.0.0", "logfire>=4.38.0"]
-all = ["fan-manager[mcp,agent]>=1.5.0"]
+mcp = ["agent-connector-sdk>=0.2.0,<1.0.0"]
+all = ["fan-manager[mcp,agent]>=1.7.0"]
 test = ["pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0", "pytest-cov>=7.1.0"]
 
 [project.scripts]
 fan-manager = "fan_manager.fan_manager:fan_manager"
 fan-manager-mcp = "fan_manager.mcp_server:mcp_server"
-fan-manager-agent = "fan_manager.agent_server:agent_server"
 fan-manager-control = "fan_manager.kg_control:main"
 
-[project.entry-points."agent_utilities.skill_providers"]
+[project.entry-points."agent_connector_sdk.skill_providers"]
 fan-manager = "fan_manager.skills"
 
-[project.entry-points."agent_utilities.ontology_providers"]
+[project.entry-points."agent_connector_sdk.ontology_providers"]
 fan-manager = "fan_manager.ontology"
 
-[project.entry-points."agent_utilities.source_connector_providers"]
+[project.entry-points."agent_connector_sdk.source_connector_providers"]
 fan-manager = "fan_manager.connectors"
 
-[project.entry-points."agent_utilities.prompt_providers"]
+[project.entry-points."agent_connector_sdk.prompt_providers"]
 fan-manager = "fan_manager.prompts"
 
 [tool.uv.workspace]
@@ -62,12 +60,8 @@ include = ["fan_manager*"]
 
 [tool.uv]
 override-dependencies = [
-    "fastmcp-slim[client,server]>=4.0.0b1",
+    "fastmcp-slim[client,server]>=4.1.0",
 ]
-
-[tool.uv.sources]
-agent-connector-sdk = { path = ".uv-workspace-siblings/agent-connector-sdk", editable = true }
-agent-utilities = { path = ".uv-workspace-siblings/agent-utilities", editable = true }
 
 [tool.ruff]
 line-length = 88

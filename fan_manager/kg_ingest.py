@@ -296,21 +296,12 @@ async def ingest_sensor_readings(
 
 
 def _engine() -> Any | None:
-    """Return a live :class:`GraphComputeEngine` (for reads) or ``None`` when unavailable.
+    """Read-side graph engine hook; reads are unavailable without a graph-os-served engine.
 
-    Out of scope for this migration: reads still go through the required
-    ``agent-utilities`` knowledge-graph engine; ``agent_connector_sdk`` has no read-side
-    equivalent (it owns the write/ingest path only).
+    ``agent_connector_sdk`` owns the write/ingest path only, so this returns ``None`` and
+    :func:`read_thermal_trends` degrades to ``[]`` (callers already treat that as no history).
     """
-    try:
-        from agent_utilities.knowledge_graph.core.graph_compute import (
-            GraphComputeEngine,
-        )
-
-        return GraphComputeEngine()
-    except Exception as e:  # noqa: BLE001 — KG stack absent / engine unreachable
-        logger.debug("Operation failed: error_type=%s", type(e).__name__)
-        return None
+    return None
 
 
 def _parse_ts(value: Any) -> float | None:

@@ -1,7 +1,7 @@
 # fan-manager
 
 Dell PowerEdge **Fan Controller + MCP Server + A2A Agent** for the
-agent-utilities ecosystem — a local, action-routed connector for temperature
+Graph OS ecosystem — a local, action-routed connector for temperature
 monitoring and IPMI fan control.
 
 !!! info "Official documentation"

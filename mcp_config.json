@@ -15,7 +15,6 @@
         "FAN_MANAGER_KG_INGEST": "true",
         "FAN_MANAGER_POLICY_FILE": "/policy/fan-policy.json",
         "FAN_MANAGER_POLICY_REFRESH": "20",
-        "IPMITOOL": "True",
         "IPMITOOL_PATH": "ipmitool",
         "KGTOOL": "True",
         "SENSORS_PATH": "sensors",

@@ -1,8 +1,8 @@
 {
-  "algorithm": "agent-connector-sdk:mcp-tool-schema-compat:v1",
+  "algorithm": "agent-connector-sdk:mcp-tool-contract-compat:v2",
   "connector": "fan-manager",
   "schema_version": "1",
   "tools": {
-    "fan_manager_sensors": "c34bcd5fd7d52ebb8e8b10e298c894f2666c49447cb4d75eb6b4f655c0b4f719"
+    "fan_manager_ipmi_sensors_records": "c385d95a6f85159aef2d486dfd693a612dc7139782c945843911f0f533890ca3"
   }
 }

@@ -1,12 +1,12 @@
 {
   "api_version": "arbora.io/v1",
   "artifacts": {
-    "connector_manifest.yml": "e58e827cab300a51c2dcc8edcab5649e2f29b7dc52950d443c5fff86bf625063",
-    "fan_manager/connectors/mcp_source_presets.json": "28312663c53de5e36c350e132ebc9703eb0b88a2bc1971e0bc2bb63c59b213d1",
-    "fan_manager/connectors/tool_schema_fingerprints.json": "4e35eab0fc225fd0e3c2c3fe0ccf1579160ccd36370026fb8a2ac39f44414483",
+    "connector_manifest.yml": "c4fe0336fe8401d113b61117253825c646e13af95338c8d4067173d675f0d5bf",
+    "fan_manager/connectors/mcp_source_presets.json": "2a84cc51787fc3ce5c434f2f478033cbf7a3bd0faab5cda8ae75354a27093b01",
+    "fan_manager/connectors/tool_schema_fingerprints.json": "ce1e084f622aa1526d7d23b9871802bf639bd3e3450acb98e612fcaf1dc6b155",
     "fan_manager/ontology/fan.ttl": "321cdb0380bd1c0251fec2809f8e15d54897ce4b209353f6e1ddc556f201358a",
     "fan_manager/ontology/fixtures/records.json": "0b82536f1a88eb995419010321dc54a85bd9d931eaca067bdd5f7ea4fa9012b3",
-    "fan_manager/ontology/mappings/source.yaml": "84ff0a26c3bcaa9d262225d49b64c1267bb9fb551c3c551532d985b594c760a7",
+    "fan_manager/ontology/mappings/source.yaml": "7dc70b4b1fd97eb8a302bf2098f37cd5ccbb8563cc501ec829d48f2f32740de1",
     "fan_manager/ontology/migrations/manifest.json": "4dd403504b959b5ae5206c90e800fd4dd3b3bdee49e08a7ec7640cf2e8e932f3",
     "fan_manager/ontology/shapes/connector.shacl.ttl": "dfed1524c05e2adbe703c6c6ef90975dbe2db244362d8eced099bfed7c0fc4c3"
   },

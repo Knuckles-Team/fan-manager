@@ -21,26 +21,32 @@ from agent_connector_sdk.mcp.tool_surface import register_tool_surface
 
 from fan_manager.api_client import Api
 from fan_manager.auth import get_client
+from fan_manager.ipmi_api import IpmiApi
 from fan_manager.mcp import (
     register_fan_control_tools,
-    register_ipmi_tools,
     register_kg_tools,
     register_temperature_tools,
 )
 
-__version__ = "2.2.1"
+__version__ = "2.3.0"
 print(f"Fan Manager MCP v{__version__}", file=sys.stderr)
 
 load_config()
 
 logger = logging.getLogger("FanManagerMCP")
 
+
 # (tag, env-toggle, registrar) — toggle names match the framework-derived
 # ``<TAG>TOOL`` convention (``register_<tag>_tools`` -> ``<TAG>TOOL``).
+class _OperationApi(Api):
+    """``Api`` without ``run_service``: the endless daemon loop is not a tool."""
+
+    run_service = None  # type: ignore[assignment]
+
+
 TOOL_REGISTRY = [
     ("temperature", "TEMPERATURETOOL", register_temperature_tools),
     ("fan-control", "FAN_CONTROLTOOL", register_fan_control_tools),
-    ("ipmi", "IPMITOOL", register_ipmi_tools),
     ("kg", "KGTOOL", register_kg_tools),
 ]
 
@@ -62,10 +68,17 @@ def get_mcp_instance():
 
     registered_tags = register_tool_surface(
         mcp,
-        client_cls=Api,
+        client_cls=_OperationApi,
         get_client=get_client,
         service="fan-manager",
         tool_registry=TOOL_REGISTRY,
+        verbose_targets=[
+            {
+                "client_cls": IpmiApi,
+                "get_client": IpmiApi,
+                "prefix": "fan_manager_ipmi",
+            }
+        ],
     )
 
     for mw in middlewares:

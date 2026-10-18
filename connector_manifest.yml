@@ -408,8 +408,8 @@ schema_mappings:
 sync:
 - preset: fan-sensors
   server: fan-manager-mcp
-  tool: fan_manager_sensors
-  action: records
+  tool: fan_manager_ipmi_sensors_records
+  action: null
   records_path: records
   id_field: name
   title_field: name
@@ -417,11 +417,10 @@ sync:
   updated_field: null
   pagination: null
   doc_type: sensor-telemetry
-  tool_schema_sha256: c34bcd5fd7d52ebb8e8b10e298c894f2666c49447cb4d75eb6b4f655c0b4f719
+  tool_schema_sha256: c385d95a6f85159aef2d486dfd693a612dc7139782c945843911f0f533890ca3
   raw:
     server: fan-manager-mcp
-    tool: fan_manager_sensors
-    action: records
+    tool: fan_manager_ipmi_sensors_records
     records_path: records
     id_field: name
     title_field: name

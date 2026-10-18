@@ -19,7 +19,7 @@
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/fan-manager)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/fan-manager)
 
-*Version: 2.2.1*
+*Version: 2.3.0*
 
 > **Documentation** — Installation, deployment, and usage across the CLI and MCP
 > interfaces, plus the integrated A2A agent server, are maintained in the
@@ -87,13 +87,7 @@ _Auto-generated from the live MCP server — do not edit by hand._
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
 | `fan_ingest_telemetry` | `KGTOOL` | Ingest live thermal telemetry into epistemic-graph as typed nodes. |
-| `fan_manager_bmc` | `IPMITOOL` | BMC configuration: LAN, users, and management-controller ops (CONCEPT:FM-OS.config.bmc-config-lan-user). |
 | `fan_manager_fan_control` | `FAN_CONTROLTOOL` | Control Dell PowerEdge fan speed via IPMI (CONCEPT:FM-OS.governance.service-writes-fan-level). |
-| `fan_manager_power` | `IPMITOOL` | Chassis power + boot control over IPMI (CONCEPT:FM-OS.governance.power-chassis). DESTRUCTIVE for |
-| `fan_manager_raw` | `IPMITOOL` | Send a raw IPMI command (CONCEPT:FM-OS.governance.raw). Advanced/vendor commands. |
-| `fan_manager_sel` | `IPMITOOL` | System Event Log — the BMC's hardware-event history (CONCEPT:FM-OS.governance.event-log). |
-| `fan_manager_sensors` | `IPMITOOL` | Read BMC sensors / SDR (CONCEPT:FM-OS.governance.sensors). |
-| `fan_manager_sol` | `IPMITOOL` | Serial-over-LAN console status/teardown (CONCEPT:FM-OS.governance.serial-over-lan). A live |
 | `fan_manager_temperature` | `TEMPERATURETOOL` | Read CPU/sensor temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through). |
 
 #### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
@@ -157,7 +151,6 @@ context window. Configure filtering via:
         "FAN_MANAGER_KG_INGEST": "true",
         "FAN_MANAGER_POLICY_FILE": "/policy/fan-policy.json",
         "FAN_MANAGER_POLICY_REFRESH": "20",
-        "IPMITOOL": "True",
         "IPMITOOL_PATH": "ipmitool",
         "KGTOOL": "True",
         "SENSORS_PATH": "sensors",
@@ -200,7 +193,6 @@ own runtime secret boundary.
         "FAN_MANAGER_KG_INGEST": "true",
         "FAN_MANAGER_POLICY_FILE": "/policy/fan-policy.json",
         "FAN_MANAGER_POLICY_REFRESH": "20",
-        "IPMITOOL": "True",
         "IPMITOOL_PATH": "ipmitool",
         "KGTOOL": "True",
         "SENSORS_PATH": "sensors",
@@ -242,7 +234,6 @@ docker run -i --rm \
   -e FAN_MANAGER_KG_INGEST=true \
   -e FAN_MANAGER_POLICY_FILE=/policy/fan-policy.json \
   -e FAN_MANAGER_POLICY_REFRESH=20 \
-  -e IPMITOOL=True \
   -e IPMITOOL_PATH=ipmitool \
   -e KGTOOL=True \
   -e SENSORS_PATH=sensors \
@@ -308,7 +299,6 @@ Interface alongside the MCP server. See
 | `FASTMCP_LOG_LEVEL` | `INFO` |  |
 | `TEMPERATURETOOL` | `True` | register the temperature tool domain |
 | `FAN_CONTROLTOOL` | `True` | register the fan-control tool domain |
-| `IPMITOOL` | `True` | register the full IPMI/BMC tool domain |
 | `KGTOOL` | `True` | register the native KG ingestion tool (fan_ingest_telemetry) |
 | `FAN_MANAGER_KG_INGEST` | `true` | default-on best-effort thermal-sample ingestion in the control loop |
 | `FAN_MANAGER_KG_AGGREGATE_S` | `3600` | window (s) over which samples distill to ONE :ThermalTrend node |
@@ -369,7 +359,6 @@ file (auto-loaded), or in the MCP client's `env` block. See
 | `FASTMCP_LOG_LEVEL` | `INFO` | MCP server | Log verbosity for the underlying FastMCP server. |
 | `TEMPERATURETOOL` | `True` | Tool toggle | Register the `temperature` tool domain (`CONCEPT:FM-OS.governance.service-reads-temperature-through`). |
 | `FAN_CONTROLTOOL` | `True` | Tool toggle | Register the `fan-control` tool domain (`CONCEPT:FM-OS.governance.service-writes-fan-level`). |
-| `IPMITOOL` | `True` | Tool toggle | Register the full IPMI/BMC tool domain (`CONCEPT:FM-OS.governance.power-chassis..008`). |
 | `IPMITOOL_PATH` | `ipmitool` | Local tooling | Path/name of the `ipmitool` binary used to drive the BMC. |
 | `SENSORS_PATH` | `sensors` | Local tooling | Path/name of the `lm-sensors` binary used to read temperatures. |
 | `ENABLE_OTEL` | `True` | Observability | Enable OpenTelemetry/logfire instrumentation for the agent. |

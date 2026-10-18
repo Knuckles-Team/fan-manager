@@ -8,7 +8,6 @@
         "fan-manager-mcp"
       ],
       "env": {
-        "MCP_TOOL_MODE": "intent",
         "ENABLE_DELEGATION": "False",
         "FAN_CONTROLTOOL": "True",
         "FAN_MANAGER_HOSTS": "r510,r710,r820,rw710",

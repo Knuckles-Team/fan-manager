@@ -4,7 +4,7 @@
   "schema_version": "1.0",
   "prompt_version": "0.1.0",
   "source": "fan-manager",
-  "extends": "agent-utilities:base",
+  "extends": "agent-connector-sdk:base",
   "compose": "append",
   "description": "Server thermal-management specialist: read temperatures, drive Dell PowerEdge BMC/IPMI fan control safely, and map the thermal timeseries into the knowledge graph.",
   "metadata": {

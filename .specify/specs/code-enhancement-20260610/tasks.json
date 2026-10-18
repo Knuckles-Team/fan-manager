@@ -27,8 +27,8 @@
   },
   {
     "id": "T003",
-    "title": "[Dependency Audit] Minor update: agent-utilities 0.2.40 (installed) -> 0.47.0",
-    "description": "Minor update: agent-utilities 0.2.40 (installed) -> 0.47.0",
+    "title": "[Dependency Audit] Minor update: agent-connector-sdk 0.2.40 (installed) -> 0.47.0",
+    "description": "Minor update: agent-connector-sdk 0.2.40 (installed) -> 0.47.0",
     "domain": "Dependency Audit",
     "priority": "P3-Low",
     "effort": "Small",
@@ -287,8 +287,8 @@
   },
   {
     "id": "T023",
-    "title": "[XDG Compliance (KG)] Check skipped: required agent-utilities/networkx dependencies not found.",
-    "description": "Check skipped: required agent-utilities/networkx dependencies not found.",
+    "title": "[XDG Compliance (KG)] Check skipped: required agent-connector-sdk/networkx dependencies not found.",
+    "description": "Check skipped: required agent-connector-sdk/networkx dependencies not found.",
     "domain": "XDG Compliance (KG)",
     "priority": "P2-Medium",
     "effort": "Medium",

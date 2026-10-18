@@ -14,15 +14,7 @@ the loop itself) has approved. The applied-policy read seam lives in
 :func:`fan_manager.fan_manager.load_fan_policy`.
 
 The pure statistics (``compute_baseline``/``detect_anomaly``/``classify_ambient`` +
-``_percentile``/``_slope``) were the reference implementation for a fleet-wide shared
-primitive, ``agent_utilities.observability.health`` (metric-agnostic: any named signal,
-not just °C — see ``reports/unified-infra-intelligence-plan.md``). This module now
-**consumes** that shared primitive via a guarded import, mapping fan-manager's
-temp/fan-shaped dicts to/from the kernel's generic ``value_key``/``peak_key``/
-``control_key`` shape — dogfooding the extraction. When the installed
-``agent-utilities`` predates the shared module (or is absent), it falls back to the
-original local implementation below, so this package never breaks on an older
-``agent-utilities``.
+``_percentile``/``_slope``) are implemented locally in this module.
 
 CONCEPT:FM-OS.control.baseline-learning / .policy-derivation / .anomaly-detection /
 .ambient-correlation.
@@ -38,23 +30,6 @@ from typing import Any
 
 logger = logging.getLogger("fan_manager.control")
 
-try:
-    from agent_utilities.observability.health import _percentile as _shared_percentile
-    from agent_utilities.observability.health import _slope as _shared_slope
-    from agent_utilities.observability.health import (
-        compute_baseline as _shared_compute_baseline,
-    )
-    from agent_utilities.observability.health import (
-        correlate as _shared_correlate,
-    )
-    from agent_utilities.observability.health import (
-        detect_anomaly as _shared_detect_anomaly,
-    )
-
-    _HAS_SHARED_HEALTH = True
-except Exception as _e:  # noqa: BLE001 — older/absent agent-utilities falls back to local
-    logger.debug("shared health kernels unavailable, using local fallback: %s", _e)
-    _HAS_SHARED_HEALTH = False
 
 # The curve the DaemonSet ships today (``fan-manager -c 55 -w 80 -s 10 -f 100 -p 24``).
 # Treated as the "currently running" policy when no approved override exists yet.
@@ -115,15 +90,11 @@ def _local_slope(xs: list[float], ys: list[float]) -> float | None:
 
 def _percentile(values: list[float], pct: float) -> float | None:
     """Linear-interpolated percentile of ``values`` (``pct`` in 0..100)."""
-    if _HAS_SHARED_HEALTH:
-        return _shared_percentile(values, pct)
     return _local_percentile(values, pct)
 
 
 def _slope(xs: list[float], ys: list[float]) -> float | None:
     """Least-squares slope of ``ys`` on ``xs`` (``None`` if degenerate)."""
-    if _HAS_SHARED_HEALTH:
-        return _shared_slope(xs, ys)
     return _local_slope(xs, ys)
 
 
@@ -182,42 +153,8 @@ def compute_baseline(
     temperature distribution (``temp_p50`` / ``temp_p95``), the idle↔load envelope, and
     ``thermal_inertia`` — the |°C per fan-%| slope that says how much thermal margin a fan
     step actually buys on this box (``None`` when the fan barely moved across the window).
-
-    Delegates to the shared ``agent_utilities.observability.health.compute_baseline``
-    kernel (mapping the host's raw ``avg_temp``/``max_temp``/``avg_fan`` trend keys onto
-    the kernel's generic ``value_key``/``peak_key``/``control_key``) when available, and
-    translates the generic result back onto this exact dict shape so every caller
-    (``derive_policy``, ``kg_ingest.ingest_thermal_baseline``, tests) is unaffected.
     """
-    if not _HAS_SHARED_HEALTH:
-        return _compute_baseline_local(trends, host=host, min_windows=min_windows)
-    normalized = [
-        {
-            "avg_temp": _g(r, "avgCelsius", "avg_temp"),
-            "max_temp": _g(r, "maxCelsius", "max_temp"),
-            "avg_fan": _g(r, "avgFan", "avg_fan"),
-        }
-        for r in trends
-    ]
-    b = _shared_compute_baseline(
-        normalized,
-        value_key="avg_temp",
-        peak_key="max_temp",
-        control_key="avg_fan",
-        min_windows=min_windows,
-    )
-    if b is None:
-        return None
-    return {
-        "host": host,
-        "temp_p50": round(b["p50"], 1),
-        "temp_p95": round(b["p95"], 1),
-        "idle_temp": round(b["min_env"], 1),
-        "load_temp": round(b["max_env"], 1),
-        "avg_fan": round(b["avg_control"], 1) if b["avg_control"] is not None else None,
-        "thermal_inertia": b["inertia"],
-        "windows": b["windows"],
-    }
+    return _compute_baseline_local(trends, host=host, min_windows=min_windows)
 
 
 # --------------------------------------------------------------------------- #
@@ -337,43 +274,10 @@ def detect_anomaly(
     above p50 — the early signal of dust / a failing fan / degraded paste. ``cooling-saturated``:
     fans effectively pinned (≥95%) yet still hotter than the learned load temp. ``None`` when
     the host is behaving normally.
-
-    Delegates to the shared ``agent_utilities.observability.health.detect_anomaly``
-    kernel (its generic ``"saturated"`` kind is remapped to this domain's
-    ``"cooling-saturated"``) when available.
     """
     if not baseline:
         return None
-    if not _HAS_SHARED_HEALTH:
-        return _detect_anomaly_local(recent, baseline, z_thresh=z_thresh)
-    normalized = [
-        {
-            "avg_temp": _g(r, "avgCelsius", "avg_temp"),
-            "avg_fan": _g(r, "avgFan", "avg_fan"),
-        }
-        for r in recent
-    ]
-    shared_baseline = {
-        "p50": baseline["temp_p50"],
-        "p95": baseline["temp_p95"],
-        "max_env": baseline["load_temp"],
-    }
-    a = _shared_detect_anomaly(
-        normalized,
-        shared_baseline,
-        value_key="avg_temp",
-        control_key="avg_fan",
-        z_thresh=z_thresh,
-        saturated_control=95.0,
-    )
-    if a is None:
-        return None
-    return {
-        "kind": "cooling-saturated" if a["kind"] == "saturated" else a["kind"],
-        "zscore": a["zscore"],
-        "observed_c": round(a["observed"], 1),
-        "expected_c": round(a["expected"], 1),
-    }
+    return _detect_anomaly_local(recent, baseline, z_thresh=z_thresh)
 
 
 def classify_ambient(
@@ -384,18 +288,8 @@ def classify_ambient(
     If a majority of hosts spike at once it's the room / rack AC, not N independent faults —
     collapse them to one cause so the loop raises one ``ambient`` signal, not a storm. Mutates
     and returns the mapping.
-
-    Delegates to the shared ``agent_utilities.observability.health.correlate`` kernel
-    (this is the ``kind="above-baseline"``, ``systemic_kind="ambient"`` instance of it)
-    when available.
     """
-    if _HAS_SHARED_HEALTH:
-        return _shared_correlate(
-            anomalies_by_host,
-            total_hosts,
-            kind="above-baseline",
-            systemic_kind="ambient",
-        )
+
     above = [
         h for h, a in anomalies_by_host.items() if a and a["kind"] == "above-baseline"
     ]
@@ -429,10 +323,8 @@ def _notify(message: str) -> None:
     """Best-effort push to the intelligent alert router (``FAN_MANAGER_NOTIFY_URL``)."""
     logger.info(message)
     try:
-        from agent_utilities.core.config import config, setting
-        from agent_utilities.protocols.source_connectors.http_safety import (
-            safe_post_json,
-        )
+        from agent_connector_sdk.config import setting
+        from agent_connector_sdk.http.safe_post import safe_post_json
 
         url = str(setting("FAN_MANAGER_NOTIFY_URL", "") or "").strip()
         if not url:
@@ -443,7 +335,6 @@ def _notify(message: str) -> None:
             timeout=5,
             max_bytes=64 * 1024,
             max_request_bytes=64 * 1024,
-            allowed_private_hosts=config.source_http_allowed_private_hosts,
             tls_service="fan-manager-notify",
         )
     except Exception as exc:  # noqa: BLE001 — notification is best-effort

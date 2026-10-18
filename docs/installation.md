@@ -28,8 +28,8 @@ python -m pip install "fan-manager[all]"
 
 | Extra | Installs | Use |
 |-------|----------|-----|
-| `mcp` | `agent-utilities[mcp]` | MCP server (`fan-manager-mcp`) |
-| `agent` | `agent-utilities[agent-runtime,logfire]` | A2A agent (`fan-manager-agent`) |
+| `mcp` | `agent-connector-sdk[mcp]` | MCP server (`fan-manager-mcp`) |
+| `agent` | `agent-connector-sdk[agent-runtime,logfire]` | A2A agent (`fan-manager-agent`) |
 | `all` | `fan-manager[mcp,agent]` | Everything |
 | `test` | pytest stack | Running the test suite |
 

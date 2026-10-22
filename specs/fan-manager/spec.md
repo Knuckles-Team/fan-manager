@@ -16,7 +16,7 @@ The shared pipelines repository owns quality gates and delivery rendering.
 
 Component: Connector integration
 References: [Connector SDK](https://github.com/Knuckles-Team/agent-connector-sdk/blob/main/README.md)
-Code: ../../fan_manager/node_api.py ../../fan_manager/fleet.py ../../fan_manager/mcp_server.py:69 ../../fan_manager/mcp/mcp_kg.py ../../tests/test_served_surface_keeps_ingest.py ../../pyproject.toml
+Code: ../../fan_manager/node_api.py ../../fan_manager/fleet.py ../../fan_manager/mcp_server.py:69 ../../fan_manager/mcp/mcp_kg.py ../../tests/test_served_surface_keeps_ingest.py ../../pyproject.toml ../../fan_manager/fan_manager.py:75 ../../tests/test_engine_identity.py
 
 ## Non-goals
 

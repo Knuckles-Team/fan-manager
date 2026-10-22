@@ -15,7 +15,7 @@ The connector owns the IPMI operations, the fan-control logic, and the telemetry
 ## Interfaces and data model
 
 The served set holds 39 tools: the temperature tools, the fan-control tools, the IPMI tools, and the two ingest tools.
-The package requires `agent-connector-sdk[mcp]>=0.3.8,<1.0.0`. An older SDK drops `fan_ingest_telemetry` from the served surface.
+The package requires `agent-connector-sdk[mcp]>=0.3.10,<1.0.0`. An older SDK drops `fan_ingest_telemetry` from the served surface.
 
 ## Node endpoints and aggregation (R002, R003)
 
@@ -50,4 +50,4 @@ Run `pytest tests/test_served_surface_keeps_ingest.py` and `pipelines-hook spec-
 
 ## Risks, alternatives, and decisions
 
-An SDK below 0.3.8 serves no ingest tools. `R001.3` guards the floor, and `R001.1` guards the served names.
+An SDK below 0.3.10 serves no ingest tools and ignores the engine audience. `R001.3` guards the floor, and `R001.1` guards the served names.

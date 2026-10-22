@@ -28,7 +28,7 @@ from fan_manager.mcp import (
     register_temperature_tools,
 )
 
-__version__ = "2.4.0"
+__version__ = "2.4.1"
 print(f"Fan Manager MCP v{__version__}", file=sys.stderr)
 
 load_config()

@@ -19,7 +19,8 @@
     "CONN-FAN-MANAGER-R003.2",
     "CONN-FAN-MANAGER-R003.3",
     "CONN-FAN-MANAGER-R003.4",
-    "CONN-FAN-MANAGER-R003.5"
+    "CONN-FAN-MANAGER-R003.5",
+    "CONN-FAN-MANAGER-R004"
   ],
   "requirements": [
     {
@@ -177,6 +178,15 @@
       "landed_in": [],
       "verified_by": [
         "tests/test_fleet_endpoints.py:141"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R004",
+      "title": "Engine identity",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_engine_identity.py:7"
       ]
     }
   ]

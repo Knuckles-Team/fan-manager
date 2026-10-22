@@ -21,5 +21,6 @@ Governing spec: [spec.md](spec.md).
 | `CONN-FAN-MANAGER-R003.4` | Unit | `tests/test_fleet_endpoints.py::test_unreachable_node_is_reported_not_raised` must pass. |
 | `CONN-FAN-MANAGER-R003.5` | Unit | `tests/test_fleet_endpoints.py::test_hosts_map_through_the_url_template` must pass. |
 | `CONN-FAN-MANAGER-R004` | Unit | `tests/test_engine_identity.py::test_trend_ingest_signs_as_the_configured_principal_and_audience` must pass. |
+| `CONN-FAN-MANAGER-R005` | Unit | `tests/test_ingest_connector_name.py::test_ingest_binding_uses_the_onboarded_connector_name` must pass. |
 
 The tests run against the production server object. They need no vendor requests.

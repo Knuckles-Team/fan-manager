@@ -19,3 +19,4 @@ Governing spec: [spec.md](spec.md). Design: [plan.md](plan.md). Rows: [requireme
 - [x] `CONN-FAN-MANAGER-R003.4` — Dead node is typed. `tests/test_fleet_endpoints.py::test_unreachable_node_is_reported_not_raised` must pass.
 - [x] `CONN-FAN-MANAGER-R003.5` — Node names to endpoints. `tests/test_fleet_endpoints.py::test_hosts_map_through_the_url_template` must pass.
 - [x] `CONN-FAN-MANAGER-R004` — Engine identity. `tests/test_engine_identity.py::test_trend_ingest_signs_as_the_configured_principal_and_audience` must pass.
+- [x] `CONN-FAN-MANAGER-R005` — Ingest connector name. `tests/test_ingest_connector_name.py::test_ingest_binding_uses_the_onboarded_connector_name` must pass.

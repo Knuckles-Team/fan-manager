@@ -1,0 +1,75 @@
+{
+  "schema_version": 2,
+  "spec_id": "CONN-FAN-MANAGER",
+  "owner_repo": "fan-manager",
+  "delivery_state": "SPECIFIED",
+  "requirement_ids": [
+    "CONN-FAN-MANAGER-R001",
+    "CONN-FAN-MANAGER-R001.1",
+    "CONN-FAN-MANAGER-R001.2",
+    "CONN-FAN-MANAGER-R001.3",
+    "CONN-FAN-MANAGER-R001.4",
+    "CONN-FAN-MANAGER-R001.5"
+  ],
+  "requirements": [
+    {
+      "id": "CONN-FAN-MANAGER-R001",
+      "title": "Ingest tools stay served",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "CONN-FAN-MANAGER-R001.1",
+        "CONN-FAN-MANAGER-R001.2",
+        "CONN-FAN-MANAGER-R001.3",
+        "CONN-FAN-MANAGER-R001.4",
+        "CONN-FAN-MANAGER-R001.5"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R001.1",
+      "title": "Ingest actions served",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_served_surface_keeps_ingest.py:20"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R001.2",
+      "title": "Daemon loop is not a tool",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_served_surface_keeps_ingest.py:27"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R001.3",
+      "title": "SDK floor",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_served_surface_keeps_ingest.py:33"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R001.4",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_served_surface_keeps_ingest.py:44"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R001.5",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_served_surface_keeps_ingest.py:45"
+      ]
+    }
+  ]
+}

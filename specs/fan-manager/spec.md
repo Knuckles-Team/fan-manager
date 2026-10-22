@@ -1,0 +1,28 @@
+# CONN-FAN-MANAGER — Fan manager served tool surface
+
+## Outcome
+
+The connector must serve the telemetry ingest operations as typed tools beside the fan, temperature, and IPMI tools.
+The served surface holds 39 tools, including `fan_ingest_telemetry_temperature` and `fan_ingest_telemetry_sensors`.
+
+## Scope and owner
+
+The `fan-manager` repository owns this behavior. The shared connector SDK owns the tool-surface mechanism.
+The shared pipelines repository owns quality gates and delivery rendering.
+
+Component: Connector integration
+References: [Connector SDK](https://github.com/Knuckles-Team/agent-connector-sdk/blob/main/README.md)
+Code: ../../fan_manager/mcp_server.py:69 ../../fan_manager/mcp/mcp_kg.py ../../tests/test_served_surface_keeps_ingest.py ../../pyproject.toml
+
+## Non-goals
+
+This specification grants no service access, credential creation, deployment, or approval exception.
+The connector must not implement a graph engine, a policy authority, or a duplicate SDK runtime.
+
+## Why a new spec
+
+The search `git grep -n ingest -- specs` found no spec in this repository. The `specs/` tree holds only the template. No other repository owns the fan manager tool surface.
+
+## Requirements
+
+See [requirements.md](requirements.md), [plan.md](plan.md), and [test-spec.md](test-spec.md).

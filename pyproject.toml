@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fan-manager"
-version = "2.4.0"
+version = "2.4.1"
 description = "Dell PowerEdge Fan Manager + MCP Server + A2A Agent"
 readme = "README.md"
 classifiers = [
@@ -15,7 +15,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 requires-python = ">=3.12, <3.15"
-dependencies = ["agent-connector-sdk[mcp]>=0.3.8,<1.0.0", "python-dotenv>=1.2.4"]
+dependencies = ["agent-connector-sdk[mcp]>=0.3.10,<1.0.0", "python-dotenv>=1.2.4"]
 [[project.authors]]
 name = "Audel Rouhi"
 email = "knucklessg1@gmail.com"
@@ -24,7 +24,7 @@ email = "knucklessg1@gmail.com"
 text = "MIT"
 
 [project.optional-dependencies]
-mcp = ["agent-connector-sdk[mcp]>=0.3.8,<1.0.0"]
+mcp = ["agent-connector-sdk[mcp]>=0.3.10,<1.0.0"]
 all = ["fan-manager[mcp]>=1.7.0"]
 test = ["pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0", "pytest-cov>=7.1.0"]
 

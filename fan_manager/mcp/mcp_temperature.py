@@ -13,6 +13,7 @@ from typing import Any
 from fastmcp import Context, FastMCP
 from pydantic import Field
 
+from fan_manager import fleet
 from fan_manager.fan_manager import get_core_temp, get_temp
 
 
@@ -50,7 +51,7 @@ def register_temperature_tools(mcp: FastMCP):
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
         if action == "get":
-            return get_temp()
+            return fleet.read_all("temperature") if fleet.enabled() else get_temp()
         if action == "get_core":
             return get_core_temp(
                 cpus=kwargs.get("cpus", ["coretemp-isa-0000", "coretemp-isa-0001"]),

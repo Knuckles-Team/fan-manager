@@ -1,9 +1,13 @@
-# CONN-FAN-MANAGER — Fan manager served tool surface
+# CONN-FAN-MANAGER — Fan manager served tool surface and node endpoints
 
 ## Outcome
 
 The connector must serve the telemetry ingest operations as typed tools beside the fan, temperature, and IPMI tools.
 The served surface holds 39 tools, including `fan_ingest_telemetry_temperature` and `fan_ingest_telemetry_sensors`.
+
+The connector runs away from the servers it reads. Each fan-manager daemon runs on one server, next to that server's BMC.
+Each daemon must serve a read-only endpoint for its own BMC (R002). The connector must read every node through those endpoints
+and return the answers keyed by node (R003). Writes must never travel over the node endpoints.
 
 ## Scope and owner
 
@@ -12,7 +16,7 @@ The shared pipelines repository owns quality gates and delivery rendering.
 
 Component: Connector integration
 References: [Connector SDK](https://github.com/Knuckles-Team/agent-connector-sdk/blob/main/README.md)
-Code: ../../fan_manager/mcp_server.py:69 ../../fan_manager/mcp/mcp_kg.py ../../tests/test_served_surface_keeps_ingest.py ../../pyproject.toml
+Code: ../../fan_manager/node_api.py ../../fan_manager/fleet.py ../../fan_manager/mcp_server.py:69 ../../fan_manager/mcp/mcp_kg.py ../../tests/test_served_surface_keeps_ingest.py ../../pyproject.toml
 
 ## Non-goals
 

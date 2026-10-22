@@ -9,7 +9,17 @@
     "CONN-FAN-MANAGER-R001.2",
     "CONN-FAN-MANAGER-R001.3",
     "CONN-FAN-MANAGER-R001.4",
-    "CONN-FAN-MANAGER-R001.5"
+    "CONN-FAN-MANAGER-R001.5",
+    "CONN-FAN-MANAGER-R002",
+    "CONN-FAN-MANAGER-R002.1",
+    "CONN-FAN-MANAGER-R002.2",
+    "CONN-FAN-MANAGER-R002.3",
+    "CONN-FAN-MANAGER-R003",
+    "CONN-FAN-MANAGER-R003.1",
+    "CONN-FAN-MANAGER-R003.2",
+    "CONN-FAN-MANAGER-R003.3",
+    "CONN-FAN-MANAGER-R003.4",
+    "CONN-FAN-MANAGER-R003.5"
   ],
   "requirements": [
     {
@@ -69,6 +79,104 @@
       "landed_in": [],
       "verified_by": [
         "tests/test_served_surface_keeps_ingest.py:45"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R002",
+      "title": "Per-node read endpoint",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "CONN-FAN-MANAGER-R002.1",
+        "CONN-FAN-MANAGER-R002.2",
+        "CONN-FAN-MANAGER-R002.3"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R002.1",
+      "title": "Reads served, writes refused",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_fleet_endpoints.py:56"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R002.2",
+      "title": "Read operations only",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_fleet_endpoints.py:77"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R002.3",
+      "title": "Bearer token",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_fleet_endpoints.py:69"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R003",
+      "title": "Connector aggregation",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "CONN-FAN-MANAGER-R003.1",
+        "CONN-FAN-MANAGER-R003.2",
+        "CONN-FAN-MANAGER-R003.3",
+        "CONN-FAN-MANAGER-R003.4",
+        "CONN-FAN-MANAGER-R003.5"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R003.1",
+      "title": "Temperature by node",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_fleet_endpoints.py:102"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R003.2",
+      "title": "In-band IPMI reads by node",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_fleet_endpoints.py:111"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R003.3",
+      "title": "Writes stay guarded",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_fleet_endpoints.py:121"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R003.4",
+      "title": "Dead node is typed",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_fleet_endpoints.py:133"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R003.5",
+      "title": "Node names to endpoints",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_fleet_endpoints.py:141"
       ]
     }
   ]

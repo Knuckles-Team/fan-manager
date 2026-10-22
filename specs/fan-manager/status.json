@@ -20,7 +20,8 @@
     "CONN-FAN-MANAGER-R003.3",
     "CONN-FAN-MANAGER-R003.4",
     "CONN-FAN-MANAGER-R003.5",
-    "CONN-FAN-MANAGER-R004"
+    "CONN-FAN-MANAGER-R004",
+    "CONN-FAN-MANAGER-R005"
   ],
   "requirements": [
     {
@@ -187,6 +188,15 @@
       "landed_in": [],
       "verified_by": [
         "tests/test_engine_identity.py:7"
+      ]
+    },
+    {
+      "id": "CONN-FAN-MANAGER-R005",
+      "title": "Ingest connector name",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_ingest_connector_name.py:7"
       ]
     }
   ]

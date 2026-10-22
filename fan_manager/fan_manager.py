@@ -579,6 +579,9 @@ def fan_manager():
         usage()
         sys.exit(2)
 
+    from fan_manager.node_api import start_from_env
+
+    start_from_env()
     run_service(
         temperature_poll_rate=args.poll_rate,
         minimum_fan_speed=args.slow,

@@ -13,6 +13,7 @@ command-runner adapter (and config) without monkeypatching :mod:`subprocess`.
 
 from typing import Any
 
+from fan_manager import fleet
 from fan_manager.fan_manager import (
     CommandRunner,
     auto_set_fan_speed,
@@ -57,7 +58,12 @@ class Api:
         )
 
     def get_temp(self) -> dict[str, Any]:
-        """Return the current highest CPU core temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through)."""
+        """Return the current highest CPU core temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through).
+
+        With ``FAN_MANAGER_HOSTS`` set, every node endpoint answers, keyed by node.
+        """
+        if fleet.enabled():
+            return fleet.read_all("temperature")
         return self._service.read_temperature()
 
     def get_core_temp(self, cpus: list, sensors: dict) -> dict[str, Any]:

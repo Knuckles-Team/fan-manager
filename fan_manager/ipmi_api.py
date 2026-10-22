@@ -7,7 +7,7 @@ the runtime and never persisted in connector records.
 
 from typing import Any
 
-from fan_manager import ipmi
+from fan_manager import fleet, ipmi
 from fan_manager.kg_ingest import parse_sensor_list
 
 
@@ -27,6 +27,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Read the chassis power state."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("power_status")
         return ipmi.power("status", target=_target(host, user, password))
 
     def power_on(
@@ -102,6 +104,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """List the BMC sensor data records (SDR)."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("sensors_list")
         return ipmi.sensors("list", target=_target(host, user, password))
 
     def sensors_full(
@@ -111,6 +115,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """List every BMC sensor with readings and thresholds."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("sensors_full")
         return ipmi.sensors("full", target=_target(host, user, password))
 
     def sensors_by_type(
@@ -132,6 +138,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Read every BMC sensor as structured records."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("sensors_records")
         response = ipmi.sensors("full", target=_target(host, user, password))
         if not isinstance(response, dict) or response.get("status") != 200:
             return {"records": [], "status": "source-unavailable"}
@@ -144,6 +152,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """List the system event log."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("sel_list")
         return ipmi.sel("list", target=_target(host, user, password))
 
     def sel_elist(
@@ -153,6 +163,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """List the system event log with sensor names."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("sel_elist")
         return ipmi.sel("elist", target=_target(host, user, password))
 
     def sel_info(
@@ -162,6 +174,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Read system event log capacity and state."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("sel_info")
         return ipmi.sel("info", target=_target(host, user, password))
 
     def sel_clear(
@@ -180,6 +194,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Read Serial-over-LAN configuration."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("sol_info")
         return ipmi.sol("info", target=_target(host, user, password))
 
     def sol_deactivate(
@@ -198,6 +214,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Print the BMC LAN channel configuration."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("lan_print")
         return ipmi.lan("print", target=_target(host, user, password))
 
     def lan_set(
@@ -220,6 +238,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """List BMC users."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("user_list")
         return ipmi.user("list", target=_target(host, user, password))
 
     def user_set_password(
@@ -269,6 +289,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Read management-controller firmware information."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("mc_info")
         return ipmi.mc("info", target=_target(host, user, password))
 
     def mc_reset_cold(
@@ -296,6 +318,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Run the management-controller self-test."""
+        if host is None and fleet.enabled():
+            return fleet.read_all("mc_selftest")
         return ipmi.mc("selftest", target=_target(host, user, password))
 
     def send_raw(

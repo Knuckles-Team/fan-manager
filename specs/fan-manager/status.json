@@ -184,8 +184,10 @@
     {
       "id": "CONN-FAN-MANAGER-R004",
       "title": "Engine identity",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c03661f300ed"
+      ],
       "verified_by": [
         "tests/test_engine_identity.py:7"
       ]
@@ -193,10 +195,12 @@
     {
       "id": "CONN-FAN-MANAGER-R005",
       "title": "Ingest connector name",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "11bd6fec3621"
+      ],
       "verified_by": [
-        "tests/test_ingest_connector_name.py:7"
+        "tests/test_ingest_connector_name.py:8"
       ]
     }
   ]

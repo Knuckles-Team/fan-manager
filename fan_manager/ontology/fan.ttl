@@ -249,5 +249,4 @@
     rdfs:comment """Fan Manager thermal-control domain — managed hosts, their BMC/IPMI fan
     controllers and fans, the temperature-to-fan-speed policy curve, and the timeseries of
     temperature readings, fan-speed settings, IPMI sensor readings and system-event-log
-    entries — federated into the agent-connector-sdk knowledge-graph hub.""" ;
-    owl:imports <http://knuckles.team/kg> .
+    entries — federated into the agent-connector-sdk knowledge-graph hub.""" .

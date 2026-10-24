@@ -142,10 +142,10 @@ def test_unreachable_node_is_reported_not_raised(monkeypatch):
 def test_hosts_map_through_the_url_template(monkeypatch):
     """CONN-FAN-MANAGER-R003.5: names map through the template; URLs pass through; no template means local."""
     assert fleet.node_endpoints(
-        "a, b ,https://c.example/", "http://{host}.lan:9180"
+        "a, b ,https://c.example/", "http://{host}.example:9180"
     ) == [
-        "http://a.lan:9180",
-        "http://b.lan:9180",
+        "http://a.example:9180",
+        "http://b.example:9180",
         "https://c.example",
     ]
     monkeypatch.setenv("FAN_MANAGER_HOSTS", "r1,r2")

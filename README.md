@@ -19,8 +19,6 @@
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/fan-manager)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/fan-manager)
 
-*Version: 2.4.4*
-
 > **Documentation** — Installation, deployment, and usage across the CLI and MCP
 > interfaces, plus the integrated A2A agent server, are maintained in the
 > [official documentation](https://knuckles-team.github.io/fan-manager/).

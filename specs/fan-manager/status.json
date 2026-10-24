@@ -195,13 +195,11 @@
     {
       "id": "CONN-FAN-MANAGER-R005",
       "title": "Ingest connector name",
-      "delivery_state": "VERIFIED",
+      "delivery_state": "LANDED",
       "landed_in": [
         "11bd6fec3621"
       ],
-      "verified_by": [
-        "tests/test_ingest_connector_name.py:8"
-      ]
+      "verified_by": []
     }
   ]
 }

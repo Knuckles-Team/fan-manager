@@ -9,9 +9,7 @@ import importlib.util
 import inspect
 from typing import Any
 
-__version__ = "2.4.4"
-
-__all__: list[str] = ["__version__"]
+__all__: list[str] = []
 
 CORE_MODULES: list[str] = [
     "fan_manager.fan_manager",
@@ -81,3 +79,20 @@ def __getattr__(name: str) -> Any:
 
 def __dir__() -> list[str]:
     return sorted(list(globals().keys()) + __all__)
+
+
+from agent_connector_sdk.connector import Connector
+
+from fan_manager.auth import get_client
+from fan_manager.ipmi_api import IpmiApi
+from fan_manager.mcp_server import TOOL_REGISTRY, _OperationApi
+
+connector = Connector(
+    api=_OperationApi,
+    get_client=get_client,
+    tool_registry=tuple(TOOL_REGISTRY),
+    instructions="Fan Manager MCP Server - Read CPU/sensor temperatures and control Dell PowerEdge fan speed via IPMI.",
+    verbose_targets=(
+        {"client_cls": IpmiApi, "get_client": IpmiApi, "prefix": "fan_manager_ipmi"},
+    ),
+)

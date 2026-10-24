@@ -16,3 +16,4 @@ Read the existing specs first. Extend the spec that owns the behavior. Create a 
 
 The lifecycle generator owns delivery receipts in `status.json`.
 Run `pipelines-hook spec-status --write` after reviewed source changes enter Git history.
+- [`CONN-FAN-MANAGER-CONNECTOR-CONTENT`](connector-content/spec.md) — The connector serves its packaged content.

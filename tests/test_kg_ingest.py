@@ -16,7 +16,7 @@ import pytest
 from agent_connector_sdk.ingest import IngestError, KnowledgeIngest
 
 from fan_manager.kg_ingest import (
-    ingest_entities,
+    STREAM,
     ingest_fan_settings,
     ingest_sensor_readings,
     ingest_temperature_readings,
@@ -65,7 +65,7 @@ def _rel_name(relationship: Any) -> str:
 
 async def test_ingest_entities_writes_nodes_and_edges(ingest):
     service, transport = ingest
-    res = await ingest_entities(
+    res = await STREAM.entities(
         [
             {"id": "a", "node_type": "ManagedHost", "name": "h"},
             {"id": "b", "node_type": "FanController"},
@@ -189,13 +189,13 @@ def test_parse_sensor_list_handles_na_values():
 async def test_ingest_rejects_legacy_structural_fields(ingest):
     service, _transport = ingest
     with pytest.raises(IngestError):
-        await ingest_entities([{"id": "legacy", "type": "Legacy"}], ingest=service)
+        await STREAM.entities([{"id": "legacy", "type": "Legacy"}], ingest=service)
 
 
 async def test_ingest_empty_is_rejected(ingest):
     service, _transport = ingest
     with pytest.raises(IngestError, match="at least one entity"):
-        await ingest_entities([], ingest=service)
+        await STREAM.entities([], ingest=service)
     for ingestor in (
         ingest_temperature_readings,
         ingest_fan_settings,

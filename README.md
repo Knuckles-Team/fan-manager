@@ -144,7 +144,7 @@ context window. Configure filtering via:
         "MCP_TOOL_MODE": "intent",
         "ENABLE_DELEGATION": "False",
         "FAN_CONTROLTOOL": "True",
-        "FAN_MANAGER_HOSTS": "r510,r710,r820,rw710",
+        "FAN_MANAGER_HOSTS": "node-a,node-b,node-c,node-d",
         "FAN_MANAGER_KG_AGGREGATE_S": "3600",
         "FAN_MANAGER_KG_INGEST": "true",
         "FAN_MANAGER_POLICY_FILE": "/policy/fan-policy.json",
@@ -186,7 +186,7 @@ own runtime secret boundary.
         "MCP_TOOL_MODE": "intent",
         "ENABLE_DELEGATION": "False",
         "FAN_CONTROLTOOL": "True",
-        "FAN_MANAGER_HOSTS": "r510,r710,r820,rw710",
+        "FAN_MANAGER_HOSTS": "node-a,node-b,node-c,node-d",
         "FAN_MANAGER_KG_AGGREGATE_S": "3600",
         "FAN_MANAGER_KG_INGEST": "true",
         "FAN_MANAGER_POLICY_FILE": "/policy/fan-policy.json",
@@ -227,7 +227,7 @@ docker run -i --rm \
   -e MCP_TOOL_MODE=intent \
   -e ENABLE_DELEGATION=False \
   -e FAN_CONTROLTOOL=True \
-  -e FAN_MANAGER_HOSTS=r510,r710,r820,rw710 \
+  -e FAN_MANAGER_HOSTS=node-a,node-b,node-c,node-d \
   -e FAN_MANAGER_KG_AGGREGATE_S=3600 \
   -e FAN_MANAGER_KG_INGEST=true \
   -e FAN_MANAGER_POLICY_FILE=/policy/fan-policy.json \
@@ -301,7 +301,7 @@ Interface alongside the MCP server. See
 | `FAN_MANAGER_KG_INGEST` | `true` | default-on best-effort thermal-sample ingestion in the control loop |
 | `FAN_MANAGER_KG_AGGREGATE_S` | `3600` | window (s) over which samples distill to ONE :ThermalTrend node |
 | `FAN_MANAGER_HOST` | — | optional host/BMC label stamped on ingested :ManagedHost provenance |
-| `FAN_MANAGER_HOSTS` | `r510,r710,r820,rw710` | hosts the derivation pass learns/recommends over |
+| `FAN_MANAGER_HOSTS` | `node-a,node-b,node-c,node-d` | hosts the derivation pass learns/recommends over |
 | `FAN_MANAGER_CURVE` | — | JSON override of the "current" curve, e.g. {"cold":55,"warm":80,"slow":10,"fast":100,"poll":24} |
 | `FAN_MANAGER_NOTIFY_URL` | — | best-effort webhook for thermal-anomaly notifications (e.g. the alert-bridge) |
 | `FAN_MANAGER_POLICY_FILE` | `/policy/fan-policy.json` | mounted JSON of approved per-host policies the control loop applies |

@@ -16,99 +16,17 @@ import time
 from typing import Any
 
 from agent_connector_sdk.ingest import (
-    ChangeSet,
-    Document,
-    Entity,
-    IngestBinding,
-    IngestError,
     KnowledgeIngest,
-    Relationship,
-    current_ingest,
+    SourceStream,
 )
 
 logger = logging.getLogger("fan_manager.kg")
 
-_BINDING = IngestBinding(connector="fan-manager-mcp", stream="fan")
-
-_ENTITY_RESERVED_KEYS = frozenset({"id", "node_type"})
-_RELATIONSHIP_RESERVED_KEYS = frozenset({"source", "target", "relationship"})
+STREAM = SourceStream.for_package(__package__.split(".")[0], "fan")
 
 
 def _now() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-
-
-def _to_entity(record: dict[str, Any]) -> Entity:
-    return Entity(
-        id=record.get("id"),
-        node_type=record.get("node_type"),
-        properties={
-            key: value
-            for key, value in record.items()
-            if key not in _ENTITY_RESERVED_KEYS
-        },
-    )
-
-
-def _to_relationship(record: dict[str, Any]) -> Relationship:
-    properties = {
-        key: value
-        for key, value in record.items()
-        if key not in _RELATIONSHIP_RESERVED_KEYS
-    }
-    return Relationship(
-        source=record["source"],
-        target=record["target"],
-        relationship=record["relationship"],
-        properties=properties or None,
-    )
-
-
-async def ingest_entities(
-    entities: list[dict[str, Any]],
-    relationships: list[dict[str, Any]] | None = None,
-    *,
-    ingest: KnowledgeIngest | None = None,
-) -> dict[str, int]:
-    """Write canonical typed nodes and relationships through the SDK ingest facade."""
-    if not entities:
-        raise IngestError("ingest_entities needs at least one entity")
-    change_set = ChangeSet(
-        entities=tuple(_to_entity(entity) for entity in entities),
-        relationships=tuple(
-            _to_relationship(relationship) for relationship in relationships or ()
-        ),
-    )
-    service = ingest or current_ingest()
-    receipt = await service.submit(_BINDING, change_set)
-    return {"nodes": receipt.affected_count, "edges": receipt.relationship_count}
-
-
-async def ingest_documents(
-    documents: list[dict[str, Any]],
-    *,
-    ingest: KnowledgeIngest | None = None,
-) -> dict[str, int]:
-    """Write text records as ``:Document`` nodes (semantic-search fodder).
-
-    Each doc: ``{"id":..., "text":..., "title"?:..., "source_uri"?:..., ...props}``.
-    """
-    if not documents:
-        raise IngestError("ingest_documents needs at least one document")
-    change_set = ChangeSet(
-        documents=tuple(
-            Document(
-                id=doc["id"],
-                text=doc["text"],
-                title=doc.get("title"),
-                source_uri=doc.get("source_uri"),
-            )
-            for doc in documents
-        ),
-    )
-    service = ingest or current_ingest()
-    receipt = await service.submit(_BINDING, change_set)
-    return {"nodes": receipt.affected_count, "edges": receipt.relationship_count}
 
 
 # --------------------------------------------------------------------------- #
@@ -208,7 +126,7 @@ async def ingest_temperature_readings(
             )
     if len(entities) <= 2:  # only the host/controller scaffold — no real samples
         return {"nodes": 0, "edges": 0}
-    return await ingest_entities(entities, relationships, ingest=ingest)
+    return await STREAM.entities(entities, relationships, ingest=ingest)
 
 
 async def ingest_fan_settings(
@@ -245,7 +163,7 @@ async def ingest_fan_settings(
         )
     if len(entities) <= 2:  # only the host/controller scaffold — no real samples
         return {"nodes": 0, "edges": 0}
-    return await ingest_entities(entities, relationships, ingest=ingest)
+    return await STREAM.entities(entities, relationships, ingest=ingest)
 
 
 async def ingest_sensor_readings(
@@ -292,7 +210,7 @@ async def ingest_sensor_readings(
         )
     if len(entities) <= 2:  # only the host/controller scaffold — no real samples
         return {"nodes": 0, "edges": 0}
-    return await ingest_entities(entities, relationships, ingest=ingest)
+    return await STREAM.entities(entities, relationships, ingest=ingest)
 
 
 def _engine() -> Any | None:
@@ -353,7 +271,7 @@ async def ingest_thermal_trend(
             "relationship": "readingForHost",
         }
     )
-    return await ingest_entities(entities, relationships, ingest=ingest)
+    return await STREAM.entities(entities, relationships, ingest=ingest)
 
 
 def read_thermal_trends(
@@ -416,7 +334,7 @@ async def ingest_thermal_baseline(
         }
     ]
     rels = [{"source": bid, "target": hid, "relationship": "baselineForHost"}]
-    return await ingest_entities(entities, rels, ingest=ingest)
+    return await STREAM.entities(entities, rels, ingest=ingest)
 
 
 async def ingest_fan_policy(
@@ -444,7 +362,7 @@ async def ingest_fan_policy(
         }
     ]
     rels = [{"source": hid, "target": pid, "relationship": "governedByPolicy"}]
-    return await ingest_entities(entities, rels, ingest=ingest)
+    return await STREAM.entities(entities, rels, ingest=ingest)
 
 
 async def ingest_thermal_anomaly(
@@ -470,7 +388,7 @@ async def ingest_thermal_anomaly(
         }
     ]
     rels = [{"source": aid, "target": hid, "relationship": "affectsHost"}]
-    return await ingest_entities(entities, rels, ingest=ingest)
+    return await STREAM.entities(entities, rels, ingest=ingest)
 
 
 def _classify_sensor(name: str, unit: str | None) -> str:

@@ -10,7 +10,7 @@
       "env": {
         "ENABLE_DELEGATION": "False",
         "FAN_CONTROLTOOL": "True",
-        "FAN_MANAGER_HOSTS": "r510,r710,r820,rw710",
+        "FAN_MANAGER_HOSTS": "node-a,node-b,node-c,node-d",
         "FAN_MANAGER_KG_AGGREGATE_S": "3600",
         "FAN_MANAGER_KG_INGEST": "true",
         "FAN_MANAGER_POLICY_FILE": "/policy/fan-policy.json",

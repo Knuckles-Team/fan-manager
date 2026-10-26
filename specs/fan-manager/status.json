@@ -2,7 +2,7 @@
   "schema_version": 2,
   "spec_id": "CONN-FAN-MANAGER",
   "owner_repo": "fan-manager",
-  "delivery_state": "SPECIFIED",
+  "delivery_state": "LANDED",
   "requirement_ids": [
     "CONN-FAN-MANAGER-R001",
     "CONN-FAN-MANAGER-R001.1",
@@ -27,9 +27,18 @@
     {
       "id": "CONN-FAN-MANAGER-R001",
       "title": "Ingest tools stay served",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b14b79765db3",
+        "d85b9cbe45a0"
+      ],
+      "verified_by": [
+        "tests/test_served_surface_keeps_ingest.py:20",
+        "tests/test_served_surface_keeps_ingest.py:27",
+        "tests/test_served_surface_keeps_ingest.py:33",
+        "tests/test_served_surface_keeps_ingest.py:44",
+        "tests/test_served_surface_keeps_ingest.py:45"
+      ],
       "rollup_of": [
         "CONN-FAN-MANAGER-R001.1",
         "CONN-FAN-MANAGER-R001.2",
@@ -41,8 +50,10 @@
     {
       "id": "CONN-FAN-MANAGER-R001.1",
       "title": "Ingest actions served",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d85b9cbe45a0"
+      ],
       "verified_by": [
         "tests/test_served_surface_keeps_ingest.py:20"
       ]
@@ -50,8 +61,10 @@
     {
       "id": "CONN-FAN-MANAGER-R001.2",
       "title": "Daemon loop is not a tool",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d85b9cbe45a0"
+      ],
       "verified_by": [
         "tests/test_served_surface_keeps_ingest.py:27"
       ]
@@ -70,8 +83,10 @@
     {
       "id": "CONN-FAN-MANAGER-R001.4",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d85b9cbe45a0"
+      ],
       "verified_by": [
         "tests/test_served_surface_keeps_ingest.py:44"
       ]
@@ -79,8 +94,10 @@
     {
       "id": "CONN-FAN-MANAGER-R001.5",
       "title": "Hot-path proof",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d85b9cbe45a0"
+      ],
       "verified_by": [
         "tests/test_served_surface_keeps_ingest.py:45"
       ]
@@ -88,9 +105,16 @@
     {
       "id": "CONN-FAN-MANAGER-R002",
       "title": "Per-node read endpoint",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b14b79765db3",
+        "d85b9cbe45a0"
+      ],
+      "verified_by": [
+        "tests/test_fleet_endpoints.py:58",
+        "tests/test_fleet_endpoints.py:71",
+        "tests/test_fleet_endpoints.py:82"
+      ],
       "rollup_of": [
         "CONN-FAN-MANAGER-R002.1",
         "CONN-FAN-MANAGER-R002.2",
@@ -111,8 +135,10 @@
     {
       "id": "CONN-FAN-MANAGER-R002.2",
       "title": "Read operations only",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d85b9cbe45a0"
+      ],
       "verified_by": [
         "tests/test_fleet_endpoints.py:82"
       ]
@@ -131,9 +157,18 @@
     {
       "id": "CONN-FAN-MANAGER-R003",
       "title": "Connector aggregation",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b14b79765db3",
+        "d85b9cbe45a0"
+      ],
+      "verified_by": [
+        "tests/test_fleet_endpoints.py:107",
+        "tests/test_fleet_endpoints.py:116",
+        "tests/test_fleet_endpoints.py:144",
+        "tests/test_fleet_endpoints.py:190",
+        "tests/test_fleet_endpoints.py:199"
+      ],
       "rollup_of": [
         "CONN-FAN-MANAGER-R003.1",
         "CONN-FAN-MANAGER-R003.2",
@@ -145,8 +180,10 @@
     {
       "id": "CONN-FAN-MANAGER-R003.1",
       "title": "Temperature by node",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d85b9cbe45a0"
+      ],
       "verified_by": [
         "tests/test_fleet_endpoints.py:107"
       ]
@@ -154,8 +191,10 @@
     {
       "id": "CONN-FAN-MANAGER-R003.2",
       "title": "In-band IPMI reads by node",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d85b9cbe45a0"
+      ],
       "verified_by": [
         "tests/test_fleet_endpoints.py:116"
       ]
@@ -168,25 +207,29 @@
         "b14b79765db3"
       ],
       "verified_by": [
-        "tests/test_fleet_endpoints.py:126"
+        "tests/test_fleet_endpoints.py:144"
       ]
     },
     {
       "id": "CONN-FAN-MANAGER-R003.4",
       "title": "Dead node is typed",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d85b9cbe45a0"
+      ],
       "verified_by": [
-        "tests/test_fleet_endpoints.py:172"
+        "tests/test_fleet_endpoints.py:190"
       ]
     },
     {
       "id": "CONN-FAN-MANAGER-R003.5",
       "title": "Node names to endpoints",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d85b9cbe45a0"
+      ],
       "verified_by": [
-        "tests/test_fleet_endpoints.py:180"
+        "tests/test_fleet_endpoints.py:199"
       ]
     },
     {

@@ -114,13 +114,31 @@ def test_connector_aggregates_temperature_by_node(nodes):
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R003.2")
-def test_connector_routes_inband_ipmi_reads(nodes):
-    """CONN-FAN-MANAGER-R003.2: an IPMI read with no host goes to every node."""
+def test_connector_routes_inband_ipmi_reads(nodes, monkeypatch):
+    """CONN-FAN-MANAGER-R003.2: in-band reads fan out; OOB reads stay direct."""
     result = IpmiApi().sensors_list()
     assert result["response"] == {
         "node-a": {"response": "sdr-node-a", "status": 200},
         "node-b": {"response": "sdr-node-b", "status": 200},
     }
+
+    calls = []
+
+    def fake_exec(runner, target, args, **_):
+        calls.append((target, args))
+        return {"status": 200, "response": "oob-sdr"}
+
+    monkeypatch.setattr(ipmi, "_exec", fake_exec)
+    oob = IpmiApi().sensors_list(
+        host="bmc.example", user="operator", password="x"
+    )
+    assert oob == {"status": 200, "response": "oob-sdr"}
+    assert calls == [
+        (
+            {"host": "bmc.example", "user": "operator", "password": "x"},
+            ["sdr", "list"],
+        )
+    ]
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R003.3")
@@ -175,6 +193,7 @@ def test_unreachable_node_is_reported_not_raised(monkeypatch):
     monkeypatch.setenv("FAN_MANAGER_HOSTS", "http://127.0.0.1:1")
     result = fleet.read_all("temperature", timeout=1)
     assert result["status"] == 502 and result["nodes_ok"] == 0
+    assert result["response"]["http://127.0.0.1:1"]["status"] == 502
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R003.5")

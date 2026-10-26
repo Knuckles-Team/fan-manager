@@ -58,9 +58,11 @@
     },
     {
       "id": "CONN-FAN-MANAGER-R001.3",
-      "title": "SDK floor",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "title": "Shared SDK floor",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b14b79765db3"
+      ],
       "verified_by": [
         "tests/test_served_surface_keeps_ingest.py:33"
       ]
@@ -98,10 +100,12 @@
     {
       "id": "CONN-FAN-MANAGER-R002.1",
       "title": "Reads served, writes refused",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b14b79765db3"
+      ],
       "verified_by": [
-        "tests/test_fleet_endpoints.py:56"
+        "tests/test_fleet_endpoints.py:58"
       ]
     },
     {
@@ -110,16 +114,18 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/test_fleet_endpoints.py:77"
+        "tests/test_fleet_endpoints.py:82"
       ]
     },
     {
       "id": "CONN-FAN-MANAGER-R002.3",
       "title": "Bearer token",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b14b79765db3"
+      ],
       "verified_by": [
-        "tests/test_fleet_endpoints.py:69"
+        "tests/test_fleet_endpoints.py:71"
       ]
     },
     {
@@ -142,7 +148,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/test_fleet_endpoints.py:102"
+        "tests/test_fleet_endpoints.py:107"
       ]
     },
     {
@@ -151,16 +157,18 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/test_fleet_endpoints.py:111"
+        "tests/test_fleet_endpoints.py:116"
       ]
     },
     {
       "id": "CONN-FAN-MANAGER-R003.3",
       "title": "Writes stay guarded",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b14b79765db3"
+      ],
       "verified_by": [
-        "tests/test_fleet_endpoints.py:121"
+        "tests/test_fleet_endpoints.py:126"
       ]
     },
     {
@@ -169,7 +177,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/test_fleet_endpoints.py:133"
+        "tests/test_fleet_endpoints.py:172"
       ]
     },
     {
@@ -178,7 +186,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/test_fleet_endpoints.py:141"
+        "tests/test_fleet_endpoints.py:180"
       ]
     },
     {

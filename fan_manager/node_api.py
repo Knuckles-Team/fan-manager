@@ -5,7 +5,8 @@ The fan-manager daemon runs on each server, next to that server's BMC. When
 remote connector can read the node's temperature and BMC state.
 
 The endpoint serves ``GET`` only. It exposes no fan-level, power, BMC user, or
-raw IPMI write: every other method returns 405. When
+raw IPMI write: every other method returns 405 before request authentication.
+When
 ``FAN_MANAGER_NODE_API_TOKEN`` is set, each request except ``/health`` must
 carry ``Authorization: Bearer <token>``. The endpoint binds to
 ``FAN_MANAGER_NODE_API_BIND`` (default loopback); a deployment sets it to the
@@ -75,7 +76,18 @@ class _Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
-        self.wfile.write(data)
+        # RFC 9110: HEAD carries the same headers as GET but no response body.
+        if self.command != "HEAD":
+            self.wfile.write(data)
+
+    def send_error(
+        self, code: int, message: str | None = None, explain: str | None = None
+    ) -> None:
+        """Turn BaseHTTPRequestHandler's unknown-method 501 into our 405 contract."""
+        if code == 501:
+            self._refuse()
+            return
+        super().send_error(code, message, explain)
 
     def _authorized(self) -> bool:
         if not self.token:
@@ -105,7 +117,7 @@ class _Handler(BaseHTTPRequestHandler):
     def _refuse(self) -> None:
         self._send(405, {"error": "the node endpoint is read-only"})
 
-    do_POST = do_PUT = do_PATCH = do_DELETE = _refuse  # noqa: N815
+    do_POST = do_PUT = do_PATCH = do_DELETE = do_HEAD = do_OPTIONS = _refuse  # noqa: N815
 
 
 def make_server(

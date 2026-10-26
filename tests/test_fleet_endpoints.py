@@ -48,9 +48,11 @@ def _get(url: str, token: str | None = None, method: str = "GET"):
         req.add_header("Authorization", f"Bearer {token}")
     try:
         with urllib.request.urlopen(req, timeout=5) as resp:
-            return resp.status, json.loads(resp.read())
+            body = resp.read()
+            return resp.status, json.loads(body) if body else {}
     except urllib.error.HTTPError as exc:
-        return exc.code, json.loads(exc.read())
+        body = exc.read()
+        return exc.code, json.loads(body) if body else {}
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R002.1")
@@ -62,8 +64,8 @@ def test_node_endpoint_serves_reads_and_refuses_writes(nodes):
     code, body = _get(f"{base}/v1/temperature", token="t0k")
     assert code == 200 and body["result"]["response"] == 61.0
     assert _get(f"{base}/v1/power_off", token="t0k")[0] == 404
-    assert _get(f"{base}/v1/temperature", token="t0k", method="POST")[0] == 405
-    assert _get(f"{base}/v1/temperature", token="t0k", method="PUT")[0] == 405
+    for method in ("POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE"):
+        assert _get(f"{base}/v1/temperature", token="t0k", method=method)[0] == 405
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R002.3")
@@ -72,6 +74,9 @@ def test_node_endpoint_requires_the_token(nodes):
     port = nodes[0]
     assert _get(f"http://127.0.0.1:{port}/v1/temperature")[0] == 401
     assert _get(f"http://127.0.0.1:{port}/v1/temperature", token="bad")[0] == 401
+    # R002.1's method guard runs first, so an unsupported unauthenticated
+    # method is 405 rather than an auth-shaped 401.
+    assert _get(f"http://127.0.0.1:{port}/v1/temperature", method="OPTIONS")[0] == 405
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R002.2")
@@ -120,14 +125,48 @@ def test_connector_routes_inband_ipmi_reads(nodes):
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R003.3")
 def test_connector_never_fans_out_writes(nodes, monkeypatch):
-    """CONN-FAN-MANAGER-R003.3: a write stays local even when FAN_MANAGER_HOSTS is set."""
+    """CONN-FAN-MANAGER-R003.3: writes require one explicit OOB target and never fan out."""
     called = []
-    monkeypatch.setattr(fleet, "read_all", lambda op, **_: called.append(op))
     monkeypatch.setattr(
         ipmi, "_exec", lambda runner, target, args, **_: {"status": 500, "args": args}
     )
-    assert IpmiApi().power_off()["args"] == ["chassis", "power", "off"]
     assert called == []
+
+    write_calls = [
+        ("power_on", {}),
+        ("power_off", {}),
+        ("power_cycle", {}),
+        ("power_reset", {}),
+        ("power_soft", {}),
+        ("chassis_identify", {}),
+        ("chassis_set_boot_device", {"bootdev": "pxe"}),
+        ("sel_clear", {}),
+        ("sol_deactivate", {}),
+        ("lan_set", {"param": "access", "value": "on"}),
+        ("user_set_password", {"user_id": "2", "new_password": "new"}),
+        ("user_enable", {"user_id": "2"}),
+        ("user_disable", {"user_id": "2"}),
+        ("mc_reset_cold", {}),
+        ("mc_reset_warm", {}),
+        ("send_raw", {"data": "0x30 0x30 0x01 0x00"}),
+    ]
+    for method, kwargs in write_calls:
+        result = getattr(IpmiApi(), method)(**kwargs)
+        assert result["status"] == 400, method
+
+    # A complete OOB target reaches the runner seam with the credentials intact;
+    # this remains a mock and never invokes hardware.
+    monkeypatch.setattr(
+        ipmi,
+        "_exec",
+        lambda runner, target, args, **_: {"status": 200, "target": target, "args": args},
+    )
+    result = IpmiApi().power_off(host="bmc.example", user="operator", password="x")
+    assert result == {
+        "status": 200,
+        "target": {"host": "bmc.example", "user": "operator", "password": "x"},
+        "args": ["chassis", "power", "off"],
+    }
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R003.4")

@@ -21,7 +21,7 @@ Code: ../../fan_manager/node_api.py ../../fan_manager/fleet.py ../../fan_manager
 ## Non-goals
 
 This specification grants no service access, credential creation, deployment, or approval exception.
-The connector must not implement a graph engine, a policy authority, or a duplicate SDK runtime.
+The connector must not implement a graph engine, a policy authority, or a duplicate shared SDK runtime.
 
 ## Why a new spec
 

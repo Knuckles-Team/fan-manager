@@ -10,31 +10,6 @@ resolution-markers = [
 overrides = [{ name = "fastmcp-slim", extras = ["client", "server"], specifier = ">=4.1.0" }]
 
 [[package]]
-name = "agent-connector-sdk"
-version = "0.5.4"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "anyio" },
-    { name = "cryptography" },
-    { name = "epistemic-graph" },
-    { name = "httpx" },
-    { name = "httpx2" },
-    { name = "mcp-types" },
-    { name = "pydantic" },
-    { name = "pyyaml" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/30/b4/e5258b6239c7b3abb2a2d000d1eaa9b4145588733eb94335e84998fb21d7/agent_connector_sdk-0.5.4.tar.gz", hash = "sha256:691cf9bde80ae856f1f0a7d0088f0f17fb5acfcb6e0c94b51cfd0e582e76a2c9", size = 794041, upload-time = "2026-10-24T08:54:16.4Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/57/d0/1da4865ca3be3e454866d582c5b97a0f902a5cbfdac8866499a76e3d4701/agent_connector_sdk-0.5.4-py3-none-any.whl", hash = "sha256:d9a35dbbeec3cb50baa6bcd28a8f2d691fef23206532e86340d9c8d0fb617603", size = 783615, upload-time = "2026-10-24T08:54:14.886Z" },
-]
-
-[package.optional-dependencies]
-mcp = [
-    { name = "fastmcp" },
-    { name = "mcp" },
-]
-
-[[package]]
 name = "aiofile"
 version = "3.11.1"
 source = { registry = "https://pypi.org/simple" }
@@ -439,11 +414,11 @@ wheels = [
 
 [[package]]
 name = "fan-manager"
-version = "2.4.5"
+version = "2.4.6"
 source = { editable = "." }
 dependencies = [
-    { name = "agent-connector-sdk", extra = ["mcp"] },
     { name = "python-dotenv" },
+    { name = "scion-sdk", extra = ["mcp"] },
 ]
 
 [package.optional-dependencies]
@@ -461,12 +436,12 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "agent-connector-sdk", extras = ["mcp"], specifier = ">=0.5.4,<0.6.0" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=9.1.1" },
     { name = "pytest-asyncio", marker = "extra == 'test'", specifier = ">=1.4.0" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=7.1.0" },
     { name = "pytest-xdist", marker = "extra == 'test'", specifier = ">=3.8.0" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
+    { name = "scion-sdk", extras = ["mcp"], specifier = ">=0.5.4,<0.6.0" },
 ]
 provides-extras = ["test"]
 
@@ -1413,6 +1388,31 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/5b/de/e0674bdbc3ef7634989b3f854c3f34bc1f587d36e5bfdc5c378d57034619/rpds_py-2026.6.3-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:ea7bb13b7c9a29791f87a0387ba7d3ad3a6d783d827e4d3f27b40a0ff44495e2", size = 576486, upload-time = "2026-06-30T07:16:39.797Z" },
     { url = "https://files.pythonhosted.org/packages/f2/f6/21101359743cd136ada781e8210a85769578422ba460672eea0e29739200/rpds_py-2026.6.3-cp314-cp314t-win32.whl", hash = "sha256:6de4744d05bd1aa1be4ed7ea1189e3979196808008113bbbf899a460966b925e", size = 201068, upload-time = "2026-06-30T07:16:41.316Z" },
     { url = "https://files.pythonhosted.org/packages/a6/b2/9574d4d44f7760c2aa32d92a0a4f41698e33f5b204a0bf5c9758f52c79d5/rpds_py-2026.6.3-cp314-cp314t-win_amd64.whl", hash = "sha256:c7b9a2f8f4d8e90af72571d3d495deebdd7e3c75451f5b41719aee166e940fc2", size = 220600, upload-time = "2026-06-30T07:16:43.091Z" },
+]
+
+[[package]]
+name = "scion-sdk"
+version = "0.5.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "cryptography" },
+    { name = "epistemic-graph" },
+    { name = "httpx" },
+    { name = "httpx2" },
+    { name = "mcp-types" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d3/35/dd48282419c4488d451463e922379e6580fdb89b7b24159705da1aae79bb/scion_sdk-0.5.6.tar.gz", hash = "sha256:a8a9e52ade50835fe828de74c81db9ce983ef7b088e243762dd12757169bff99", size = 796490, upload-time = "2026-10-26T05:03:29.924Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/69/2c/b63f9dec5c402c51a37a2466936b336510e89ac72b183cbedcc0d9ae7590/scion_sdk-0.5.6-py3-none-any.whl", hash = "sha256:0276f6aea3eecfabc408191a112ac9bb221ce994033e714231ae59fb3f7ab117", size = 784816, upload-time = "2026-10-26T05:03:27.98Z" },
+]
+
+[package.optional-dependencies]
+mcp = [
+    { name = "fastmcp" },
+    { name = "mcp" },
 ]
 
 [[package]]

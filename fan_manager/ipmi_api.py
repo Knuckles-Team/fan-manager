@@ -1,8 +1,9 @@
 """Typed IPMI/BMC operations served as one MCP tool each.
 
-Each method wraps one :mod:`fan_manager.ipmi` call. An optional out-of-band
-target ``host``/``user``/``password`` may be passed; credentials are resolved by
-the runtime and never persisted in connector records.
+Each method wraps one :mod:`fan_manager.ipmi` call. Reads may use an optional
+out-of-band target ``host``/``user``/``password``; writes require all three
+fields and credentials are resolved by the runtime and never persisted in
+connector records.
 """
 
 from typing import Any
@@ -15,6 +16,20 @@ def _target(host: str | None, user: str, password: str | None) -> dict[str, Any]
     if not host:
         return None
     return {"host": host, "user": user, "password": password or ""}
+
+
+def _write_guard(
+    host: str | None, user: str, password: str | None
+) -> dict[str, Any] | None:
+    """Refuse an IPMI write unless its out-of-band target is fully explicit."""
+    if host and user and password:
+        return None
+    return {
+        "response": None,
+        "command": "write",
+        "status": 400,
+        "error": "write requires an explicit out-of-band host, user, and BMC password",
+    }
 
 
 class IpmiApi:
@@ -38,6 +53,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Power the chassis on."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.power("on", target=_target(host, user, password))
 
     def power_off(
@@ -47,6 +64,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Power the chassis off (destructive: confirm the target first)."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.power("off", target=_target(host, user, password))
 
     def power_cycle(
@@ -56,6 +75,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Power-cycle the chassis (destructive: confirm the target first)."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.power("cycle", target=_target(host, user, password))
 
     def power_reset(
@@ -65,6 +86,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Hard-reset the chassis (destructive: confirm the target first)."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.power("reset", target=_target(host, user, password))
 
     def power_soft(
@@ -74,6 +97,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Request an ACPI soft shutdown."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.power("soft", target=_target(host, user, password))
 
     def chassis_identify(
@@ -83,6 +108,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Blink the chassis identify LED for 15 seconds."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.chassis("identify", target=_target(host, user, password))
 
     def chassis_set_boot_device(
@@ -93,6 +120,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Set the next boot device (pxe, disk, cdrom or bios)."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.chassis(
             "bootdev", target=_target(host, user, password), bootdev=bootdev
         )
@@ -185,6 +214,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Clear the system event log (destructive)."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.sel("clear", target=_target(host, user, password))
 
     def sol_info(
@@ -205,6 +236,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Deactivate an open Serial-over-LAN session."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.sol("deactivate", target=_target(host, user, password))
 
     def lan_print(
@@ -227,6 +260,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Set one BMC LAN parameter, such as ipaddr."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.lan(
             "set", target=_target(host, user, password), param=param, value=value
         )
@@ -251,6 +286,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Set a BMC user's password."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.user(
             "set_password",
             target=_target(host, user, password),
@@ -266,6 +303,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Enable a BMC user."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.user(
             "enable", target=_target(host, user, password), user_id=user_id
         )
@@ -278,6 +317,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Disable a BMC user."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.user(
             "disable", target=_target(host, user, password), user_id=user_id
         )
@@ -300,6 +341,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Cold-reset the management controller (destructive)."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.mc("reset_cold", target=_target(host, user, password))
 
     def mc_reset_warm(
@@ -309,6 +352,8 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Warm-reset the management controller (destructive)."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.mc("reset_warm", target=_target(host, user, password))
 
     def mc_selftest(
@@ -330,4 +375,6 @@ class IpmiApi:
         password: str | None = None,
     ) -> dict[str, Any]:
         """Send a raw IPMI command given as space-separated hex bytes (advanced, vendor-specific)."""
+        if refusal := _write_guard(host, user, password):
+            return refusal
         return ipmi.raw(data, target=_target(host, user, password))

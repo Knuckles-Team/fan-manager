@@ -49,5 +49,3 @@ def test_core_callables_exposed():
     mod = importlib.import_module(PKG)
     for name in ("get_temp", "set_fan", "auto_set_fan_speed", "fan_manager"):
         assert hasattr(mod, name), f"{name} not exposed on fan_manager"
-
-

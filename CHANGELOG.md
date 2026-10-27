@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.8] - 2026-10-27
+
+### Added
+- Add the Fan Manager rapid-delivery development skill and its package-content contract test.
+
 ## [2.4.6] - 2026-10-26
 
 ### Fixed

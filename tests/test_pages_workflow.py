@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 
 import pytest
@@ -18,8 +17,6 @@ pytestmark = pytest.mark.spec("PIPE-CONNSPEC-R120.3")
 def mock_hardware():
     """Keep this filesystem-only contract test independent of package imports."""
     yield
-
-
 
 
 def test_dashboard_reads_only_canonical_spec_status_files() -> None:

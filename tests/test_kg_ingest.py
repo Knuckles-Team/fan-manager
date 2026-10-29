@@ -29,9 +29,9 @@ class _FakeTransport:
         self.requests: list[Any] = []
 
     async def source_status(self, connector, stream):
-
-        del connector, stream
-        return SimpleNamespace(accepted_checkpoint=None)
+        return SimpleNamespace(
+            connector=connector, stream=stream, accepted_checkpoint=None
+        )
 
     async def submit(self, request):
         self.requests.append(request)
@@ -168,11 +168,11 @@ async def test_ingest_sensor_readings_classifies_fan_and_temp(ingest):
     # host + controller + 2 sensors = 4 nodes; controlsHost + 2 readingForHost = 3 edges
     assert res == {"nodes": 4, "edges": 3}
     fan_nodes = [
-        r for r in transport.requests[0].records
-        if r.payload.get("sensorType") == "Fan"
+        r for r in transport.requests[0].records if r.payload.get("sensorType") == "Fan"
     ]
     temp_nodes = [
-        r for r in transport.requests[0].records
+        r
+        for r in transport.requests[0].records
         if r.payload.get("sensorType") == "Temperature"
     ]
     assert fan_nodes and fan_nodes[0].payload["fanRpm"] == 5000.0

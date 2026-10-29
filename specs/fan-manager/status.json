@@ -33,11 +33,11 @@
         "d85b9cbe45a0"
       ],
       "verified_by": [
-        "tests/test_served_surface_keeps_ingest.py:20",
-        "tests/test_served_surface_keeps_ingest.py:27",
-        "tests/test_served_surface_keeps_ingest.py:33",
-        "tests/test_served_surface_keeps_ingest.py:44",
-        "tests/test_served_surface_keeps_ingest.py:45"
+        "tests/test_served_surface_keeps_ingest.py:19",
+        "tests/test_served_surface_keeps_ingest.py:26",
+        "tests/test_served_surface_keeps_ingest.py:32",
+        "tests/test_served_surface_keeps_ingest.py:43",
+        "tests/test_served_surface_keeps_ingest.py:44"
       ],
       "rollup_of": [
         "CONN-FAN-MANAGER-R001.1",
@@ -55,7 +55,7 @@
         "d85b9cbe45a0"
       ],
       "verified_by": [
-        "tests/test_served_surface_keeps_ingest.py:20"
+        "tests/test_served_surface_keeps_ingest.py:19"
       ]
     },
     {
@@ -66,7 +66,7 @@
         "d85b9cbe45a0"
       ],
       "verified_by": [
-        "tests/test_served_surface_keeps_ingest.py:27"
+        "tests/test_served_surface_keeps_ingest.py:26"
       ]
     },
     {
@@ -77,7 +77,7 @@
         "b14b79765db3"
       ],
       "verified_by": [
-        "tests/test_served_surface_keeps_ingest.py:33"
+        "tests/test_served_surface_keeps_ingest.py:32"
       ]
     },
     {
@@ -88,7 +88,7 @@
         "d85b9cbe45a0"
       ],
       "verified_by": [
-        "tests/test_served_surface_keeps_ingest.py:44"
+        "tests/test_served_surface_keeps_ingest.py:43"
       ]
     },
     {
@@ -99,7 +99,7 @@
         "d85b9cbe45a0"
       ],
       "verified_by": [
-        "tests/test_served_surface_keeps_ingest.py:45"
+        "tests/test_served_surface_keeps_ingest.py:44"
       ]
     },
     {

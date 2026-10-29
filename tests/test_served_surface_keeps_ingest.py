@@ -12,9 +12,8 @@ import pytest
 
 sys.argv = ["fan-manager"]
 
-from agent_connector_sdk.mcp.tool_surface import registered_tools
-
 from agent_connector_sdk.connector import build_server
+from agent_connector_sdk.mcp.tool_surface import registered_tools
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R001.1")
@@ -38,7 +37,7 @@ def test_sdk_floor_is_declared_for_the_split_surface():
     project = tomllib.loads(
         (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text()
     )["project"]
-    assert "scion-sdk[mcp]>=0.5.4,<0.6.0" in project["dependencies"]
+    assert "scion-sdk[mcp]>=0.5.9,<0.6.0" in project["dependencies"]
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R001.4")

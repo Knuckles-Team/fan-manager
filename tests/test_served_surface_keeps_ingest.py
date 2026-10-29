@@ -12,9 +12,8 @@ import pytest
 
 sys.argv = ["fan-manager"]
 
-from agent_connector_sdk.mcp.tool_surface import registered_tools
-
 from agent_connector_sdk.connector import build_server
+from agent_connector_sdk.mcp.tool_surface import registered_tools
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R001.1")

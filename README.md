@@ -31,7 +31,7 @@
 temperature. It is a **local** tool: it reads temperatures via `lm-sensors`
 (`sensors -j`) and drives the server's BMC via `ipmitool` raw commands. It ships
 as a CLI, a Model Context Protocol (MCP) server, and an integrated A2A agent for
-the [`agent-connector-sdk`](https://github.com/Knuckles-Team/agent-connector-sdk) ecosystem.
+the [`scion-sdk`](https://github.com/Knuckles-Team/scion-sdk) ecosystem.
 
 Because fan control happens against the local host, **no service URL or token is
 required** — the connector degrades to a no-op/local config for authentication.
@@ -124,7 +124,7 @@ context window. Configure filtering via:
 <!-- MCP-CONFIG-EXAMPLES:START -->
 
 > **Install the connector-focused `[mcp]` extra.** Examples use `fan-manager[mcp]` to add
-> FastMCP / FastAPI through `agent-connector-sdk[mcp]`; the required Agent Utilities core
+> FastMCP / FastAPI through `scion-sdk[mcp]`; the required Agent Utilities core
 > still carries `epistemic-graph[full]`. The `[agent-runtime]` extra additionally
 > enables model orchestration.
 
@@ -293,7 +293,7 @@ Interface alongside the MCP server. See
 | `HOST` | `0.0.0.0` |  |
 | `PORT` | `8000` |  |
 | `TRANSPORT` | `stdio` | options: stdio, streamable-http, sse |
-| `AUTH_TYPE` | `none` | auth strategy for the agent-connector-sdk MCP factory |
+| `AUTH_TYPE` | `none` | auth strategy for the scion-sdk MCP factory |
 | `FASTMCP_LOG_LEVEL` | `INFO` |  |
 | `TEMPERATURETOOL` | `True` | register the temperature tool domain |
 | `FAN_CONTROLTOOL` | `True` | register the fan-control tool domain |
@@ -318,7 +318,7 @@ Interface alongside the MCP server. See
 | `EUNOMIA_POLICY_FILE` | `mcp_policies.json` |  |
 | `EUNOMIA_REMOTE_URL` | `http://eunomia-server:8000` |  |
 
-#### Inherited agent-connector-sdk variables (apply to every connector)
+#### Inherited scion-sdk variables (apply to every connector)
 
 | Variable | Example | Description |
 |----------|---------|-------------|
@@ -339,7 +339,7 @@ Interface alongside the MCP server. See
 | `MODEL_ID` | `gpt-4o` | Model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
-_28 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared agent-connector-sdk set — do not edit._
+_28 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared scion-sdk set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
 
 
@@ -353,7 +353,7 @@ file (auto-loaded), or in the MCP client's `env` block. See
 | `HOST` | `0.0.0.0` | MCP server | Bind address for `streamable-http`/`sse` transports. |
 | `PORT` | `8000` | MCP server | Bind port for `streamable-http`/`sse` transports. |
 | `TRANSPORT` | `stdio` | MCP server | Transport: `stdio`, `streamable-http`, or `sse`. |
-| `AUTH_TYPE` | `none` | MCP server | Auth strategy passed to the `agent-connector-sdk` MCP factory (`none` for this local tool). |
+| `AUTH_TYPE` | `none` | MCP server | Auth strategy passed to the `scion-sdk` MCP factory (`none` for this local tool). |
 | `FASTMCP_LOG_LEVEL` | `INFO` | MCP server | Log verbosity for the underlying FastMCP server. |
 | `TEMPERATURETOOL` | `True` | Tool toggle | Register the `temperature` tool domain (`CONCEPT:FM-OS.governance.service-reads-temperature-through`). |
 | `FAN_CONTROLTOOL` | `True` | Tool toggle | Register the `fan-control` tool domain (`CONCEPT:FM-OS.governance.service-writes-fan-level`). |
@@ -373,7 +373,7 @@ file (auto-loaded), or in the MCP client's `env` block. See
 ## Security & Governance
 
 Built directly upon the enterprise-ready
-[`agent-connector-sdk`](https://github.com/Knuckles-Team/agent-connector-sdk) core,
+[`scion-sdk`](https://github.com/Knuckles-Team/scion-sdk) core,
 standard security parameters are fully supported:
 
 ### Access Control & Policy Enforcement
@@ -395,8 +395,8 @@ Pick the extra that matches what the operator want to run:
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
-| `fan-manager[mcp]` | Connector-focused MCP server (`agent-connector-sdk[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | The operator only run the **MCP server** (smallest install / image) |
-| `fan-manager[agent]` | Agent runtime (`agent-connector-sdk[agent-runtime,logfire]` — model orchestration + `epistemic-graph[full]`) | The operator run the **integrated agent** |
+| `fan-manager[mcp]` | Connector-focused MCP server (`scion-sdk[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | The operator only run the **MCP server** (smallest install / image) |
+| `fan-manager[agent]` | Agent runtime (`scion-sdk[agent-runtime,logfire]` — model orchestration + `epistemic-graph[full]`) | The operator run the **integrated agent** |
 | `fan-manager[all]` | Everything (`mcp` + `agent` + `logfire`) | Development / both surfaces |
 
 ```bash
@@ -465,15 +465,15 @@ before submitting pull requests:
 - Run test suites using `pytest`
 
 
-<!-- BEGIN agent-connector-sdk-deployment (generated; do not edit between markers) -->
+<!-- BEGIN scion-sdk-deployment (generated; do not edit between markers) -->
 
-## Deploy with `agent-connector-sdk-deployment`
+## Deploy with `scion-sdk-deployment`
 
-Provision this package with the consolidated **`agent-connector-sdk-deployment`**
+Provision this package with the consolidated **`scion-sdk-deployment`**
 workflow. It selects an installed-package, editable-source, or immutable-container
 path; records only runtime secret and TLS-profile references in `AgentConfig`; and
 runs doctor, registration, policy, observability, and rollback gates. Ask your agent
-to **"deploy `fan-manager` with agent-connector-sdk-deployment"**.
+to **"deploy `fan-manager` with scion-sdk-deployment"**.
 
 | Install mode | Command |
 |------|---------|
@@ -485,7 +485,7 @@ The repository embeds no deployment profile, credential value, certificate path,
 environment-specific endpoint. Supply those at runtime through `AgentConfig` and the
 configured secret provider.
 
-<!-- END agent-connector-sdk-deployment -->
+<!-- END scion-sdk-deployment -->
 
 <!-- GOVERNED-CAPABILITY:START -->
 ## Governed capability contract

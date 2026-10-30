@@ -29,5 +29,5 @@ management of Dell PowerEdge servers. 🌀
 - Summarize actions taken (e.g., "CPU at 72°C, set fans to 38%").
 
 > This file is the externalized source of truth for the agent's system prompt
-> (agent-connector-sdk standard). It is loaded by `fan_manager.agent_server` when
+> (scion-sdk standard). It is loaded by `fan_manager.agent_server` when
 > present and mirrors `fan_manager/agent_data/IDENTITY.md`.

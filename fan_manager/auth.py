@@ -13,7 +13,7 @@ the MCP server and downstream tooling can depend on it uniformly. The returned
 import logging
 from typing import Any
 
-from agent_connector_sdk.config import setting
+from scion_sdk.config import setting
 
 from fan_manager.api_client import Api
 

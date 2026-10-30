@@ -7,7 +7,7 @@ Skipped informational: 4
   - Priority: P2-Medium | Effort: Medium
 - [ ] [P] **T002** [Dependency Audit] Minor update: pytest-asyncio 1.3.0 (installed) -> 1.4.0
   - Priority: P3-Low | Effort: Small
-- [ ] [P] **T003** [Dependency Audit] Minor update: agent-connector-sdk 0.2.40 (installed) -> 0.47.0
+- [ ] [P] **T003** [Dependency Audit] Minor update: scion-sdk 0.2.40 (installed) -> 0.47.0
   - Priority: P3-Low | Effort: Small
 - [ ] [P] **T004** [Test Coverage] Test suite lacks intent diversity (only one type)
   - Priority: P2-Medium | Effort: Medium
@@ -47,5 +47,5 @@ Skipped informational: 4
   - Priority: P2-Medium | Effort: Medium
 - [ ] [P] **T022** [Environment Variables] 3 Python env vars not in .env.example: ENABLE_DELEGATION, IPMITOOL_PATH, SENSORS
   - Priority: P2-Medium | Effort: Medium
-- [ ] [P] **T023** [XDG Compliance (KG)] Check skipped: required agent-connector-sdk/networkx dependencies not found.
+- [ ] [P] **T023** [XDG Compliance (KG)] Check skipped: required scion-sdk/networkx dependencies not found.
   - Priority: P2-Medium | Effort: Medium

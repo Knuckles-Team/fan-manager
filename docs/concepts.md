@@ -2,7 +2,7 @@
 
 > **Prefix**: `CONCEPT:FM-OS.*` (OKF-CIS: `<SLUG>-<PILLAR>.<domain>.<concept>`)
 > **Version**: 1.1.0
-> **Bridge**: [`ECO-4.0`](https://github.com/Knuckles-Team/agent-connector-sdk/blob/main/docs/concepts.md) (Unified Toolkit Ingestion)
+> **Bridge**: [`ECO-4.0`](https://github.com/Knuckles-Team/scion-sdk/blob/main/docs/concepts.md) (Unified Toolkit Ingestion)
 
 ---
 
@@ -24,27 +24,27 @@
 | `CONCEPT:FM-OS.control.ambient-correlation` | Ambient Correlation | `kg-control` | Collapse simultaneous multi-host spikes into one `ambient` cause (rack/room cooling) instead of N independent alerts. |
 | `CONCEPT:FM-OS.control.policy-source-seam` | Policy Source Seam | `kg-control` | The control loop's ONLY write path to fan behaviour: `load_fan_policy` overlays an approved, clamped `:FanControlPolicy` (mounted JSON/ConfigMap) on the CLI curve, hot-reloaded each refresh. |
 
-## Cross-Project References (from agent-connector-sdk)
+## Cross-Project References (from scion-sdk)
 
-> These are **external** concepts owned by the [`agent-connector-sdk`](https://github.com/Knuckles-Team/agent-connector-sdk)
+> These are **external** concepts owned by the [`scion-sdk`](https://github.com/Knuckles-Team/scion-sdk)
 > project, not project-specific `CONCEPT:FM-OS.*` concepts. They are listed here as
 > bare IDs (without the `CONCEPT:` marker prefix) so traceability tooling treats
 > them as external bridges rather than orphaned local concepts.
 
 | External Concept ID | Name | Origin |
 |---------------------|------|--------|
-| `ECO-4.0` | Unified Toolkit Ingestion | agent-connector-sdk |
-| `ORCH-1.2` | Confidence-Gated Router | agent-connector-sdk |
-| `OS-5.1` | Prompt Injection Defense | agent-connector-sdk |
-| `OS-5.2` | Cognitive Scheduler | agent-connector-sdk |
-| `AU-OS.governance.reactive-multi-axis-budget` | Guardrail Engine | agent-connector-sdk |
-| `AU-OS.governance.wasm-micro-agent-sandbox` | Audit Logging | agent-connector-sdk |
-| `AU-KG.ingest.enterprise-source-extractor` | Enterprise Source Extractor (native KG ingestion) | agent-connector-sdk |
-| `KG-2.0` | Knowledge Graph Core | agent-connector-sdk |
+| `ECO-4.0` | Unified Toolkit Ingestion | scion-sdk |
+| `ORCH-1.2` | Confidence-Gated Router | scion-sdk |
+| `OS-5.1` | Prompt Injection Defense | scion-sdk |
+| `OS-5.2` | Cognitive Scheduler | scion-sdk |
+| `AU-OS.governance.reactive-multi-axis-budget` | Guardrail Engine | scion-sdk |
+| `AU-OS.governance.wasm-micro-agent-sandbox` | Audit Logging | scion-sdk |
+| `AU-KG.ingest.enterprise-source-extractor` | Enterprise Source Extractor (native KG ingestion) | scion-sdk |
+| `KG-2.0` | Knowledge Graph Core | scion-sdk |
 
-## Synergy with agent-connector-sdk
+## Synergy with scion-sdk
 
-This project integrates with `agent-connector-sdk` via the `ECO-4.0` (Unified
+This project integrates with `scion-sdk` via the `ECO-4.0` (Unified
 Toolkit Ingestion) bridge. The `fan_manager` MCP server registers its tools with
-the agent-connector-sdk FastMCP middleware, enabling automatic discovery, telemetry,
+the scion-sdk FastMCP middleware, enabling automatic discovery, telemetry,
 and Knowledge Graph ingestion of all `CONCEPT:FM-OS.*` concepts.

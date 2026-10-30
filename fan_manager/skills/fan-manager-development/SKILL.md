@@ -9,7 +9,7 @@ domain: development
 license: MIT
 tags: [fan-manager, dell, ipmi, sensors, mcp, knowledge-graph, rapid-delivery]
 metadata:
-  author: Genius
+  author: Knuckles-Team
   version: '1.0.0'
 ---
 
@@ -56,7 +56,7 @@ configuration, never as secrets to embed in this skill. Keep node reads
 read-only and require one explicit out-of-band target for write operations.
 The MCP domains are gated by `TEMPERATURETOOL`, `FAN_CONTROLTOOL`, and
 `KGTOOL`; preserve the inherited `MCP_TOOL_MODE` surface and the existing
-`agent_connector_sdk` registration path.
+`scion_sdk` registration path.
 
 ## Rapid delivery: the 5-minute contract
 

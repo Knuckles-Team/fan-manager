@@ -323,8 +323,8 @@ def _notify(message: str) -> None:
     """Best-effort push to the intelligent alert router (``FAN_MANAGER_NOTIFY_URL``)."""
     logger.info(message)
     try:
-        from agent_connector_sdk.config import setting
-        from agent_connector_sdk.http.safe_post import safe_post_json
+        from scion_sdk.config import setting
+        from scion_sdk.http.safe_post import safe_post_json
 
         url = str(setting("FAN_MANAGER_NOTIFY_URL", "") or "").strip()
         if not url:

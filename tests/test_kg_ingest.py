@@ -1,4 +1,4 @@
-"""Epistemic-graph typed-node ingestion via agent_connector_sdk — Wire-First coverage.
+"""Epistemic-graph typed-node ingestion via scion_sdk — Wire-First coverage.
 
 Exercises the real ``fan_manager.kg_ingest`` mappers against a fake transport one level
 below the SDK's own ``KnowledgeIngest`` facade, so these tests still run the SDK's real
@@ -13,7 +13,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-from agent_connector_sdk.ingest import IngestError, KnowledgeIngest
+from scion_sdk.ingest import IngestError, KnowledgeIngest
 
 from fan_manager.kg_ingest import (
     STREAM,

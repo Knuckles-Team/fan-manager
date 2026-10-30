@@ -1,7 +1,7 @@
 """The trend ingest signs engine requests as the configured service identity."""
 
 import pytest
-from agent_connector_sdk.ingest.engine import EngineSettings
+from scion_sdk.ingest.engine import EngineSettings
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R004")

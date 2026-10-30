@@ -10,8 +10,8 @@ import logging
 import os
 import threading
 
-from agent_connector_sdk.utilities import to_boolean
 from fastmcp.server.middleware import Middleware, MiddlewareContext
+from scion_sdk.utilities import to_boolean
 
 logger = logging.getLogger(__name__)
 local = threading.local()

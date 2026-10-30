@@ -14,7 +14,7 @@ import warnings
 warnings.filterwarnings("ignore", message=".*urllib3.*or chardet.*")
 warnings.filterwarnings("ignore", message=".*urllib3.*or charset_normalizer.*")
 
-from agent_connector_sdk.config import load_config
+from scion_sdk.config import load_config
 
 from fan_manager.api_client import Api
 from fan_manager.mcp import (

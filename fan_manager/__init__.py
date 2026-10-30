@@ -81,7 +81,7 @@ def __dir__() -> list[str]:
     return sorted(list(globals().keys()) + __all__)
 
 
-from agent_connector_sdk.connector import Connector
+from scion_sdk.connector import Connector
 
 from fan_manager.auth import get_client
 from fan_manager.ipmi_api import IpmiApi

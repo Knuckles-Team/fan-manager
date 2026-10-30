@@ -4,7 +4,7 @@ CONCEPT:AU-KG.ingest.enterprise-source-extractor. Fan Manager pushes its thermal
 timeseries into the ONE epistemic-graph knowledge graph as **typed OWL nodes**
 — ``:TemperatureReading`` / ``:FanSpeedSetting`` / ``:SensorReading`` samples, each linked
 to the ``:ManagedHost`` and its ``:FanController`` — through
-``agent_connector_sdk.ingest`` -- the generated ``SourceIngest`` client, not a local
+``scion_sdk.ingest`` -- the generated ``SourceIngest`` client, not a local
 ingestion helper. Node ids follow ``fan:<class>:<extId>`` and each entity's
 ``node_type`` matches a class the ``fan_manager.ontology`` ``fan.ttl`` federates.
 """
@@ -15,7 +15,7 @@ import logging
 import time
 from typing import Any
 
-from agent_connector_sdk.ingest import (
+from scion_sdk.ingest import (
     KnowledgeIngest,
     SourceStream,
 )
@@ -216,7 +216,7 @@ async def ingest_sensor_readings(
 def _engine() -> Any | None:
     """Read-side graph engine hook; reads are unavailable without an arbora-served engine.
 
-    ``agent_connector_sdk`` owns the write/ingest path only, so this returns ``None`` and
+    ``scion_sdk`` owns the write/ingest path only, so this returns ``None`` and
     :func:`read_thermal_trends` degrades to ``[]`` (callers already treat that as no history).
     """
     return None

@@ -37,7 +37,7 @@ def test_sdk_floor_is_declared_for_the_split_surface():
     project = tomllib.loads(
         (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text()
     )["project"]
-    assert "scion-sdk[mcp]>=0.6.2,<0.7.0" in project["dependencies"]
+    assert "scion-sdk[mcp]>=0.6.3,<0.7.0" in project["dependencies"]
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R001.4")

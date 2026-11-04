@@ -1,5 +1,5 @@
-"""Regression tests for epistemic-graph–driven fan control (Phases 1-3 of
-``reports/epistemic-graph-fan-control-plan.md``). Locks the pure reasoning (baseline
+"""Regression tests for medulla–driven fan control (Phases 1-3 of
+``reports/medulla-fan-control-plan.md``). Locks the pure reasoning (baseline
 learning, policy derivation with its safety bounds, anomaly detection, ambient correlation),
 the Phase-2 approved-policy control seam, and one end-to-end derivation pass over a fake KG.
 

@@ -17,7 +17,7 @@ _thermal_last_flush = [0.0]  # mutable single-cell so the closure can update it
 
 
 def _kg_record_thermal_sample(temperature: Any, fan_level: int) -> None:
-    """Best-effort thermal telemetry into epistemic-graph — as DECAYING TRENDS, not every ping.
+    """Best-effort thermal telemetry into medulla — as DECAYING TRENDS, not every ping.
 
     CONCEPT:AU-KG.ingest.enterprise-source-extractor. Samples accumulate in a small in-memory
     window and are distilled to ONE :ServerThermalTrend reading per FAN_MANAGER_KG_AGGREGATE_S
@@ -388,7 +388,7 @@ def load_fan_policy(
     """Phase 2 control seam: overlay an *approved* per-host FanPolicy on the CLI ``defaults``.
 
     Reads ``FAN_MANAGER_POLICY_FILE`` — a JSON map ``{"<host>": {cold,warm,slow,fast,poll,
-    approved}, "*": {...}}`` (e.g. a mounted ConfigMap the epistemic-graph derivation loop
+    approved}, "*": {...}}`` (e.g. a mounted ConfigMap the medulla derivation loop
     writes). Only an ``approved`` entry is applied; every value is clamped and an invalid
     curve (``cold>=warm`` / ``slow>=fast``) falls back to ``defaults``. Missing file / bad
     JSON / no host match ⇒ ``defaults`` unchanged — the fail-safe curve always wins. This is
@@ -449,7 +449,7 @@ def run_service(
     Each tick re-runs :func:`auto_set_fan_speed` (CONCEPT:FM-OS.governance.service-reads-temperature-through read +
     CONCEPT:FM-OS.governance.service-writes-fan-level write) through the injected :class:`CommandRunner`, then
     sleeps for the active poll rate. Every ``FAN_MANAGER_POLICY_REFRESH`` ticks (default 20)
-    the curve is re-read via :func:`load_fan_policy`, so an epistemic-graph-approved policy
+    the curve is re-read via :func:`load_fan_policy`, so an medulla-approved policy
     hot-reloads without restarting the pod (CONCEPT:FM-OS.control.policy-source-seam).
     """
     runner = runner or _DEFAULT_RUNNER

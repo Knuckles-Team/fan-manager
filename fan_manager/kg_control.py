@@ -1,6 +1,6 @@
 """Epistemic-graph–driven fan control — learn per-host thermal baselines, recommend
 per-host fan policies, and flag thermal anomalies from the accumulated ``:ThermalTrend``
-history (see ``reports/epistemic-graph-fan-control-plan.md``).
+history (see ``reports/medulla-fan-control-plan.md``).
 
 This module is the **brain**: the reasoning is pure, cheap statistics (percentiles + a
 least-squares slope over the at-most-few-hundred hourly trend rows per host) — no ML, no

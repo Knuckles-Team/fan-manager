@@ -44,8 +44,8 @@ def test_sdk_floor_is_declared_for_the_split_surface():
         next(d for d in project["dependencies"] if d.startswith("scion-sdk[mcp]"))
     )
     floor = max(Version(s.version) for s in requirement.specifier if s.operator == ">=")
-    assert floor >= Version("0.6.3")
-    assert not requirement.specifier.contains("0.7.0")
+    assert floor >= Version("0.7.0")
+    assert requirement.specifier.contains("0.7.0")
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R001.4")

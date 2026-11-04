@@ -4,7 +4,7 @@ CONCEPT:AU-KG.ingest.enterprise-source-extractor — KG ingest (tag ``kg``)
 
 Wire-First: these tools list live data via the real fan-manager surface (``sensors -j``
 for temperature, ``ipmitool sensor list`` for the SDR) and push it into the ONE
-epistemic-graph engine as typed ``:TemperatureReading`` / ``:SensorReading`` timeseries
+medulla engine as typed ``:TemperatureReading`` / ``:SensorReading`` timeseries
 nodes. Best-effort: when no engine is reachable the tool returns ``{"ingested": None}``.
 """
 
@@ -40,7 +40,7 @@ def register_kg_tools(mcp: FastMCP):
             default=None, description="MCP context for progress reporting"
         ),
     ) -> Any:
-        """Ingest live thermal telemetry into epistemic-graph as typed nodes.
+        """Ingest live thermal telemetry into medulla as typed nodes.
 
         Action-routed methods:
           - ``temperature``: read the current CPU temperature via ``sensors -j`` and push

@@ -84,7 +84,7 @@ _Auto-generated from the live MCP server — do not edit by hand._
 
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
-| `fan_ingest_telemetry` | `KGTOOL` | Ingest live thermal telemetry into epistemic-graph as typed nodes. |
+| `fan_ingest_telemetry` | `KGTOOL` | Ingest live thermal telemetry into medulla as typed nodes. |
 | `fan_manager_fan_control` | `FAN_CONTROLTOOL` | Control Dell PowerEdge fan speed via IPMI (CONCEPT:FM-OS.governance.service-writes-fan-level). |
 | `fan_manager_temperature` | `TEMPERATURETOOL` | Read CPU/sensor temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through). |
 
@@ -125,7 +125,7 @@ context window. Configure filtering via:
 
 > **Install the connector-focused `[mcp]` extra.** Examples use `fan-manager[mcp]` to add
 > FastMCP / FastAPI through `scion-sdk[mcp]`; the required Agent Utilities core
-> still carries `epistemic-graph[full]`. The `[agent-runtime]` extra additionally
+> still carries `medulla[full]`. The `[agent-runtime]` extra additionally
 > enables model orchestration.
 
 #### stdio Transport (local IDEs — Cursor, Claude Desktop, VS Code)
@@ -395,8 +395,8 @@ Pick the extra that matches what the operator want to run:
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
-| `fan-manager[mcp]` | Connector-focused MCP server (`scion-sdk[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | The operator only run the **MCP server** (smallest install / image) |
-| `fan-manager[agent]` | Agent runtime (`scion-sdk[agent-runtime,logfire]` — model orchestration + `epistemic-graph[full]`) | The operator run the **integrated agent** |
+| `fan-manager[mcp]` | Connector-focused MCP server (`scion-sdk[mcp]` — FastMCP/FastAPI + `medulla[full]`) | The operator only run the **MCP server** (smallest install / image) |
+| `fan-manager[agent]` | Agent runtime (`scion-sdk[agent-runtime,logfire]` — model orchestration + `medulla[full]`) | The operator run the **integrated agent** |
 | `fan-manager[all]` | Everything (`mcp` + `agent` + `logfire`) | Development / both surfaces |
 
 ```bash
@@ -416,8 +416,8 @@ One multi-stage `docker/Dockerfile` builds two right-sized images, selected by `
 
 | Image tag | Build target | Contents | Entrypoint |
 |-----------|--------------|----------|------------|
-| `example/fan-manager:mcp` | `--target mcp` | `fan-manager[mcp]` — **connector-focused**, includes `epistemic-graph[full]`; no model-orchestration stack | `fan-manager-mcp` |
-| `example/fan-manager@sha256:<digest>` | `--target agent` (default) | `fan-manager[agent]` — **agent runtime**, model orchestration + `epistemic-graph[full]` | `fan-manager-agent` |
+| `example/fan-manager:mcp` | `--target mcp` | `fan-manager[mcp]` — **connector-focused**, includes `medulla[full]`; no model-orchestration stack | `fan-manager-mcp` |
+| `example/fan-manager@sha256:<digest>` | `--target agent` (default) | `fan-manager[agent]` — **agent runtime**, model orchestration + `medulla[full]` | `fan-manager-agent` |
 
 ```bash
 docker build --target mcp   -t example/fan-manager:mcp    docker/   # connector-focused MCP server
@@ -427,16 +427,16 @@ docker build --target agent -t example/fan-manager:agent-local docker/   # agent
 `docker/mcp.compose.yml` runs the connector-focused `:mcp` server; `docker/agent.compose.yml` runs the
 agent (`immutable agent digest`) with a co-located `:mcp` sidecar.
 
-### Knowledge-graph database (`epistemic-graph`)
+### Knowledge-graph database (`medulla`)
 
-Both `[mcp]` and `[agent]` carry the **epistemic-graph** engine through the required
-Agent Utilities core dependency (`epistemic-graph[full]`). The `[mcp]` extra keeps
+Both `[mcp]` and `[agent]` carry the **medulla** engine through the required
+Agent Utilities core dependency (`medulla[full]`). The `[mcp]` extra keeps
 the server connector-focused; `[agent]` also enables model orchestration. Local
 deployments can use the bundled engine. For production or shared state, run
-**epistemic-graph as a dedicated database service** and configure the runtime to use it.
+**medulla as a dedicated database service** and configure the runtime to use it.
 Deployment recipes (single-node + Raft HA), connection configuration, and architecture
 diagrams are documented in the
-[epistemic-graph deployment guide](https://knuckles-team.github.io/epistemic-graph/deployment/).
+[medulla deployment guide](https://knuckles-team.github.io/medulla/deployment/).
 
 ---
 

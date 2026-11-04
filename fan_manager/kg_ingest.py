@@ -1,7 +1,7 @@
-"""Native epistemic-graph ingestion for Fan Manager thermal telemetry (typed nodes).
+"""Native medulla ingestion for Fan Manager thermal telemetry (typed nodes).
 
 CONCEPT:AU-KG.ingest.enterprise-source-extractor. Fan Manager pushes its thermal
-timeseries into the ONE epistemic-graph knowledge graph as **typed OWL nodes**
+timeseries into the ONE medulla knowledge graph as **typed OWL nodes**
 — ``:TemperatureReading`` / ``:FanSpeedSetting`` / ``:SensorReading`` samples, each linked
 to the ``:ManagedHost`` and its ``:FanController`` — through
 ``scion_sdk.ingest`` -- the generated ``SourceIngest`` client, not a local

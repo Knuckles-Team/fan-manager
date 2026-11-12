@@ -1,7 +1,7 @@
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix dc: <http://purl.org/dc/terms/> .
-@prefix : <http://knuckles.team/kg#> .
+@prefix : <https://knuckles-team.github.io/ontology/connector/fan-control#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -244,7 +244,7 @@
     rdfs:comment "How many baseline standard-spreads a ThermalAnomaly's observed temperature sits above p50." ;
     rdfs:range xsd:decimal .
 
-<http://knuckles.team/kg/fan> a owl:Ontology ;
+<https://knuckles-team.github.io/ontology/connector/fan> a owl:Ontology ;
     rdfs:label "Fan Manager Ontology" ;
     rdfs:comment """Fan Manager thermal-control domain — managed hosts, their BMC/IPMI fan
     controllers and fans, the temperature-to-fan-speed policy curve, and the timeseries of
@@ -252,14 +252,14 @@
     entries — federated into the scion-sdk knowledge-graph hub.""" .
 
 # connector-surface core roll-up
-<http://knuckles.team/kg#ManagedHost> rdfs:subClassOf <http://knuckles.team/kg#Server> .
-<http://knuckles.team/kg#FanController> rdfs:subClassOf <http://knuckles.team/kg#ConfigurationItem> .
-<http://knuckles.team/kg#Fan> rdfs:subClassOf <http://knuckles.team/kg#ConfigurationItem> .
-<http://knuckles.team/kg#TemperatureReading> rdfs:subClassOf <http://knuckles.team/kg#Observation> .
-<http://knuckles.team/kg#SensorReading> rdfs:subClassOf <http://knuckles.team/kg#Observation> .
-<http://knuckles.team/kg#FanSpeedSetting> rdfs:subClassOf <http://knuckles.team/kg#Event> .
-<http://knuckles.team/kg#FanControlPolicy> rdfs:subClassOf <http://knuckles.team/kg#Policy> .
-<http://knuckles.team/kg#SystemEvent> rdfs:subClassOf <http://knuckles.team/kg#Event> .
-<http://knuckles.team/kg#ThermalTrend> rdfs:subClassOf <http://knuckles.team/kg#Observation> .
-<http://knuckles.team/kg#ThermalBaseline> rdfs:subClassOf <http://knuckles.team/kg#Observation> .
-<http://knuckles.team/kg#ThermalAnomaly> rdfs:subClassOf <http://knuckles.team/kg#Alert> .
+<https://knuckles-team.github.io/ontology/connector/fan-control#ManagedHost> rdfs:subClassOf <https://knuckles-team.github.io/ontology/core#Server> .
+<https://knuckles-team.github.io/ontology/connector/fan-control#FanController> rdfs:subClassOf <https://knuckles-team.github.io/ontology/core#ConfigurationItem> .
+<https://knuckles-team.github.io/ontology/connector/fan-control#Fan> rdfs:subClassOf <https://knuckles-team.github.io/ontology/core#ConfigurationItem> .
+<https://knuckles-team.github.io/ontology/connector/fan-control#TemperatureReading> rdfs:subClassOf <https://knuckles-team.github.io/ontology/core#Observation> .
+<https://knuckles-team.github.io/ontology/connector/fan-control#SensorReading> rdfs:subClassOf <https://knuckles-team.github.io/ontology/core#Observation> .
+<https://knuckles-team.github.io/ontology/connector/fan-control#FanSpeedSetting> rdfs:subClassOf <https://knuckles-team.github.io/ontology/core#Event> .
+<https://knuckles-team.github.io/ontology/connector/fan-control#FanControlPolicy> rdfs:subClassOf <https://knuckles-team.github.io/ontology/core#Policy> .
+<https://knuckles-team.github.io/ontology/connector/fan-control#SystemEvent> rdfs:subClassOf <https://knuckles-team.github.io/ontology/core#Event> .
+<https://knuckles-team.github.io/ontology/connector/fan-control#ThermalTrend> rdfs:subClassOf <https://knuckles-team.github.io/ontology/core#Observation> .
+<https://knuckles-team.github.io/ontology/connector/fan-control#ThermalBaseline> rdfs:subClassOf <https://knuckles-team.github.io/ontology/core#Observation> .
+<https://knuckles-team.github.io/ontology/connector/fan-control#ThermalAnomaly> rdfs:subClassOf <https://knuckles-team.github.io/ontology/core#Alert> .

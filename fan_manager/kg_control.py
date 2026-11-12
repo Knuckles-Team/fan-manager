@@ -1,4 +1,4 @@
-"""Epistemic-graph–driven fan control — learn per-host thermal baselines, recommend
+"""Medulla–driven fan control — learn per-host thermal baselines, recommend
 per-host fan policies, and flag thermal anomalies from the accumulated ``:ThermalTrend``
 history (see ``reports/medulla-fan-control-plan.md``).
 
@@ -407,7 +407,7 @@ def main() -> None:
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
     p = argparse.ArgumentParser(
-        description="Epistemic-graph fan-control derivation pass."
+        description="Medulla fan-control derivation pass."
     )
     p.add_argument(
         "--days", type=int, default=14, help="trend lookback window (default 14)"

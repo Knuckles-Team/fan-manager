@@ -27,10 +27,9 @@ quality gates, version/lock policy, and release ownership.
 - `fan_manager/api_client.py` is the thin `Api` facade over
   `FanControlService`; `fan_manager/services/fan_control_service.py` owns
   dependency-injected temperature and fan-control calls.
-- `fan_manager/mcp_server.py` builds the MCP surface. Domain registrars in
-  `fan_manager/mcp/mcp_temperature.py`,
-  `fan_manager/mcp/mcp_fan_control.py`, and `fan_manager/mcp/mcp_kg.py`
-  expose one action-routed tool per domain through `TOOL_REGISTRY`.
+- `fan_manager/mcp_server.py` builds the MCP surface. The SDK serves one typed
+  tool per `Api` and `IpmiApi` method; the registrar in `fan_manager/mcp/mcp_kg.py`
+  adds the two telemetry ingest tools through `TOOL_REGISTRY`.
 - `fan_manager/connector_sources.py` declares the live `fan-sensors` source;
   `fan_manager/kg_ingest.py` maps telemetry to typed `ManagedHost`,
   `FanController`, `TemperatureReading`, `FanSpeedSetting`, and
@@ -54,8 +53,7 @@ The runtime may read `FAN_MANAGER_HOST`, `FAN_MANAGER_HOSTS`,
 `FAN_MANAGER_CURVE`, and `FAN_MANAGER_NOTIFY_URL`. Treat values as runtime
 configuration, never as secrets to embed in this skill. Keep node reads
 read-only and require one explicit out-of-band target for write operations.
-The MCP domains are gated by `TEMPERATURETOOL`, `FAN_CONTROLTOOL`, and
-`KGTOOL`; preserve the inherited `MCP_TOOL_MODE` surface and the existing
+The ingest tools are gated by `KGTOOL`; preserve the inherited `MCP_TOOL_MODE` surface and the existing
 `scion_sdk` registration path.
 
 ## Rapid delivery: the 5-minute contract
@@ -70,9 +68,8 @@ Specs are already designed. Deliver one small, reviewable slice and bind it to
    SDK-ingest seam before adding code. Keep local sensor/BMC commands fixed,
    validate fan levels before execution, and preserve fail-safe maximum fans on
    an automatic-control temperature failure.
-3. For MCP changes, test registration and action routing through the public
-   FastMCP surface. Keep unknown actions and malformed JSON on their existing
-   structured/error paths; do not broaden tools or bypass the domain toggles.
+3. For MCP changes, test registration through the public FastMCP surface. Keep
+   malformed JSON on its existing structured/error paths; do not broaden tools.
 4. For ingestion changes, preserve source IDs and typed node names from
    `connector_sources.py`/`kg_ingest.py`. Never add a local graph client or
    direct database write.

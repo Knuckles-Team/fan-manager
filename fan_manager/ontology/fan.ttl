@@ -9,7 +9,7 @@
 # Fan Manager thermal-control ontology — Dell PowerEdge BMC/IPMI fan and temperature
 # management. All classes and properties live in the shared `:` (kg#) namespace; only the
 # owl:Ontology node gets the per-package IRI. Backs the fan-manager MCP tool surface
-# (fan_manager_temperature / fan_manager_fan_control / fan_manager_ipmi) and the native
+# (fan_manager_get_temp / fan_manager_set_fan / fan_manager_ipmi_*) and the native
 # timeseries ingestion (:TemperatureReading / :FanSpeedSetting / :SensorReading samples).
 
 # --- classes (owl:Class) ---
@@ -250,3 +250,16 @@
     controllers and fans, the temperature-to-fan-speed policy curve, and the timeseries of
     temperature readings, fan-speed settings, IPMI sensor readings and system-event-log
     entries — federated into the scion-sdk knowledge-graph hub.""" .
+
+# connector-surface core roll-up
+<http://knuckles.team/kg#ManagedHost> rdfs:subClassOf <http://knuckles.team/kg#Server> .
+<http://knuckles.team/kg#FanController> rdfs:subClassOf <http://knuckles.team/kg#ConfigurationItem> .
+<http://knuckles.team/kg#Fan> rdfs:subClassOf <http://knuckles.team/kg#ConfigurationItem> .
+<http://knuckles.team/kg#TemperatureReading> rdfs:subClassOf <http://knuckles.team/kg#Observation> .
+<http://knuckles.team/kg#SensorReading> rdfs:subClassOf <http://knuckles.team/kg#Observation> .
+<http://knuckles.team/kg#FanSpeedSetting> rdfs:subClassOf <http://knuckles.team/kg#Event> .
+<http://knuckles.team/kg#FanControlPolicy> rdfs:subClassOf <http://knuckles.team/kg#Policy> .
+<http://knuckles.team/kg#SystemEvent> rdfs:subClassOf <http://knuckles.team/kg#Event> .
+<http://knuckles.team/kg#ThermalTrend> rdfs:subClassOf <http://knuckles.team/kg#Observation> .
+<http://knuckles.team/kg#ThermalBaseline> rdfs:subClassOf <http://knuckles.team/kg#Observation> .
+<http://knuckles.team/kg#ThermalAnomaly> rdfs:subClassOf <http://knuckles.team/kg#Alert> .

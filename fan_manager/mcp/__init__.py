@@ -1,15 +1,10 @@
-"""MCP tool registration modules for fan-manager.
+"""MCP tool registration for fan-manager.
 
-Each domain has its own module with a ``register_*_tools`` function that
-attaches an action-routed dynamic tool to the FastMCP server.
+The temperature, fan-control and IPMI operations are served by the SDK as one
+typed tool per ``Api`` / ``IpmiApi`` method. Only the telemetry ingest tools,
+which are not client-method wrappers, are registered here.
 """
 
-from fan_manager.mcp.mcp_fan_control import register_fan_control_tools
 from fan_manager.mcp.mcp_kg import register_kg_tools
-from fan_manager.mcp.mcp_temperature import register_temperature_tools
 
-__all__ = [
-    "register_temperature_tools",
-    "register_fan_control_tools",
-    "register_kg_tools",
-]
+__all__ = ["register_kg_tools"]

@@ -13,7 +13,7 @@ skills to act on the reading.
 
 ## Tools
 
-- `get_temp`: Returns the current highest CPU core temperature as a
+- `fan_manager_get_temp`: Returns the current highest CPU core temperature as a
   structured envelope (`response`, `command`, `status`).
 
 ## Usage

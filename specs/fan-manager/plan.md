@@ -4,7 +4,7 @@ Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
 
 ## Summary
 
-`fan_manager/mcp/mcp_kg.py` defines `fan_ingest_telemetry`, which routes an `action` of `temperature` or `sensors`. The shared SDK's `register_tool_surface` splits it into one tool per action. The connector adds no splitting code. The connector depends only on the shared SDK. The shared SDK owns tool naming and registration. The connector owns the IPMI operations, the fan-control logic, and the telemetry ingest actions.
+`fan_manager/mcp/mcp_kg.py` defines two typed tools, `fan_ingest_telemetry_temperature` and `fan_ingest_telemetry_sensors`. No tool takes an `action` argument. The connector depends only on the shared SDK. The shared SDK owns tool naming and registration. The connector owns the IPMI operations, the fan-control logic, and the telemetry ingest actions.
 
 ## Technical Context
 
@@ -42,7 +42,7 @@ No unknowns. Each row names the code it touches.
 ### Interfaces and data model
 
 The served set holds 39 tools: the temperature tools, the fan-control tools, the IPMI tools, and the two ingest tools.
-The package requires `scion-sdk[mcp]>=0.3.10,<1.0.0`. An older shared SDK drops `fan_ingest_telemetry` from the served surface.
+The package requires `scion-sdk[mcp]>=0.9.0,<0.10.0`.
 
 ### Node endpoints and aggregation (R002, R003)
 
@@ -77,7 +77,7 @@ Run `pytest tests/test_served_surface_keeps_ingest.py` and `pipelines-hook spec-
 
 ### Risks, alternatives, and decisions
 
-An SDK below 0.3.10 serves no ingest tools and ignores the engine audience. `R001.3` guards the floor, and `R001.1` guards the served names.
+An SDK below 0.9.0 lacks the typed surface contracts. `R001.3` guards the floor, and `R001.1` guards the served names.
 
 ## Phase 2: Task approach
 
@@ -93,7 +93,7 @@ The repository pre-commit hooks apply: `ruff-format`, `connector-standard`, `sec
 
 ## Production caller chain
 
-1. `CONN-FAN-MANAGER-R001.1`: the fan-manager-mcp console script (scion_sdk.cli:serve) loads fan_manager:connector (fan_manager/__init__.py:90), whose tool_registry TOOL_REGISTRY (fan_manager/mcp_server.py) registers register_kg_tools (fan_manager/mcp/mcp_kg.py:26), defining fan_ingest_telemetry at mcp_kg.py:28.
+1. `CONN-FAN-MANAGER-R001.1`: the fan-manager-mcp console script (scion_sdk.cli:serve) loads fan_manager:connector (fan_manager/__init__.py:90), whose tool_registry TOOL_REGISTRY (fan_manager/mcp_server.py) registers register_kg_tools (fan_manager/mcp/mcp_kg.py:26), defining fan_ingest_telemetry_temperature and fan_ingest_telemetry_sensors in mcp_kg.py.
 2. `CONN-FAN-MANAGER-R001.2`: fan_manager:connector (fan_manager/__init__.py:90) passes api=_OperationApi (fan_manager/mcp_server.py:33) to Connector, so the SDK surface built for the fan-manager-mcp console script has no run_service method; the CLI fan-manager entry point fan_manager.fan_manager:fan_manager (fan_manager/fan_manager.py:501) runs the loop.
 3. `CONN-FAN-MANAGER-R001.3`: the dependency pin in pyproject.toml (dependencies list) is resolved at install time, and scion_sdk.cli:serve behind the fan-manager-mcp console script relies on the SDK split surface it provides.
 4. `CONN-FAN-MANAGER-R001.4`: the fan-manager-mcp console script (scion_sdk.cli:serve) loads fan_manager:connector (fan_manager/__init__.py:90), whose tool_registry=tuple(TOOL_REGISTRY) from fan_manager/mcp_server.py names register_temperature_tools, register_fan_control_tools and register_kg_tools; the SDK registers them through register_tool_surface.
@@ -101,7 +101,7 @@ The repository pre-commit hooks apply: `ruff-format`, `connector-standard`, `sec
 6. `CONN-FAN-MANAGER-R002.1`: the fan-manager console script (fan_manager.fan_manager:fan_manager, fan_manager/fan_manager.py:501) calls start_from_env (fan_manager/node_api.py:138) at fan_manager.py:584, which starts make_server (node_api.py:123) with _Handler.do_GET (node_api.py:98) and _refuse (node_api.py:117) for other methods.
 7. `CONN-FAN-MANAGER-R002.2`: the fan-manager console script (fan_manager/fan_manager.py:501) starts the node endpoint through start_from_env (fan_manager/node_api.py:138); _Handler.do_GET (node_api.py:98) dispatches only names found in READ_OPERATIONS (node_api.py:42).
 8. `CONN-FAN-MANAGER-R002.3`: the fan-manager console script (fan_manager/fan_manager.py:501) starts the node endpoint through start_from_env (fan_manager/node_api.py:138), which passes FAN_MANAGER_NODE_API_TOKEN to make_server; _Handler.do_GET (node_api.py:98) answers 401 when _authorized (node_api.py:92) fails, after answering /health.
-9. `CONN-FAN-MANAGER-R003.1`: the fan-manager-mcp tool fan_manager_get_temp (action-routed in fan_manager/mcp/mcp_temperature.py:54) calls Api.get_temp (fan_manager/api_client.py:60), which calls fleet.read_all (fan_manager/fleet.py:71) when fleet.enabled (fleet.py:42).
+9. `CONN-FAN-MANAGER-R003.1`: the fan-manager-mcp tool fan_manager_get_temp (the SDK-served tool of the Api.get_temp client method) calls Api.get_temp (fan_manager/api_client.py:60), which calls fleet.read_all (fan_manager/fleet.py:71) when fleet.enabled (fleet.py:42).
 10. `CONN-FAN-MANAGER-R003.2`: the fan_manager_ipmi_* tools registered through verbose_targets in fan_manager:connector (fan_manager/__init__.py:90) call IpmiApi methods such as power_status (fan_manager/ipmi_api.py:45) and sensors reads, which call fleet.read_all (fan_manager/fleet.py:71) when host is None and fleet.enabled.
 11. `CONN-FAN-MANAGER-R003.3`: IpmiApi write methods such as power_on (fan_manager/ipmi_api.py:55), reached through the fan_manager_ipmi_* tools of fan_manager:connector, call _write_guard (ipmi_api.py:21) before ipmi.power; no write path calls fleet.read_all.
 12. `CONN-FAN-MANAGER-R003.4`: Api.get_temp (fan_manager/api_client.py:60) and the IpmiApi reads call fleet.read_all (fan_manager/fleet.py:71), which uses _fetch (fleet.py:47) per node.

@@ -30,34 +30,27 @@ api.auto_set_fan_speed(minimum_fan_speed=5, maximum_fan_speed=100)
 
 ## MCP tools
 
-The MCP server exposes two action-routed tools:
+The MCP server exposes one typed tool per operation. Arguments are passed by name.
 
-### `fan_manager_temperature` (`CONCEPT:FM-OS.governance.service-reads-temperature-through`)
+### Temperature (`CONCEPT:FM-OS.governance.service-reads-temperature-through`)
 
 ```json
-{ "action": "get" }
+{ "tool": "fan_manager_get_temp", "arguments": {} }
 ```
 
 ```json
-{ "action": "get_core", "params_json": "{\"cpus\": [\"coretemp-isa-0000\"], \"sensors\": {}}" }
+{ "tool": "fan_manager_get_core_temp", "arguments": { "cpus": ["coretemp-isa-0000"], "sensors": {} } }
 ```
 
-### `fan_manager_fan_control` (`CONCEPT:FM-OS.governance.service-writes-fan-level`)
+### Fan control (`CONCEPT:FM-OS.governance.service-writes-fan-level`)
 
 ```json
-{ "action": "set", "params_json": "{\"fan_level\": 40}" }
+{ "tool": "fan_manager_set_fan", "arguments": { "fan_level": 40 } }
 ```
 
 ```json
-{ "action": "auto", "params_json": "{\"minimum_fan_speed\": 5, \"maximum_fan_speed\": 100, \"minimum_temperature\": 50, \"maximum_temperature\": 80, \"temperature_power\": 5}" }
+{ "tool": "fan_manager_auto_set_fan_speed", "arguments": { "minimum_fan_speed": 5, "maximum_fan_speed": 100, "minimum_temperature": 50, "maximum_temperature": 80, "temperature_power": 5 } }
 ```
-
-### Toggling tools
-
-| Env Var | Default | Effect |
-|---------|---------|--------|
-| `TEMPERATURETOOL` | `True` | Registers the `temperature` tool |
-| `FAN_CONTROLTOOL` | `True` | Registers the `fan-control` tool |
 
 ## Running the MCP server
 

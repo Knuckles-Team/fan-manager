@@ -84,9 +84,8 @@ _Auto-generated from the live MCP server — do not edit by hand._
 
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
-| `fan_ingest_telemetry` | `KGTOOL` | Ingest live thermal telemetry into medulla as typed nodes. |
-| `fan_manager_fan_control` | `FAN_CONTROLTOOL` | Control Dell PowerEdge fan speed via IPMI (CONCEPT:FM-OS.governance.service-writes-fan-level). |
-| `fan_manager_temperature` | `TEMPERATURETOOL` | Read CPU/sensor temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through). |
+| `fan_ingest_telemetry_temperature` | `KGTOOL` | Ingest the current CPU temperature into medulla as a typed node. |
+| `fan_ingest_telemetry_sensors` | `KGTOOL` | Ingest the IPMI sensor table into medulla as typed nodes. |
 
 #### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
 
@@ -98,7 +97,6 @@ _Auto-generated from the live MCP server — do not edit by hand._
 | `fan_manager_auto_set_fan_speed` | `APITOOL` | Adjust fan speed automatically from the current temperature (CONCEPT:FM-OS.governance.service-writes-fan-level). |
 | `fan_manager_get_core_temp` | `APITOOL` | Return the highest core temperature from a sensors mapping (CONCEPT:FM-OS.governance.service-reads-temperature-through). |
 | `fan_manager_get_temp` | `APITOOL` | Return the current highest CPU core temperature (CONCEPT:FM-OS.governance.service-reads-temperature-through). |
-| `fan_manager_run_service` | `APITOOL` | Run the continuous fan-management service loop (CONCEPT:FM-OS.governance.service-writes-fan-level). |
 | `fan_manager_set_fan` | `APITOOL` | Set the fan to a fixed level (0-100) (CONCEPT:FM-OS.governance.service-writes-fan-level). |
 
 </details>
@@ -295,9 +293,7 @@ Interface alongside the MCP server. See
 | `TRANSPORT` | `stdio` | options: stdio, streamable-http, sse |
 | `AUTH_TYPE` | `none` | auth strategy for the scion-sdk MCP factory |
 | `FASTMCP_LOG_LEVEL` | `INFO` |  |
-| `TEMPERATURETOOL` | `True` | register the temperature tool domain |
-| `FAN_CONTROLTOOL` | `True` | register the fan-control tool domain |
-| `KGTOOL` | `True` | register the native KG ingestion tool (fan_ingest_telemetry) |
+| `KGTOOL` | `True` | register the native KG ingestion tool (fan_ingest_telemetry_temperature, fan_ingest_telemetry_sensors) |
 | `FAN_MANAGER_KG_INGEST` | `true` | default-on best-effort thermal-sample ingestion in the control loop |
 | `FAN_MANAGER_KG_AGGREGATE_S` | `3600` | window (s) over which samples distill to ONE :ThermalTrend node |
 | `FAN_MANAGER_HOST` | — | optional host/BMC label stamped on ingested :ManagedHost provenance |
@@ -355,8 +351,6 @@ file (auto-loaded), or in the MCP client's `env` block. See
 | `TRANSPORT` | `stdio` | MCP server | Transport: `stdio`, `streamable-http`, or `sse`. |
 | `AUTH_TYPE` | `none` | MCP server | Auth strategy passed to the `scion-sdk` MCP factory (`none` for this local tool). |
 | `FASTMCP_LOG_LEVEL` | `INFO` | MCP server | Log verbosity for the underlying FastMCP server. |
-| `TEMPERATURETOOL` | `True` | Tool toggle | Register the `temperature` tool domain (`CONCEPT:FM-OS.governance.service-reads-temperature-through`). |
-| `FAN_CONTROLTOOL` | `True` | Tool toggle | Register the `fan-control` tool domain (`CONCEPT:FM-OS.governance.service-writes-fan-level`). |
 | `IPMITOOL_PATH` | `ipmitool` | Local tooling | Path/name of the `ipmitool` binary used to drive the BMC. |
 | `SENSORS_PATH` | `sensors` | Local tooling | Path/name of the `lm-sensors` binary used to read temperatures. |
 | `ENABLE_OTEL` | `True` | Observability | Enable OpenTelemetry/logfire instrumentation for the agent. |

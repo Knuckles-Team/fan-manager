@@ -3,7 +3,7 @@
 ## Outcome
 
 The connector must serve the telemetry ingest operations as typed tools beside the fan, temperature, and IPMI tools.
-The served surface holds 39 tools, including `fan_ingest_telemetry_temperature` and `fan_ingest_telemetry_sensors`.
+The served surface holds 35 tools, including `fan_ingest_telemetry_temperature` and `fan_ingest_telemetry_sensors`.
 
 The connector runs away from the servers it reads. Each fan-manager daemon runs on one server, next to that server's BMC.
 Each daemon must serve a read-only endpoint for its own BMC (R002). The connector must read every node through those endpoints

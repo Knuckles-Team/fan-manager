@@ -42,16 +42,17 @@ fan-manager/
 └── mcp_config.json
 ```
 
-## Action-Routed Tool Surface
+## Typed Tool Surface
 
-Each domain registers a single `@mcp.tool` accepting an `action` and a
-`params_json` payload, then routes to the real callables. This keeps the LLM
-tool count small while preserving the full method surface.
+The SDK serves one typed tool per public method of the `Api` facade and the `IpmiApi`
+BMC client. Only the telemetry ingest tools are written by hand.
 
-| Tool | Tag | Concept | Actions |
-|------|-----|---------|---------|
-| `fan_manager_temperature` | `temperature` | `CONCEPT:FM-OS.governance.service-reads-temperature-through` | `get`, `get_core` |
-| `fan_manager_fan_control` | `fan-control` | `CONCEPT:FM-OS.governance.service-writes-fan-level` | `set`, `auto` |
+| Tool | Concept |
+|------|---------|
+| `fan_manager_get_temp`, `fan_manager_get_core_temp` | `CONCEPT:FM-OS.governance.service-reads-temperature-through` |
+| `fan_manager_set_fan`, `fan_manager_auto_set_fan_speed` | `CONCEPT:FM-OS.governance.service-writes-fan-level` |
+| `fan_manager_ipmi_*` | BMC power, chassis, sensors, event log, network, users and controller |
+| `fan_ingest_telemetry_temperature`, `fan_ingest_telemetry_sensors` | Knowledge-graph ingest |
 
 ## Enterprise Readiness
 

@@ -1,8 +1,7 @@
 """The served surface keeps the telemetry ingest operations as their own tools.
 
-``fan_ingest_telemetry`` routes an ``action`` (temperature, sensors). The SDK
-(>= 0.3.8) splits it into one tool per action; an older SDK drops it from the
-served surface. ``run_service`` is intentionally not a tool (the endless daemon
+The telemetry ingest operations (temperature, sensors) are two typed tools,
+``fan_ingest_telemetry_temperature`` and ``fan_ingest_telemetry_sensors``. ``run_service`` is intentionally not a tool (the endless daemon
 loop runs as the CLI service).
 """
 
@@ -44,8 +43,8 @@ def test_sdk_floor_is_declared_for_the_split_surface():
         next(d for d in project["dependencies"] if d.startswith("scion-sdk[mcp]"))
     )
     floor = max(Version(s.version) for s in requirement.specifier if s.operator == ">=")
-    assert floor >= Version("0.7.0")
-    assert requirement.specifier.contains("0.7.0")
+    assert floor >= Version("0.9.0")
+    assert requirement.specifier.contains("0.9.0")
 
 
 @pytest.mark.spec("CONN-FAN-MANAGER-R001.4")
@@ -63,4 +62,4 @@ def test_client_lists_ingest_tools_through_the_real_server():
 
     names = asyncio.run(listed())
     assert {"fan_ingest_telemetry_temperature", "fan_ingest_telemetry_sensors"} <= names
-    assert len(names) == 39
+    assert len(names) == 35

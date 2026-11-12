@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.11] - 2026-11-12
+
+### Changed
+- The hand-written `action`-routed tools `fan_manager_temperature`, `fan_manager_fan_control` and `fan_ingest_telemetry` are removed. Temperature and fan control are served as one typed tool per `Api` method (`fan_manager_get_temp`, `fan_manager_set_fan`, ...), and telemetry ingest as `fan_ingest_telemetry_temperature` and `fan_ingest_telemetry_sensors` (the names already served). The `TEMPERATURETOOL` and `FAN_CONTROLTOOL` toggles are gone with them.
+- `Api.run_service` is removed from the client facade; `fan_manager.fan_manager.run_service` stays the daemon entry.
+- Declare tool-use contracts, prompt and skill links, data locations and business roles; ship an operator and two business-role agent prompts in place of the placeholder specialist prompt; root every ontology class in a core class.
+- Require `scion-sdk>=0.9.0,<0.10.0`.
+
 ## [2.4.10] - 2026-10-30
 
 ### Changed

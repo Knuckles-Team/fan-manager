@@ -83,12 +83,13 @@ def __dir__() -> list[str]:
 
 from scion_sdk.connector import Connector
 
+from fan_manager.api_client import Api
 from fan_manager.auth import get_client
 from fan_manager.ipmi_api import IpmiApi
-from fan_manager.mcp_server import TOOL_REGISTRY, _OperationApi
+from fan_manager.mcp_server import TOOL_REGISTRY
 
 connector = Connector(
-    api=_OperationApi,
+    api=Api,
     get_client=get_client,
     tool_registry=tuple(TOOL_REGISTRY),
     instructions="Fan Manager MCP Server - Read CPU/sensor temperatures and control Dell PowerEdge fan speed via IPMI.",

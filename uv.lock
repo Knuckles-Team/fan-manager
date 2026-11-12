@@ -419,7 +419,7 @@ wheels = [
 
 [[package]]
 name = "fan-manager"
-version = "2.4.10"
+version = "2.4.11"
 source = { editable = "." }
 dependencies = [
     { name = "python-dotenv" },
@@ -446,7 +446,7 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=7.1.0" },
     { name = "pytest-xdist", marker = "extra == 'test'", specifier = ">=3.8.0" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
-    { name = "scion-sdk", extras = ["mcp"], specifier = ">=0.7.0,<0.8.0" },
+    { name = "scion-sdk", extras = ["mcp"], specifier = ">=0.9.0,<0.10.0" },
 ]
 provides-extras = ["test"]
 
@@ -1350,7 +1350,7 @@ wheels = [
 
 [[package]]
 name = "scion-sdk"
-version = "0.7.0"
+version = "0.9.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1363,9 +1363,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5a/94/872f94b88bd9a94ecb252becfa4a5ec82cf06940f6dd699800834e93ef09/scion_sdk-0.7.0.tar.gz", hash = "sha256:d634e02158ed854e0724391c14b06b5a0394a1ce212b2106225fcf2b82c86802", size = 1157671, upload-time = "2026-11-03T23:57:47.279Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5c/90/a1060f3e920e2f7b43a04545fbb6f0368ccd6c591a111ace476ef9c9f53c/scion_sdk-0.9.1.tar.gz", hash = "sha256:b9070c23cb9e1dfd2d4ffde04fd3db190bb3a8a86584e0d04f72a64884fc18ca", size = 1233548, upload-time = "2026-11-06T19:08:11.532Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/36/fb/2f3e579efdef6d3d567a77eee2db4f4d23113f1159111a37477e5bd97dd2/scion_sdk-0.7.0-py3-none-any.whl", hash = "sha256:191b834676c975d80934ac7f340764c737001d7b28070539c8575f643a3a19c1", size = 1107757, upload-time = "2026-11-03T23:57:48.87Z" },
+    { url = "https://files.pythonhosted.org/packages/79/ac/aba40530ae09fb1bb8d53159e44880b5c477877a1cfafde159b1efe941f2/scion_sdk-0.9.1-py3-none-any.whl", hash = "sha256:8e084b85373e399aca22e62afe2aeb81345e153baa15593430aefb947c0c7dfd", size = 1202358, upload-time = "2026-11-06T19:08:12.894Z" },
 ]
 
 [package.optional-dependencies]

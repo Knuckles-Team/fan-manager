@@ -90,7 +90,3 @@ class Api:
             maximum_temperature=maximum_temperature,
             temperature_power=temperature_power,
         )
-
-    def run_service(self, **kwargs: Any) -> Any:
-        """Run the continuous fan-management service loop (CONCEPT:FM-OS.governance.service-writes-fan-level)."""
-        return run_service(runner=self._service.runner, **kwargs)

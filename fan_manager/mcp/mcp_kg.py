@@ -25,52 +25,59 @@ from fan_manager.kg_ingest import (
 
 def register_kg_tools(mcp: FastMCP):
     @mcp.tool(tags={"kg"})
-    async def fan_ingest_telemetry(
-        action: str = Field(
-            default="temperature",
-            description="Action to perform. Must be one of: 'temperature', 'sensors'.",
-        ),
-        params_json: str = Field(
-            default="{}",
-            description="JSON string of options. Optional 'host' (BMC hostname/IP, "
-            "for provenance and out-of-band). For 'sensors', an optional 'target' "
-            "{host,user,password} drives the read out-of-band over LAN.",
+    async def fan_ingest_telemetry_temperature(
+        host: str | None = Field(
+            default=None,
+            description="BMC hostname or IP, recorded for provenance.",
         ),
         ctx: Context | None = Field(
             default=None, description="MCP context for progress reporting"
         ),
     ) -> Any:
-        """Ingest live thermal telemetry into medulla as typed nodes.
+        """Ingest the current CPU temperature into medulla as a typed node.
 
-        Action-routed methods:
-          - ``temperature``: read the current CPU temperature via ``sensors -j`` and push
-            it as a ``:TemperatureReading`` sample linked to the ``:ManagedHost``.
-          - ``sensors``: read the full IPMI SDR (``ipmitool sensor list``), parse it, and
-            push each row as a ``:SensorReading`` (fan RPM / temperature / voltage) node.
+        Reads the temperature via ``sensors -j`` and pushes it as a
+        ``:TemperatureReading`` sample linked to the ``:ManagedHost``.
         """
         if ctx:
-            await ctx.info(f"Ingesting {action} telemetry into the knowledge graph...")
+            await ctx.info(
+                "Ingesting temperature telemetry into the knowledge graph..."
+            )
+        reading = get_temp()
+        if reading.get("status") != 200:
+            return {"read": reading, "ingested": None}
+        result = await ingest_temperature_readings([reading], host=host)
+        return {"read": 1, "ingested": result}
 
+    @mcp.tool(tags={"kg"})
+    async def fan_ingest_telemetry_sensors(
+        host: str | None = Field(
+            default=None,
+            description="BMC hostname or IP, recorded for provenance.",
+        ),
+        target_json: str | None = Field(
+            default=None,
+            description="Optional JSON object {host,user,password} that drives the "
+            "read out-of-band over LAN.",
+        ),
+        ctx: Context | None = Field(
+            default=None, description="MCP context for progress reporting"
+        ),
+    ) -> Any:
+        """Ingest the full IPMI sensor table into medulla as typed nodes.
+
+        Reads the SDR (``ipmitool sensor list``), parses it and pushes each row as
+        a ``:SensorReading`` (fan RPM, temperature or voltage) node.
+        """
+        if ctx:
+            await ctx.info("Ingesting sensor telemetry into the knowledge graph...")
         try:
-            opts = json.loads(params_json) if params_json else {}
+            target = json.loads(target_json) if target_json else None
         except Exception:  # noqa: BLE001
             return {"error": "Operation failed"}
-
-        host = opts.get("host")
-
-        if action == "temperature":
-            reading = get_temp()
-            if reading.get("status") != 200:
-                return {"read": reading, "ingested": None}
-            result = await ingest_temperature_readings([reading], host=host)
-            return {"read": 1, "ingested": result}
-
-        if action == "sensors":
-            sensor_result = ipmi.sensors(action="full", target=opts.get("target"))
-            if sensor_result.get("status") != 200:
-                return {"read": sensor_result, "ingested": None}
-            records = parse_sensor_list(sensor_result.get("response") or "")
-            result = await ingest_sensor_readings(records, host=host)
-            return {"read": len(records), "ingested": result}
-
-        raise ValueError(f"Unknown action: {action}")
+        sensor_result = ipmi.sensors(action="full", target=target)
+        if sensor_result.get("status") != 200:
+            return {"read": sensor_result, "ingested": None}
+        records = parse_sensor_list(sensor_result.get("response") or "")
+        result = await ingest_sensor_readings(records, host=host)
+        return {"read": len(records), "ingested": result}

@@ -1,21 +1,22 @@
-"""Verify the action-routed MCP tools register and route correctly.
+"""Verify the typed MCP tools register and that the local-command facade works.
 
-Routing is exercised by invoking each registered tool's underlying function
-(``tool.fn``) with ``ctx=None`` — this avoids needing a live MCP session while
-still validating the action dispatch. Hardware calls are mocked by conftest.
+The temperature and fan-control operations are served as one typed tool per
+``Api`` method (``fan_manager_get_temp``, ``fan_manager_set_fan``, ...); only the
+telemetry ingest tools are written by hand. Hardware calls are mocked by conftest.
 
-These tests deliberately span multiple *intents* — registration (contract),
-happy-path routing, negative/error paths, and boundary conditions — so the
-suite is not single-intent.
+These tests span registration (contract), happy-path calls, negative paths and
+boundary conditions, so the suite is not single-intent.
 """
 
 import importlib
+import inspect
 import json
 
 import pytest
 from fastmcp import FastMCP
 
-from fan_manager.mcp import register_fan_control_tools, register_temperature_tools
+from fan_manager.api_client import Api
+from fan_manager.mcp import register_kg_tools
 
 # The package __init__ exposes a ``fan_manager`` *function* into its namespace,
 # which shadows the ``fan_manager.fan_manager`` submodule under a plain
@@ -25,7 +26,7 @@ core = importlib.import_module("fan_manager.fan_manager")
 
 @pytest.fixture
 def mcp() -> FastMCP:
-    """A fresh, isolated FastMCP instance per test (F.I.R.S.T. — Isolated)."""
+    """A fresh, isolated FastMCP instance per test (F.I.R.S.T. - Isolated)."""
     return FastMCP(name="test-fan-manager")
 
 
@@ -34,129 +35,47 @@ async def _tool_names(mcp: FastMCP) -> set[str]:
     return {t.name for t in tools}
 
 
-async def _tool_fn(mcp: FastMCP, name: str):
-    tool = await mcp.get_tool(name)
-    assert tool is not None, f"tool {name!r} was not registered"
-    return tool.fn
-
-
 # --------------------------------------------------------------------------- #
 # Contract / registration tests
 # --------------------------------------------------------------------------- #
-@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
-async def test_temperature_tool_registers(mcp: FastMCP):
-    """CONCEPT:FM-OS.governance.service-reads-temperature-through — the temperature domain registers exactly one tool."""
-    register_temperature_tools(mcp)
-    assert "fan_manager_temperature" in await _tool_names(mcp)
-
-
-@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
-async def test_fan_control_tool_registers(mcp: FastMCP):
-    """CONCEPT:FM-OS.governance.service-writes-fan-level — the fan-control domain registers exactly one tool."""
-    register_fan_control_tools(mcp)
-    assert "fan_manager_fan_control" in await _tool_names(mcp)
+async def test_ingest_tools_are_typed_and_unrouted(mcp: FastMCP):
+    """The hand-written ingest tools are two typed tools; none takes an action."""
+    register_kg_tools(mcp)
+    assert await _tool_names(mcp) == {
+        "fan_ingest_telemetry_temperature",
+        "fan_ingest_telemetry_sensors",
+    }
+    for tool in await mcp.list_tools():
+        assert "action" not in tool.parameters.get("properties", {})
 
 
 @pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
 @pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
-@pytest.mark.parametrize(
-    ("register", "tool_name", "valid_action", "params"),
-    [
-        (register_temperature_tools, "fan_manager_temperature", "get", "{}"),
-        (
-            register_fan_control_tools,
-            "fan_manager_fan_control",
-            "set",
-            json.dumps({"fan_level": 30}),
-        ),
-    ],
-)
-async def test_action_routing_contract(
-    mcp: FastMCP, register, tool_name: str, valid_action: str, params: str
-):
-    """Contract: every domain tool routes its documented action to a 200 envelope.
-
-    Exercises both CONCEPT:FM-OS.governance.service-reads-temperature-through (temperature) and CONCEPT:FM-OS.governance.service-writes-fan-level (fan-control)
-    action routing through one parametrized contract.
-    """
-    register(mcp)
-    fn = await _tool_fn(mcp, tool_name)
-    result = await fn(action=valid_action, params_json=params, ctx=None)
-    assert result["status"] == 200
+def test_api_operations_are_the_served_temperature_and_fan_tools():
+    """The operations the SDK serves as tools are the public ``Api`` methods."""
+    methods = {
+        name
+        for name, member in inspect.getmembers(Api, inspect.isfunction)
+        if not name.startswith("_")
+    }
+    assert {"get_temp", "get_core_temp", "set_fan", "auto_set_fan_speed"} <= methods
 
 
 # --------------------------------------------------------------------------- #
-# Happy-path routing tests
+# Happy-path and negative-path tests
 # --------------------------------------------------------------------------- #
 @pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
-async def test_temperature_get_routes(mcp: FastMCP):
-    """CONCEPT:FM-OS.governance.service-reads-temperature-through — the 'get' action returns a temperature envelope (mocked)."""
-    register_temperature_tools(mcp)
-    fn = await _tool_fn(mcp, "fan_manager_temperature")
-    result = await fn(action="get", params_json="{}", ctx=None)
+def test_get_temp_returns_hottest_core():
+    """CONCEPT:FM-OS.governance.service-reads-temperature-through - get_temp returns a 200 envelope (mocked)."""
+    result = Api().get_temp()
     assert result["status"] == 200
     assert result["response"] == 60.0  # hottest mocked core
 
 
 @pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
-async def test_fan_control_set_routes(mcp: FastMCP):
-    """CONCEPT:FM-OS.governance.service-writes-fan-level — the 'set' action returns a 200 envelope (ipmitool mocked)."""
-    register_fan_control_tools(mcp)
-    fn = await _tool_fn(mcp, "fan_manager_fan_control")
-    result = await fn(
-        action="set", params_json=json.dumps({"fan_level": 40}), ctx=None
-    )
-    assert result["status"] == 200
-
-
-# --------------------------------------------------------------------------- #
-# Negative / error-path tests
-# --------------------------------------------------------------------------- #
-@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
-async def test_unknown_temperature_action_raises(mcp: FastMCP):
-    """CONCEPT:FM-OS.governance.service-reads-temperature-through — an unknown action is rejected with ValueError."""
-    register_temperature_tools(mcp)
-    fn = await _tool_fn(mcp, "fan_manager_temperature")
-    with pytest.raises(ValueError):
-        await fn(action="bogus", params_json="{}", ctx=None)
-
-
-@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
-async def test_unknown_fan_action_raises(mcp: FastMCP):
-    """CONCEPT:FM-OS.governance.service-writes-fan-level — an unknown fan-control action is rejected with ValueError."""
-    register_fan_control_tools(mcp)
-    fn = await _tool_fn(mcp, "fan_manager_fan_control")
-    with pytest.raises(ValueError):
-        await fn(action="bogus", params_json="{}", ctx=None)
-
-
-@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
-async def test_fan_set_requires_fan_level(mcp: FastMCP):
-    """CONCEPT:FM-OS.governance.service-writes-fan-level — 'set' without a fan_level returns a structured error."""
-    register_fan_control_tools(mcp)
-    fn = await _tool_fn(mcp, "fan_manager_fan_control")
-    result = await fn(action="set", params_json="{}", ctx=None)
-    assert "error" in result
-
-
-@pytest.mark.concept("FM-OS.governance.service-writes-fan-level")
-async def test_fan_set_rejects_non_integer_level(mcp: FastMCP):
-    """CONCEPT:FM-OS.governance.service-writes-fan-level — a non-integer fan_level is rejected, not crashed."""
-    register_fan_control_tools(mcp)
-    fn = await _tool_fn(mcp, "fan_manager_fan_control")
-    result = await fn(
-        action="set", params_json=json.dumps({"fan_level": "fast"}), ctx=None
-    )
-    assert "error" in result
-
-
-@pytest.mark.concept("FM-OS.governance.service-reads-temperature-through")
-async def test_temperature_rejects_malformed_params_json(mcp: FastMCP):
-    """CONCEPT:FM-OS.governance.service-reads-temperature-through — malformed params_json yields a structured error envelope."""
-    register_temperature_tools(mcp)
-    fn = await _tool_fn(mcp, "fan_manager_temperature")
-    result = await fn(action="get", params_json="{not json", ctx=None)
-    assert "error" in result
+def test_set_fan_returns_200():
+    """CONCEPT:FM-OS.governance.service-writes-fan-level - set_fan returns a 200 envelope (ipmitool mocked)."""
+    assert Api().set_fan(fan_level=40)["status"] == 200
 
 
 # --------------------------------------------------------------------------- #

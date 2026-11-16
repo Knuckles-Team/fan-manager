@@ -23,18 +23,22 @@ The `fan-manager-mcp` server serves its packaged skills, prompts and ontology to
 **Acceptance Scenarios**:
 
 1. **Given** the connector is configured, **When** the behaviour of row `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001` (default content) is exercised, **Then** `resources/list` includes `skill://` and `ontology://`; `prompts/list` includes each packaged prompt.
+2. **Given** the packaged ontology modules, **When** the behaviour of row `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R002` (ontology rolls up to core) is exercised, **Then** every class has a path to a core class. Test: `tests/test_ontology_core_rollup.py::test_every_class_rolls_up_to_core`.
 
 ### Edge Cases
 
 - If `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001` is not met, its proving test fails: default content.
+- If `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R002` is not met, its proving test fails: a class without a path to a core class.
 
 ## Requirements
 
 - **FR-001**: Default content. Rows: `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001`.
+- **FR-002**: Ontology rolls up to core. Rows: `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R002`.
 
 ## Success Criteria
 
 - **SC-001**: `resources/list` includes `skill://` and `ontology://`; `prompts/list` includes each packaged prompt. Rows: `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001`.
+- **SC-002**: Every packaged ontology class reaches a core class. Rows: `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R002`.
 
 ## Assumptions
 
@@ -46,3 +50,4 @@ The `fan-manager-mcp` server serves its packaged skills, prompts and ontology to
 | Label | Rows | Design section | Test ID | Evidence |
 |---|---|---|---|---|
 | FR-001 | `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001` | [plan.md](plan.md) | T-001 | [test-spec.md](test-spec.md) |
+| FR-002 | `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R002` | [plan.md](plan.md) | T-002 | [test-spec.md](test-spec.md) |

@@ -1,4 +1,4 @@
-"""Epistemic-graph typed-node ingestion via scion_sdk — Wire-First coverage.
+"""Medulla typed-node ingestion via scion_sdk — Wire-First coverage.
 
 Exercises the real ``fan_manager.kg_ingest`` mappers against a fake transport one level
 below the SDK's own ``KnowledgeIngest`` facade, so these tests still run the SDK's real

@@ -406,9 +406,7 @@ def main() -> None:
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    p = argparse.ArgumentParser(
-        description="Medulla fan-control derivation pass."
-    )
+    p = argparse.ArgumentParser(description="Medulla fan-control derivation pass.")
     p.add_argument(
         "--days", type=int, default=14, help="trend lookback window (default 14)"
     )

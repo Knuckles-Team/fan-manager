@@ -53,6 +53,7 @@ The repository pre-commit hooks apply: `ruff-format`, `connector-standard`, `sec
 ## Production caller chain
 
 1. `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001`: the fan-manager-mcp console script (scion_sdk.cli:serve) loads the scion_sdk.connector entry point fan_manager:connector (fan_manager/__init__.py:90), whose SDK build_server serves the packaged skills, ontology and prompts as resources and prompts.
+2. `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R002`: the `fan-manager-mcp` console script (pyproject.toml) loads the `scion_sdk.connector` entry point -> fan_manager/__init__.py::connector -> the SDK default content registration serves the ontology modules, whose root classes extend core classes.
 
 ## Cross-repo seams
 

@@ -134,11 +134,6 @@
     rdfs:comment "Measured fan speed in RPM of a Fan or SensorReading." ;
     rdfs:range xsd:integer .
 
-:observedAt a owl:DatatypeProperty ;
-    rdfs:label "observed at" ;
-    rdfs:comment "UTC timestamp at which a reading, setting, or event was sampled (timeseries key)." ;
-    rdfs:range xsd:dateTime .
-
 :sensorName a owl:DatatypeProperty ;
     rdfs:label "sensor name" ;
     rdfs:comment "IPMI SDR sensor name (e.g. 'Fan1 RPM', 'Temp', 'Inlet Temp')." ;
@@ -224,25 +219,10 @@
     rdfs:comment "|°C per fan-%| slope — how much thermal margin a fan-speed step buys on this host." ;
     rdfs:range xsd:decimal .
 
-:approved a owl:DatatypeProperty ;
-    rdfs:label "approved" ;
-    rdfs:comment "Whether a derived FanControlPolicy is cleared to actually drive fans (else report-only)." ;
-    rdfs:range xsd:boolean .
-
-:rationale a owl:DatatypeProperty ;
-    rdfs:label "rationale" ;
-    rdfs:comment "Human-readable explanation of why a FanControlPolicy was recommended." ;
-    rdfs:range xsd:string .
-
 :anomalyKind a owl:DatatypeProperty ;
     rdfs:label "anomaly kind" ;
     rdfs:comment "ThermalAnomaly category: above-baseline, cooling-saturated, or ambient." ;
     rdfs:range xsd:string .
-
-:zScore a owl:DatatypeProperty ;
-    rdfs:label "z score" ;
-    rdfs:comment "How many baseline standard-spreads a ThermalAnomaly's observed temperature sits above p50." ;
-    rdfs:range xsd:decimal .
 
 <https://knuckles-team.github.io/ontology/connector/fan> a owl:Ontology ;
     rdfs:label "Fan Manager Ontology" ;

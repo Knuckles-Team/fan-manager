@@ -25,6 +25,14 @@ The `fan-manager-mcp` server serves its packaged skills, prompts and ontology to
 1. **Given** the connector is configured, **When** the behaviour of row `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001` (default content) is exercised, **Then** `resources/list` includes `skill://` and `ontology://`; `prompts/list` includes each packaged prompt.
 2. **Given** the packaged ontology modules, **When** the behaviour of row `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R002` (ontology rolls up to core) is exercised, **Then** every class has a path to a core class. Test: `tests/test_ontology_core_rollup.py::test_every_class_rolls_up_to_core`.
 
+### User Story 2 - The pack extends only the core ontology (Priority: P1)
+
+The fleet operator and the engine rely on this behaviour of ``: its pack adds terms under the core ontology and declares no second copy of a core term. It is proven independently of the other stories.
+
+**Acceptance Scenarios**:
+
+1. **Given** the `` connector built from the default branch, **When** `tests/test_ontology_extends_core.py::test_pack_declares_no_core_term` runs, **Then** the served Turtle declares none of the listed core terms.
+
 ### Edge Cases
 
 - If `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001` is not met, its proving test fails: default content.
@@ -34,11 +42,13 @@ The `fan-manager-mcp` server serves its packaged skills, prompts and ontology to
 
 - **FR-001**: Default content. Rows: `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001`.
 - **FR-002**: Ontology rolls up to core. Rows: `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R002`.
+- **FR-003**: The pack extends only the core ontology. Rows: `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R003`.
 
 ## Success Criteria
 
 - **SC-001**: `resources/list` includes `skill://` and `ontology://`; `prompts/list` includes each packaged prompt. Rows: `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001`.
 - **SC-002**: Every packaged ontology class reaches a core class. Rows: `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R002`.
+- **SC-003**: The served Turtle declares none of the listed core terms. Rows: `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R003`.
 
 ## Assumptions
 
@@ -51,3 +61,4 @@ The `fan-manager-mcp` server serves its packaged skills, prompts and ontology to
 |---|---|---|---|---|
 | FR-001 | `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001` | [plan.md](plan.md) | T-001 | [test-spec.md](test-spec.md) |
 | FR-002 | `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R002` | [plan.md](plan.md) | T-002 | [test-spec.md](test-spec.md) |
+| FR-003 | `CONN-FAN-MANAGER-CONNECTOR-CONTENT-R003` | plan.md Production caller chain | T-003 | tests/test_ontology_extends_core.py::test_pack_declares_no_core_term |

@@ -6,3 +6,4 @@ Each task line reads `- [ ] T001 [P] [US1] <ID>-R012.4 description`. Order is pr
 
 - [x] T001 [US1] CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001 Default content.
 - [x] T002 [US1] CONN-FAN-MANAGER-CONNECTOR-CONTENT-R002 Ontology rolls up to core.
+- [x] T003 [US2] CONN-FAN-MANAGER-CONNECTOR-CONTENT-R003 The pack extends only the core ontology.

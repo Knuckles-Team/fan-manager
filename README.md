@@ -16,11 +16,12 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/Knuckles-Team/fan-manager)
 ![GitHub language count](https://img.shields.io/github/languages/count/Knuckles-Team/fan-manager)
 ![GitHub repo size](https://img.shields.io/github/repo-size/Knuckles-Team/fan-manager)
+![GitHub repo file count (file type)](https://img.shields.io/github/directory-file-count/Knuckles-Team/fan-manager)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/fan-manager)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/fan-manager)
 
-> **Documentation** — Installation, deployment, and usage across the CLI and MCP
-> interfaces, plus the integrated A2A agent server, are maintained in the
+> **Documentation** — Installation, deployment, and usage across the API, CLI, MCP,
+> and A2A agent interfaces are maintained in the
 > [official documentation](https://knuckles-team.github.io/fan-manager/).
 
 ---
@@ -260,6 +261,8 @@ the detailed transport contract.
   `MCP_ALLOWED_HOSTS` in `AgentConfig`.
 <!-- END GENERATED: additional-deployment-options -->
 
+---
+
 ## Agent
 
 This repository features a fully integrated Pydantic AI Graph Agent. It
@@ -277,6 +280,25 @@ fan-manager-agent --provider openai --model-id gpt-4o
 The `docker/agent.compose.yml` configures the Agent, Web UI, and Terminal
 Interface alongside the MCP server. See
 [docs/deployment.md](docs/deployment.md) for the full Compose stack.
+
+---
+
+## Security & Governance
+
+Built directly upon the enterprise-ready
+[`scion-sdk`](https://github.com/Knuckles-Team/scion-sdk) core,
+standard security parameters are fully supported:
+
+### Access Control & Policy Enforcement
+- **Eunomia Policies:** Fine-grained, policy-driven tool authorization (`none`, `embedded`, or `remote`).
+- **OIDC Token Delegation:** Optional RFC 8693 token exchange (inert by default — Fan Manager is a local tool).
+
+### Runtime Security Grid
+| Feature | Feature | Enablement |
+|---------|---------------|------------|
+| **Tool Guard** | Sensitivity inspection with human-in-the-loop validation | Enabled by default |
+| **Prompt Injection Defense** | Input scanning, repetition monitoring, and recursive loop blocks | Enabled by default |
+| **Context Safety Guard** | Stuck-loop detectors and contextual overflow preemptive alerts | Enabled by default |
 
 ---
 
@@ -364,25 +386,6 @@ file (auto-loaded), or in the MCP client's `env` block. See
 
 ---
 
-## Security & Governance
-
-Built directly upon the enterprise-ready
-[`scion-sdk`](https://github.com/Knuckles-Team/scion-sdk) core,
-standard security parameters are fully supported:
-
-### Access Control & Policy Enforcement
-- **Eunomia Policies:** Fine-grained, policy-driven tool authorization (`none`, `embedded`, or `remote`).
-- **OIDC Token Delegation:** Optional RFC 8693 token exchange (inert by default — Fan Manager is a local tool).
-
-### Runtime Security Grid
-| Feature | Feature | Enablement |
-|---------|---------------|------------|
-| **Tool Guard** | Sensitivity inspection with human-in-the-loop validation | Enabled by default |
-| **Prompt Injection Defense** | Input scanning, repetition monitoring, and recursive loop blocks | Enabled by default |
-| **Context Safety Guard** | Stuck-loop detectors and contextual overflow preemptive alerts | Enabled by default |
-
----
-
 ## Installation
 
 Pick the extra that matches what the operator want to run:
@@ -449,6 +452,15 @@ The complete documentation is published as the
 
 ---
 
+## Repository Owners
+
+<img width="100%" height="180em" src="https://github-readme-stats.vercel.app/api?username=example&show_icons=true&hide_border=true&&count_private=true&include_all_commits=true" />
+
+![GitHub followers](https://img.shields.io/github/followers/example)
+![GitHub User's stars](https://img.shields.io/github/stars/example)
+
+---
+
 ## Contribute
 
 Contributions are welcome! Please ensure code quality by running local checks
@@ -457,7 +469,6 @@ before submitting pull requests:
 - Lint code using `ruff check .`
 - Validate type-safety with `mypy .`
 - Run test suites using `pytest`
-
 
 <!-- BEGIN scion-sdk-deployment (generated; do not edit between markers) -->
 

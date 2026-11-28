@@ -22,3 +22,8 @@ Each task line reads `- [ ] T001 [P] [US1] <ID>-R012.4 description`. Order is pr
 - [x] T016 [US1] CONN-FAN-MANAGER-R003.5 Node names to endpoints.
 - [x] T017 [US1] CONN-FAN-MANAGER-R004 Engine identity.
 - [x] T018 [US1] CONN-FAN-MANAGER-R005 Ingest connector name.
+- [ ] T019 [US1] CONN-FAN-MANAGER-R006 Machine roll-up and controller inventory (rollup).
+- [ ] T020 [US1] CONN-FAN-MANAGER-R006.1 Managed host rolls up to the machine class.
+- [ ] T021 [US1] CONN-FAN-MANAGER-R006.2 Controller inventory tool.
+- [ ] T022 [US1] CONN-FAN-MANAGER-R006.3 Wiring.
+- [ ] T023 [US1] CONN-FAN-MANAGER-R006.4 Hot-path proof: the served tool returns the schema.

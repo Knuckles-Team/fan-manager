@@ -24,3 +24,11 @@ Governing spec: [spec.md](spec.md).
 | `CONN-FAN-MANAGER-R005` | Unit | `tests/test_ingest_connector_name.py::test_ingest_binding_uses_the_onboarded_connector_name` must pass. |
 
 The tests run against the production server object. They need no vendor requests.
+
+## Machine roll-up proofs
+
+- `CONN-FAN-MANAGER-R006`: `tests/test_ipmi_inventory.py::test_served_inventory_tool_returns_the_probe_schema` (planned; the owning change adds the test)
+- `CONN-FAN-MANAGER-R006.1`: `tests/test_machine_rollup.py::test_managed_host_rolls_up_and_ingest_observes_the_host_key` (planned; the owning change adds the test)
+- `CONN-FAN-MANAGER-R006.2`: `tests/test_ipmi_inventory.py::test_inventory_payload_matches_the_probe_schema` (planned; the owning change adds the test)
+- `CONN-FAN-MANAGER-R006.3`: `tests/test_ipmi_inventory.py::test_served_tool_set_lists_the_inventory_tool` (planned; the owning change adds the test)
+- `CONN-FAN-MANAGER-R006.4`: `tests/test_ipmi_inventory.py::test_served_inventory_tool_returns_the_probe_schema` (planned; the owning change adds the test)
